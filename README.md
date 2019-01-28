@@ -4,7 +4,7 @@
 
 Báo lỗi ? Vào phần Issues
 
-Đóng góp ý kiến ? Vào phần Pull request
+Đóng góp ý kiến: fb.com/vinaghost
 
 Vina sẽ tiếp thu ý kiến và thực hiện trong thời gian sớm nhất có thể
 
