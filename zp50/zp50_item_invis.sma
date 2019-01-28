@@ -12,7 +12,7 @@
 
 
 #define ITEM_NAME "Tang hinh trong 30s"
-#define ITEM_COST 17000
+#define ITEM_COST 0
 
 #define flag_get(%1,%2) (%1 & (1 << (%2 & 31)))
 #define flag_get_boolean(%1,%2) (flag_get(%1,%2) ? true : false)
@@ -73,7 +73,6 @@ public Vis(id) {
 }
 
 public Invisible(id) {
-	
 	fm_set_entity_visibility(id, 0)
 	flag_set(g_Invis, id);
 	

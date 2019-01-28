@@ -439,13 +439,13 @@ show_ap_items_menu(id)
 	{
 		ExecuteForward(a_Forwards[FW_ITEM_SELECT_PRE], g_ForwardResult, id, index, 0)
 		
-		if (g_ForwardResult >= ZP_ITEM_DONT_SHOW)
+		if (g_ForwardResult == ZP_ITEM_DONT_SHOW)
 			continue;
 		
 		ArrayGetString(a_ItemName, index, name, charsmax(name))
 		cost = ArrayGetCell(a_ItemCost, index)
 		
-		if (g_ForwardResult >= ZP_ITEM_NOT_AVAILABLE)
+		if (g_ForwardResult == ZP_ITEM_NOT_AVAILABLE)
 			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
 		else
 			formatex(menu, charsmax(menu), "%s \R\y%d", name, cost)
@@ -540,7 +540,7 @@ show_money_items_menu(id)
 	{
 		ExecuteForward(m_Forwards[FW_ITEM_SELECT_PRE], g_ForwardResult, id, index, 0)
 		
-		if (g_ForwardResult >= ZP_ITEM_DONT_SHOW)
+		if (g_ForwardResult >.= ZP_ITEM_DONT_SHOW)
 			continue;
 		
 		ArrayGetString(m_ItemName, index, name, charsmax(name))
