@@ -9,8 +9,8 @@
 	
 ================================================================================*/
 
-#define ITEM_NAME "Zombie Madness"
-#define ITEM_COST 20
+#define ITEM_NAME "No khi"
+#define ITEM_COST 20000
 
 #include <amxmodx>
 #include <cstrike>
@@ -66,12 +66,12 @@ public plugin_init()
 	RegisterHam(Ham_Killed, "player", "fw_PlayerKilled_Post", 1)
 	RegisterHamBots(Ham_Killed, "fw_PlayerKilled_Post", 1)
 	
-	cvar_zombie_madness_time = register_cvar("zp_zombie_madness_time", "5.0")
+	cvar_zombie_madness_time = register_cvar("zp_zombie_madness_time", "3.0")
 	cvar_madness_aura_color_R = register_cvar("zp_madness_aura_color_R", "150")
 	cvar_madness_aura_color_G = register_cvar("zp_madness_aura_color_G", "0")
 	cvar_madness_aura_color_B = register_cvar("zp_madness_aura_color_B", "0")
 	
-	g_ItemID = zp_ap_items_register(ITEM_NAME, ITEM_COST)
+	g_ItemID = zp_money_items_register(ITEM_NAME, ITEM_COST)
 }
 
 public plugin_precache()

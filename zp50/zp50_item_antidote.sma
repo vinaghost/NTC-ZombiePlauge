@@ -9,8 +9,8 @@
 	
 ================================================================================*/
 
-#define ITEM_NAME "Antidote"
-#define ITEM_COST 8000
+#define ITEM_NAME "Thuoc giai doc"
+#define ITEM_COST 29000
 
 #include <amxmodx>
 #include <zp50_items>
