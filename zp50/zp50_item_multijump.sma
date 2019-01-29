@@ -68,7 +68,7 @@ public client_disconnect(id)
 public client_PreThink(id)
 {
 	if(!is_user_alive(id)) return PLUGIN_CONTINUE
-	
+	if(!zp_core_is_zombie(id) ) return PLUGIN_CONTINUE;
 	new nbut = get_user_button(id)
 	new obut = get_user_oldbutton(id)
 	if((nbut & IN_JUMP) && !(get_entity_flags(id) & FL_ONGROUND) && !(obut & IN_JUMP))
@@ -91,6 +91,7 @@ public client_PreThink(id)
 public client_PostThink(id)
 {
 	if(!is_user_alive(id)) return PLUGIN_CONTINUE
+	if(!zp_core_is_zombie(id) ) return PLUGIN_CONTINUE;
 	if(flag_get(dojump, id))
 	{
 		new Float:velocity[3]	
