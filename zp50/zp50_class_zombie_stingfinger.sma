@@ -135,7 +135,7 @@ public reset_skill(id)
 	UnSet_BitVar(g_CanPenetrate, id)	
 }
 
-public zb_zombie_skill(id/*, ClassID*/)
+public active_drop(id/*, ClassID*/)
 {
 	/*if(ClassID != g_ZombieClass_Resident)
 		return*/
