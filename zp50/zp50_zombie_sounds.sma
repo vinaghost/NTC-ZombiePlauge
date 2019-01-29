@@ -17,8 +17,8 @@
 #include <zp50_core>
 #define LIBRARY_NEMESIS "zp50_class_nemesis"
 #include <zp50_class_nemesis>
-#define LIBRARY_ASSASSIN "zp50_class_assassin"
-#include <zp50_class_assassin>
+/*#define LIBRARY_ASSASSIN "zp50_class_assassin"
+#include <zp50_class_assassin>*/
 
 // Settings file
 new const ZP_SETTINGS_FILE[] = "zombieplague.ini"
@@ -205,14 +205,14 @@ public plugin_precache()
 		}
 	}	
 	// Assassin Class loaded?
-	else if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library))
+	/*else if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library))
 	{
 		for (index = 0; index < ArraySize(g_sound_assassin_pain); index++)
 		{
 			ArrayGetString(g_sound_assassin_pain, index, sound, charsmax(sound))
 			precache_sound(sound)
 		}
-	}	
+	}	*/
 	for (index = 0; index < ArraySize(g_sound_zombie_die); index++)
 	{
 		ArrayGetString(g_sound_zombie_die, index, sound, charsmax(sound))
@@ -296,12 +296,12 @@ public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags
 				return FMRES_SUPERCEDE;
 			}
 			// Assassin Class loaded?
-			else if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library) && zp_class_assassin_get(id))
+			/*else if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library) && zp_class_assassin_get(id))
 			{
 				ArrayGetString(g_sound_assassin_pain, random_num(0, ArraySize(g_sound_assassin_pain) - 1), sound, charsmax(sound))
 				emit_sound(id, channel, sound, volume, attn, flags, pitch)
 				return FMRES_SUPERCEDE;
-			}
+			}*/
 			ArrayGetString(g_sound_zombie_pain, random_num(0, ArraySize(g_sound_zombie_pain) - 1), sound, charsmax(sound))
 			emit_sound(id, channel, sound, volume, attn, flags, pitch)
 			return FMRES_SUPERCEDE;
