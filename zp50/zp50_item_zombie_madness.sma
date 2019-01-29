@@ -138,7 +138,7 @@ public native_item_zombie_madness_get(plugin_id, num_params)
 	return flag_get_boolean(g_MadnessBlockDamage, id);
 }
 
-public zp_fw_ap_items_select_pre(id, itemid, ignorecost)
+public zp_fw_money_items_select_pre(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)
@@ -159,7 +159,7 @@ public zp_fw_ap_items_select_pre(id, itemid, ignorecost)
 	return ZP_ITEM_AVAILABLE;
 }
 
-public zp_fw_ap_items_select_post(id, itemid, ignorecost)
+public zp_fw_money_items_select_post(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)

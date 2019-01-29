@@ -128,7 +128,7 @@ public plugin_cfg()
 	g_GameModeMultiID = zp_gamemodes_get_id("Multiple Infection Mode")
 }
 
-public zp_fw_items_select_pre(id, itemid, ignorecost)
+public zp_fw_money_items_select_pre(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)
@@ -151,7 +151,7 @@ public zp_fw_items_select_pre(id, itemid, ignorecost)
 	return ZP_ITEM_AVAILABLE;
 }
 
-public zp_fw_items_select_post(id, itemid, ignorecost)
+public zp_fw_money_items_select_post(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)

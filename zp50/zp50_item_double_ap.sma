@@ -35,7 +35,7 @@ public is_haveItem() {
 	
 	return flag_get(g_Double, id);
 }
-public zp_fw_items_select_pre(id, itemid, ignorecost)
+public zp_fw_ap_items_select_pre(id, itemid, ignorecost)
 {
 	if (itemid != g_ItemID)
 		return ZP_ITEM_AVAILABLE;
@@ -46,7 +46,7 @@ public zp_fw_items_select_pre(id, itemid, ignorecost)
 	return ZP_ITEM_AVAILABLE;
 }
 
-public zp_fw_items_select_post(id, itemid, ignorecost)
+public zp_fw_ap_items_select_post(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)
