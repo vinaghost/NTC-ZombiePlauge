@@ -11,7 +11,7 @@
 #define AUTHOR "twistedeuphoria"
 
 
-#define ITEM_NAME "Multijump"
+#define ITEM_NAME "Khinh cong"
 #define ITEM_COST 10
 
 #define flag_get(%1,%2) (%1 & (1 << (%2 & 31)))
