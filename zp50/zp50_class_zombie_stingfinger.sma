@@ -9,6 +9,9 @@
 #include <zp50_colorchat>
 #include <zp50_class_zombie>
 
+#define LIBRARY_NEMESIS "zp50_class_nemesis"
+#include <zp50_class_nemesis>
+
 #define PLUGIN "[ZP] Class: Sting Finger"
 #define VERSION "1.0"
 #define AUTHOR "Dias"
@@ -16,7 +19,7 @@
 
 // Zombie Configs
 new zclass_name[24] = "Sting Finger"
-new zclass_desc[32] = "Gomu gomu no pistol + Heal"
+new zclass_desc[32] = "Gomu gomu no pistol"
 new zclass_desc1[32] = "Gomu gomu no pistol"
 new const zclass_model[] = "StingFinger"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_stingFinger.mdl"
@@ -96,6 +99,8 @@ public client_connect(id) {
 }
 public zp_fw_core_infect_post(id, attacker) 
 {
+	if( zp_core_is_zombie(id) ) return;
+	if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id)) return;
 	if(zp_class_zombie_get_current(id) != g_StingFinger)
 		return;
 			
@@ -105,6 +110,7 @@ public zp_fw_core_infect_post(id, attacker)
 }
 public zp_fw_core_cure_post(id) {
 	
+	if( zp_core_is_zombie(id) ) return;
 	if(zp_class_zombie_get_current(id) != g_StingFinger)
 		return;
 		
