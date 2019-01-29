@@ -27,6 +27,8 @@
 
 new g_MaxPlayers
 
+native zp_get_doubleAP(id)
+
 new Float:g_DamageDealtToZombies[MAXPLAYERS+1]
 new Float:g_DamageDealtToHumans[MAXPLAYERS+1]
 
@@ -99,7 +101,7 @@ public zp_fw_core_infect_post(id, attacker)
 {
 	// Reward ammo packs to zombies infecting humans?
 	if (is_user_connected(attacker) && attacker != id && get_pcvar_num(cvar_ammop_human_infected) > 0)
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_infected))
+		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_infected) * ( 1 + zp_get_doubleAP(attacker) ))
 }
 
 // Ham Take Damage Post Forward
@@ -138,7 +140,7 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToHumans[attacker] / get_pcvar_float(cvar_ammop_human_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards))
+				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * ( 1 + zp_get_doubleAP(attacker))) )
 				g_DamageDealtToHumans[attacker] -= get_pcvar_float(cvar_ammop_human_damaged_hp) * how_many_rewards
 			}
 		}
@@ -156,7 +158,7 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToZombies[attacker] / get_pcvar_float(cvar_ammop_zombie_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards))
+				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * ( 1 + zp_get_doubleAP(attacker))) )
 				g_DamageDealtToZombies[attacker] -= get_pcvar_float(cvar_ammop_zombie_damaged_hp) * how_many_rewards
 			}
 		}
@@ -188,9 +190,9 @@ public fw_PlayerKilled_Post(victim, attacker, shouldgib)
 	
 	// Reward ammo packs to attacker for the kill
 	if (zp_core_is_zombie(victim))
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_zombie_killed))
+		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_zombie_killed) * ( 1 + zp_get_doubleAP(attacker) ) )
 	else
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_killed))
+		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_killed) * ( 1 + zp_get_doubleAP(attacker)  ))
 }
 
 public zp_fw_gamemodes_end()
