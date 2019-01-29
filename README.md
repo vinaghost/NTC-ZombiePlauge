@@ -2,9 +2,7 @@
 
 **IP:** *103.48.193.60:27016*
 
-Báo lỗi ? Vào phần Issues
-
-Đóng góp ý kiến: fb.com/vinaghost
+Báo lỗi và đóng góp ý kiến ? Vào phần Issues
 
 Vina sẽ tiếp thu ý kiến và thực hiện trong thời gian sớm nhất có thể
 
