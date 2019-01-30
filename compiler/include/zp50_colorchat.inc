@@ -57,7 +57,7 @@ stock zp_colored_print(target, const message[], any:...)
 			
 			// Format message for player (+add ZP prefix)
 			vformat(buffer, charsmax(buffer), message, 3)
-			format(buffer, charsmax(buffer), "^x04[Thông báo]^x01 %s", buffer)
+			format(buffer, charsmax(buffer), "^x04[NTC]^x01 %s", buffer)
 			
 			// Send it
 			message_begin(MSG_ONE_UNRELIABLE, msg_SayText, _, player)
@@ -75,7 +75,7 @@ stock zp_colored_print(target, const message[], any:...)
 	{
 		// Format message for player (+add ZP prefix)
 		vformat(buffer, charsmax(buffer), message, 3)
-		format(buffer, charsmax(buffer), "^x04[Thông báo]^x01 %s",  buffer)
+		format(buffer, charsmax(buffer), "^x04[NTC]^x01 %s",  buffer)
 		
 		// Send it
 		message_begin(MSG_ONE, msg_SayText, _, target)

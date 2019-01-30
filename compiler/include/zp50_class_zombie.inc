@@ -94,11 +94,34 @@ native zp_class_zombie_register_claw(classid, const clawmodel[])
 native zp_class_zombie_register_kb(classid, Float:knockback)
 
 /**
+ * Registers a zombie class' skill 1
+ *
+ * @param classid	A valid zombie class ID.
+ * @param info		Knockback multiplier.
+ * @param activeTime	Thoi gian skill delay sau khi kich hoat
+ * @param activingTime	Thoi gian skill thuc hien, mac dinh = 0
+ * @return		True on success, false otherwise.
+ */
+ native zp_class_zombie_register_1(classid, info[], activeTime, activingTime = 0)
+
+ /**
+ * Registers a zombie class' skill 2
+ *
+ * @param classid	A valid zombie class ID.
+ * @param info		Knockback multiplier.
+ * @param activeTime	Thoi gian skill delay sau khi kich hoat
+ * @param activingTime	Thoi gian skill thuc hien, mac dinh = 0
+ * @return		True on success, false otherwise.
+ */
+ native zp_class_zombie_register_2(classid, info[], activeTime, activingTime = 0)
+ 
+/**
  * Returns a zombie class' ID.
  *
  * @param name		Class name to look for.
  * @return			Internal zombie class ID, or ZP_INVALID_ZOMBIE_CLASS if not found.
  */
+ 
 native zp_class_zombie_get_id(const real_name[])
 
 /**

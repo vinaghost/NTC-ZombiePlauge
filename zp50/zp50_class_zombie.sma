@@ -1,22 +1,25 @@
 /*================================================================================
-	
-	--------------------------
-	-*- [ZP] Class: Zombie -*-
-	--------------------------
-	
-	This plugin is part of Zombie Plague Mod and is distributed under the
-	terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
-	
+
+--------------------------
+-*- [ZP] Class: Zombie -*-
+--------------------------
+
+This plugin is part of Zombie Plague Mod and is distributed under the
+terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
+
 ================================================================================*/
 
 #include <amxmodx>
 #include <fun>
 #include <fakemeta>
+#include <engine>
+
 #include <amx_settings_api>
 #include <cs_player_models_api>
 #include <cs_weap_models_api>
 #include <cs_maxspeed_api>
 #include <cs_weap_restrict_api>
+
 #include <zp50_core>
 #include <zp50_colorchat>
 #include <zp50_class_zombie_const>
@@ -35,6 +38,10 @@ new const ZP_ZOMBIECLASSES_FILE[] = "zp_zombieclasses.ini"
 #define ZOMBIES_DEFAULT_CLAWMODEL "models/zombie_plague/v_knife_zombie.mdl"
 #define ZOMBIES_DEFAULT_KNOCKBACK 1.0
 
+#define Get_BitVar(%1,%2) (%1 & (1 << (%2 & 31)))
+#define Set_BitVar(%1,%2) %1 |= (1 << (%2 & 31))
+#define UnSet_BitVar(%1,%2) %1 &= ~(1 << (%2 & 31))
+
 // Allowed weapons for zombies
 const ZOMBIE_ALLOWED_WEAPONS_BITSUM = (1<<CSW_KNIFE)|(1<<CSW_HEGRENADE)|(1<<CSW_FLASHBANG)|(1<<CSW_SMOKEGRENADE)|(1<<CSW_C4)
 const ZOMBIE_DEFAULT_ALLOWED_WEAPON = CSW_KNIFE
@@ -46,15 +53,30 @@ const OFFSET_CSMENUCODE = 205
 #define MENU_PAGE_CLASS g_menu_data[id]
 new g_menu_data[MAXPLAYERS+1]
 
-enum _:TOTAL_FORWARDS
-{
+enum _:TOTAL_FORWARDS {
 	FW_CLASS_SELECT_PRE = 0,
-	FW_CLASS_SELECT_POST
+	FW_CLASS_SELECT_POST,
+	
+	FW_CLASS_SKILL1_ACTIVE,
+	FW_CLASS_SKILL2_ACTIVE,
+	
+	FW_CLASS_SKILL1_ACTIVING,
+	FW_CLASS_SKILL2_ACTIVING,
+	
+	FW_CLASS_SKILL1_DEACTIVE,
+	FW_CLASS_SKILL2_DEACTIVE
+}
+enum ( +=1000 ) {
+	ID_DEACTIVE_1 = 1000,
+	ID_DEACTIVE_2,
+	ID_DEACTIVING_1,
+	ID_DEACTIVING_2
 }
 new g_Forwards[TOTAL_FORWARDS]
 new g_ForwardResult
 
 new g_ZombieClassCount
+
 new Array:g_ZombieClassRealName
 new Array:g_ZombieClassName
 new Array:g_ZombieClassDesc
@@ -63,14 +85,30 @@ new Array:g_ZombieClassSpeed
 new Array:g_ZombieClassGravity
 new Array:g_ZombieClassKnockbackFile
 new Array:g_ZombieClassKnockback
+
 new Array:g_ZombieClassModelsFile
 new Array:g_ZombieClassModelsHandle
 new Array:g_ZombieClassClawsFile
 new Array:g_ZombieClassClawsHandle
+
+new Array:g_ZombieClassSkillInfo1
+new Array:g_ZombieTimeDeActive_skill1
+new Array:g_ZombieTimeActiving_skill1
+
+new Array:g_ZombieClassSkillInfo2
+new Array:g_ZombieTimeDeActive_skill2
+new Array:g_ZombieTimeActiving_skill2
+
 new g_ZombieClass[MAXPLAYERS+1]
 new g_ZombieClassNext[MAXPLAYERS+1]
 new g_AdditionalMenuText[32]
 
+
+new g_skill1_active, g_skill2_active;
+new g_skill1_activing, g_skill2_activing;
+
+
+new g_synchud1, g_synchud2;
 public plugin_init()
 {
 	register_plugin("[ZP] Class: Zombie", ZP_VERSION_STRING, "ZP Dev Team")
@@ -78,8 +116,25 @@ public plugin_init()
 	register_clcmd("say /zclass", "show_menu_zombieclass")
 	register_clcmd("say /class", "show_class_menu")
 	
+	register_clcmd("drop", "active_skill1")
+	
+	register_message( get_user_msgid( "TextMsg" ), "Message_TextMsg" );
+	
 	g_Forwards[FW_CLASS_SELECT_PRE] = CreateMultiForward("zp_fw_class_zombie_select_pre", ET_CONTINUE, FP_CELL, FP_CELL)
 	g_Forwards[FW_CLASS_SELECT_POST] = CreateMultiForward("zp_fw_class_zombie_select_post", ET_CONTINUE, FP_CELL, FP_CELL)
+	
+	g_Forwards[FW_CLASS_SKILL1_ACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill1_active", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_ACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill2_active", ET_CONTINUE, FP_CELL, FP_CELL)
+	
+	g_Forwards[FW_CLASS_SKILL1_ACTIVING] = CreateMultiForward("zp_fw_class_zombie_skill1_activing", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_ACTIVING] = CreateMultiForward("zp_fw_class_zombie_skill2_activing", ET_CONTINUE, FP_CELL, FP_CELL)
+	
+	g_Forwards[FW_CLASS_SKILL1_DEACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill1_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_DEACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill2_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
+	
+	g_synchud1 = CreateHudSyncObj()
+	g_synchud2 = CreateHudSyncObj()
+	
 }
 
 public plugin_precache()
@@ -94,46 +149,35 @@ public plugin_precache()
 	precache_model(ZOMBIES_DEFAULT_CLAWMODEL)
 }
 
-public plugin_cfg()
-{
-	// No classes loaded, add default zombie class
-	if (g_ZombieClassCount < 1)
-	{
-		ArrayPushString(g_ZombieClassRealName, ZOMBIES_DEFAULT_NAME)
-		ArrayPushString(g_ZombieClassName, ZOMBIES_DEFAULT_NAME)
-		ArrayPushString(g_ZombieClassDesc, ZOMBIES_DEFAULT_DESCRIPTION)
-		ArrayPushCell(g_ZombieClassHealth, ZOMBIES_DEFAULT_HEALTH)
-		ArrayPushCell(g_ZombieClassSpeed, ZOMBIES_DEFAULT_SPEED)
-		ArrayPushCell(g_ZombieClassGravity, ZOMBIES_DEFAULT_GRAVITY)
-		ArrayPushCell(g_ZombieClassKnockbackFile, false)
-		ArrayPushCell(g_ZombieClassKnockback, ZOMBIES_DEFAULT_KNOCKBACK)
-		ArrayPushCell(g_ZombieClassModelsFile, false)
-		ArrayPushCell(g_ZombieClassModelsHandle, Invalid_Array)
-		ArrayPushCell(g_ZombieClassClawsFile, false)
-		ArrayPushCell(g_ZombieClassClawsHandle, Invalid_Array)
-		g_ZombieClassCount++
-	}
-}
 
 public plugin_natives()
 {
 	register_library("zp50_class_zombie")
 	register_native("zp_class_zombie_get_current", "native_class_zombie_get_current")
+	
 	register_native("zp_class_zombie_get_next", "native_class_zombie_get_next")
 	register_native("zp_class_zombie_set_next", "native_class_zombie_set_next")
+	
 	register_native("zp_class_zombie_get_max_health", "_class_zombie_get_max_health")
+	
 	register_native("zp_class_zombie_register", "native_class_zombie_register")
 	register_native("zp_class_zombie_register_model", "_class_zombie_register_model")
 	register_native("zp_class_zombie_register_claw", "_class_zombie_register_claw")
 	register_native("zp_class_zombie_register_kb", "native_class_zombie_register_kb")
+	
+	register_native("zp_class_zombie_register_1", "native_class_zombie_register_1")
+	register_native("zp_class_zombie_register_2", "native_class_zombie_register_2")
+		
 	register_native("zp_class_zombie_get_id", "native_class_zombie_get_id")
 	register_native("zp_class_zombie_get_name", "native_class_zombie_get_name")
 	register_native("zp_class_zombie_get_real_name", "_class_zombie_get_real_name")
 	register_native("zp_class_zombie_get_desc", "native_class_zombie_get_desc")
 	register_native("zp_class_zombie_get_kb", "native_class_zombie_get_kb")
 	register_native("zp_class_zombie_get_count", "native_class_zombie_get_count")
+	
 	register_native("zp_class_zombie_show_menu", "native_class_zombie_show_menu")
 	register_native("zp_class_zombie_menu_text_add", "_class_zombie_menu_text_add")
+	
 	
 	// Initialize dynamic arrays
 	g_ZombieClassRealName = ArrayCreate(32, 1)
@@ -144,10 +188,20 @@ public plugin_natives()
 	g_ZombieClassGravity = ArrayCreate(1, 1)
 	g_ZombieClassKnockback = ArrayCreate(1, 1)
 	g_ZombieClassKnockbackFile = ArrayCreate(1, 1)
+	
 	g_ZombieClassModelsHandle = ArrayCreate(1, 1)
 	g_ZombieClassModelsFile = ArrayCreate(1, 1)
 	g_ZombieClassClawsHandle = ArrayCreate(1, 1)
 	g_ZombieClassClawsFile = ArrayCreate(1, 1)
+	
+	g_ZombieClassSkillInfo1 = ArrayCreate(32, 1)
+	g_ZombieTimeDeActive_skill1 = ArrayCreate(1, 1)
+	g_ZombieTimeActiving_skill1 = ArrayCreate(1, 1)
+	
+	g_ZombieClassSkillInfo2 = ArrayCreate(32, 1)
+	g_ZombieTimeDeActive_skill2 = ArrayCreate(1, 1)
+	g_ZombieTimeActiving_skill2 = ArrayCreate(1, 1)
+
 }
 
 public client_putinserver(id)
@@ -160,6 +214,157 @@ public client_disconnect(id)
 {
 	// Reset remembered menu pages
 	MENU_PAGE_CLASS = 0
+}
+
+public client_PreThink(id) {
+	
+	if(zp_core_is_zombie(id) )
+	{
+		if( !Get_BitVar(g_skill2_active, id) )
+		{
+			new button = pev(id, pev_button), old_button = pev(id, pev_oldbuttons)
+			
+			if((button & IN_RELOAD) && !(old_button & IN_RELOAD))
+			{
+				active_skill2(id)
+			}
+		}
+	}
+}
+
+public active_skill1(id) {
+	if( !zp_core_is_zombie(id) ) return
+	if( Get_BitVar(g_skill1_active, id) ) return;
+	
+	new id_zom = g_ZombieClass[id];
+	
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL1_ACTIVE], g_ForwardResult, id, id_zom)
+	
+	if (g_ForwardResult >= ZP_CLASS_SKILL_CANT_ACTIVE)
+	{
+		return;
+	}
+	
+	Set_BitVar(g_skill1_active, id)
+	
+	new Float:timeDeActive = float(ArrayGetCell(g_ZombieTimeDeActive_skill1, id_zom) )
+	set_task(timeDeActive, "deactive_skill1", id + ID_DEACTIVE_1)
+	
+	
+	
+	new Float:timeActiving = float(ArrayGetCell(g_ZombieTimeActiving_skill1, id_zom) )
+	if(timeActiving) {
+		Set_BitVar(g_skill1_activing, id)
+		set_task(timeActiving, "deactiving_skill1", id + ID_DEACTIVING_1)
+	}
+}
+public active_skill2(id) {
+	
+	new id_zom = g_ZombieClass[id];
+	
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_ACTIVE], g_ForwardResult, id, id_zom)
+	
+	if (g_ForwardResult >= ZP_CLASS_SKILL_CANT_ACTIVE)
+	{
+		return;
+	}
+	
+	Set_BitVar(g_skill2_active, id)
+	
+	new Float:timeDeActive = float(ArrayGetCell(g_ZombieTimeDeActive_skill2, id_zom) )
+	set_task(timeDeActive, "deactive_skill2", id + ID_DEACTIVE_2)
+	
+	
+	
+	new timeActiving = ArrayGetCell(g_ZombieTimeActiving_skill2, id_zom) 
+	if(timeActiving) {
+		Set_BitVar(g_skill2_activing, id)
+		set_task(float(timeActiving), "deactiving_skill2", id + ID_DEACTIVING_2)
+	}
+	
+}
+
+public deactive_skill1(id) {
+	id -= ID_DEACTIVE_1;
+	new id_zom = g_ZombieClass[id];
+	UnSet_BitVar(g_skill1_active, id);
+	
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL1_DEACTIVE], g_ForwardResult, id, id_zom)
+	
+}
+
+public deactive_skill2(id) {
+	id -= ID_DEACTIVE_2;
+	UnSet_BitVar(g_skill2_active, id);
+	
+	new id_zom = g_ZombieClass[id];
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_DEACTIVE], g_ForwardResult, id, id_zom)
+}
+public deactiving_skill1(id) {
+	id -= ID_DEACTIVING_1;
+	
+	UnSet_BitVar(g_skill1_activing, id)
+	
+	new id_zom = g_ZombieClass[id];
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL1_ACTIVING], g_ForwardResult, id, id_zom)
+}
+public deactiving_skill2(id) {
+	id -= ID_DEACTIVING_2;
+	
+	UnSet_BitVar(g_skill2_activing, id)
+	
+	new id_zom = g_ZombieClass[id];
+	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_ACTIVING], g_ForwardResult, id, id_zom)
+}
+
+public Show_Skill1(id)
+{
+	if( !ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) return;
+	
+	static info[32]
+	ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
+	
+	if( Get_BitVar(g_skill1_activing, id) )
+	{
+		set_hudmessage(0, 0, 255, -1.0, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+		
+	} 
+	else if(Get_BitVar(g_skill1_active, id)) {
+		
+		set_hudmessage(255,0, 0, -1.0, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+	}
+	else 
+	{
+		set_hudmessage(0, 255, 0, -1.0, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+	}	
+	
+}
+public Show_Skill2(id)
+{
+	if( !ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) ) return;
+	
+	static info[32]
+	ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
+	
+	if( Get_BitVar(g_skill2_activing, id) )
+	{
+		set_hudmessage(0, 0, 255, -1.0, 0.25, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+		
+	} 
+	else if(Get_BitVar(g_skill2_active, id)) {
+		
+		set_hudmessage(255,0, 0, -1.0, 0.25, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+	}
+	else 
+	{
+		set_hudmessage(0, 255, 0, -1.0, 0.25, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+	}	
 }
 
 public show_class_menu(id)
@@ -675,6 +880,52 @@ public native_class_zombie_register_kb(plugin_id, num_params)
 	return true;
 }
 
+public native_class_zombie_register_1(plugin_id, num_params)
+{
+	new classid = get_param(1)
+	
+	if (classid < 0 || classid >= g_ZombieClassCount)
+	{
+		log_error(AMX_ERR_NATIVE, "[ZP] Invalid zombie class id (%d)", classid)
+		return false;
+	}
+	
+	new info[32]
+	get_string(2, info, charsmax(info))
+	
+	ArraySetString(g_ZombieClassSkillInfo1, classid, info)
+	
+	new DeActiveTime = get_param(3);
+	ArraySetCell(g_ZombieTimeDeActive_skill1, classid, DeActiveTime)
+	
+	new Activing = get_param(4)
+	ArraySetCell(g_ZombieTimeActiving_skill1, classid, Activing)
+	return true;
+}
+public native_class_zombie_register_2(plugin_id, num_params)
+{
+	new classid = get_param(1)
+	
+	if (classid < 0 || classid >= g_ZombieClassCount)
+	{
+		log_error(AMX_ERR_NATIVE, "[ZP] Invalid zombie class id (%d)", classid)
+		return false;
+	}
+	
+	new info[32]
+	get_string(2, info, charsmax(info))
+	
+	ArraySetString(g_ZombieClassSkillInfo2, classid, info)
+	
+	new DeActiveTime = get_param(3);
+	ArraySetCell(g_ZombieTimeDeActive_skill2, classid, DeActiveTime)
+	
+	new Activing = get_param(4)
+	ArraySetCell(g_ZombieTimeActiving_skill2, classid, Activing)
+	return true;
+}
+
+
 public native_class_zombie_get_id(plugin_id, num_params)
 {
 	new real_name[32]
@@ -785,4 +1036,18 @@ public _class_zombie_menu_text_add(plugin_id, num_params)
 	static text[32]
 	get_string(1, text, charsmax(text))
 	format(g_AdditionalMenuText, charsmax(g_AdditionalMenuText), "%s%s", g_AdditionalMenuText, text)
+}
+public Message_TextMsg ()
+{
+	if ( get_msg_arg_int( 1 ) == print_center )
+	{
+		static const MessageToBlock[] = "#Weapon_Cannot_Be_Dropped";
+		
+		new Message[ sizeof MessageToBlock + 1 ];
+		get_msg_arg_string( 2, Message, charsmax( Message ) );
+		
+		return equal( Message, MessageToBlock );
+	}
+	
+	return PLUGIN_CONTINUE;
 }
