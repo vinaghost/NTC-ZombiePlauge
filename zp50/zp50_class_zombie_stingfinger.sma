@@ -31,7 +31,7 @@ new const Float:zclass_speed = 1.1;
 new const Float:zclass_knockback = 1.3;
 
 #define PENETRATE_SOUND "zombie_plague/zombie/skill/StingFinger_skill1.wav"
-#define HEAL_SOUND "zombie_plague/StingFinger_heal.wav"
+#define HEAL_SOUND "zombie_plague/zombie/StingFinger_heal.wav"
 
 // Penetrate
 #define PENETRATE_ANIM 8
