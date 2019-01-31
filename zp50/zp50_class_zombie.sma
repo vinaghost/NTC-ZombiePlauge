@@ -11,6 +11,7 @@ terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
 
 #include <amxmodx>
 #include <fun>
+#include <cstrike>
 #include <fakemeta>
 #include <engine>
 
@@ -23,6 +24,8 @@ terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
 #include <zp50_core>
 #include <zp50_colorchat>
 #include <zp50_class_zombie_const>
+
+
 
 // Zombie Classes file
 new const ZP_ZOMBIECLASSES_FILE[] = "zp_zombieclasses.ini"
@@ -70,8 +73,10 @@ enum ( +=1000 ) {
 	ID_DEACTIVE_1 = 1000,
 	ID_DEACTIVE_2,
 	ID_DEACTIVING_1,
-	ID_DEACTIVING_2
+	ID_DEACTIVING_2,
+	ID_SHOWSKILL
 }
+#define ID_SHOWHUD (taskid - ID_SHOWSKILL)
 new g_Forwards[TOTAL_FORWARDS]
 new g_ForwardResult
 
@@ -109,6 +114,7 @@ new g_skill1_activing, g_skill2_activing;
 
 
 new g_synchud1, g_synchud2;
+const PEV_SPEC_TARGET = pev_iuser2
 public plugin_init()
 {
 	register_plugin("[ZP] Class: Zombie", ZP_VERSION_STRING, "ZP Dev Team")
@@ -315,6 +321,32 @@ public deactiving_skill2(id) {
 	
 	new id_zom = g_ZombieClass[id];
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_ACTIVING], g_ForwardResult, id, id_zom)
+}
+public Show_Skill(taskid)
+{
+	new player = ID_SHOWHUD
+	
+	// Player dead?
+	if (!is_user_alive(player))
+	{
+		// Get spectating target
+		player = pev(player, PEV_SPEC_TARGET)
+		
+		// Target not alive
+		if (!is_user_alive(player))
+			return;
+	}
+		
+	if (zp_core_is_zombie(player)) // zombies
+	{
+		Show_Skill1(player)
+		Show_Skill2(player)
+	}
+	/*else // humans
+	{
+		
+	}*/
+	
 }
 
 public Show_Skill1(id)
@@ -568,6 +600,8 @@ public zp_fw_core_infect_post(id, attacker)
 	
 	// Apply weapon restrictions for zombies
 	cs_set_player_weap_restrict(id, true, ZOMBIE_ALLOWED_WEAPONS_BITSUM, ZOMBIE_DEFAULT_ALLOWED_WEAPON)
+	
+	set_task(1.0, "Show_Skill", id + ID_SHOWSKILL, _, _, "b")
 }
 
 public zp_fw_core_cure(id, attacker)
@@ -578,8 +612,23 @@ public zp_fw_core_cure(id, attacker)
 	
 	// Remove zombie weapon restrictions
 	cs_set_player_weap_restrict(id, false)
+	
+	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
+	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
+	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
+	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
+	
+	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
 }
 
+public client_disconnect(id) {
+	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
+	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
+	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
+	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
+	
+	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
+}
 public native_class_zombie_get_current(plugin_id, num_params)
 {
 	new id = get_param(1)

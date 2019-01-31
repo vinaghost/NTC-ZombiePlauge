@@ -28,12 +28,13 @@ new const zclass_health = 1500;
 new const Float:zclass_gravity = 0.84;
 new const Float:zclass_speed = 1.1;
 new const Float:zclass_knockback = 1.3;
-new const DeathSound[] = "zombie_plague/zombie/resident_death.wav"
-new const HurtSound[2][] = 
+//new const DeathSound[] = "zombie_plague/zombie/resident_death.wav"
+/*new const HurtSound[2][] = 
 {
 	"zombie_plague/zombie/resident_hurt1.wav",
 	"zombie_plague/zombie/resident_hurt2.wav"
-}
+}*/
+
 new const HealSound[] = "zombie_plague/StingFinger_heal.wav"
 new const EvolSound[] = "zombie_plague/zombie/StingFinger_evolution.wav"
 
