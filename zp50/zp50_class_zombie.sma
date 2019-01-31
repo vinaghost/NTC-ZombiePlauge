@@ -220,10 +220,26 @@ public client_putinserver(id)
 
 public client_disconnect(id)
 {
-	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
-	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
-	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
-	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
+	if(task_exists(id + ID_DEACTIVE_1)) 
+	{
+		remove_task(id + ID_DEACTIVE_1)
+		deactive_skill1(id + ID_DEACTIVE_1)
+	}
+	if(task_exists(id + ID_DEACTIVE_2))
+	{
+		remove_task(id + ID_DEACTIVE_2)
+		deactive_skill1(id + ID_DEACTIVE_2)
+	}
+	if(task_exists(id + ID_DEACTIVING_1))
+	{
+		remove_task(id + ID_DEACTIVING_1)
+		deactiving_skill1(id + ID_DEACTIVING_1)
+	}
+	if(task_exists(id + ID_DEACTIVING_2)) 
+	{
+		remove_task(id + ID_DEACTIVING_2)
+		deactiving_skill1(id + ID_DEACTIVING_2)
+	}
 	
 	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
 
@@ -636,10 +652,26 @@ public zp_fw_core_cure(id, attacker)
 	// Remove zombie weapon restrictions
 	cs_set_player_weap_restrict(id, false)
 	
-	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
-	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
-	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
-	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
+	if(task_exists(id + ID_DEACTIVE_1)) 
+	{
+		remove_task(id + ID_DEACTIVE_1)
+		deactive_skill1(id + ID_DEACTIVE_1)
+	}
+	if(task_exists(id + ID_DEACTIVE_2))
+	{
+		remove_task(id + ID_DEACTIVE_2)
+		deactive_skill1(id + ID_DEACTIVE_2)
+	}
+	if(task_exists(id + ID_DEACTIVING_1))
+	{
+		remove_task(id + ID_DEACTIVING_1)
+		deactiving_skill1(id + ID_DEACTIVING_1)
+	}
+	if(task_exists(id + ID_DEACTIVING_2)) 
+	{
+		remove_task(id + ID_DEACTIVING_2)
+		deactiving_skill1(id + ID_DEACTIVING_2)
+	}
 	
 	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
 }
