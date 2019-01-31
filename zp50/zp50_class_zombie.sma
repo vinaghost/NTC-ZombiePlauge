@@ -381,18 +381,18 @@ public Show_Skill1(id)
 	
 	if( Get_BitVar(g_skill1_activing, id) )
 	{
-		set_hudmessage(0, 0, 255, -1.0, 0.15, 0, 1.5, 1.5)
+		set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
 		
 	} 
 	else if(Get_BitVar(g_skill1_active, id)) {
 		
-		set_hudmessage(255,0, 0, -1.0, 0.15, 0, 1.5, 1.5)
+		set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
 	}
 	else 
 	{
-		set_hudmessage(0, 255, 0, -1.0, 0.15, 0, 1.5, 1.5)
+		set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
 	}	
 	
@@ -406,18 +406,18 @@ public Show_Skill2(id)
 	
 	if( Get_BitVar(g_skill2_activing, id) )
 	{
-		set_hudmessage(0, 0, 255, -1.0, 0.25, 0, 1.5, 1.5)
+		set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
 		
 	} 
 	else if(Get_BitVar(g_skill2_active, id)) {
 		
-		set_hudmessage(255,0, 0, -1.0, 0.25, 0, 1.5, 1.5)
+		set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
 	}
 	else 
 	{
-		set_hudmessage(0, 255, 0, -1.0, 0.25, 0, 1.5, 1.5)
+		set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5)
 		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
 	}	
 }
