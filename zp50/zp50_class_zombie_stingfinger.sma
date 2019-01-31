@@ -7,7 +7,6 @@
 #include <hamsandwich>
 #include <xs>
 
-#include <zp50_colorchat>
 #include <zp50_class_zombie>
 
 
@@ -89,8 +88,6 @@ public zp_fw_class_zombie_select_post(id, ClassID)
 {
 	if(ClassID != g_StingFinger)
 		return	
-	
-	zp_colored_print(id, "Da chon ^x04Zombie Sting Finger")
 }
 
 public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags, pitch)

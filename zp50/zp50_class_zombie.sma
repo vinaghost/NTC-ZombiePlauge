@@ -526,16 +526,14 @@ public menu_zombieclass(id, menuid, item)
 	// Make selected class next class for player
 	g_ZombieClassNext[id] = index
 	
-	new name[32], transkey[64]
-	new Float:maxspeed = Float:ArrayGetCell(g_ZombieClassSpeed, g_ZombieClassNext[id])
+	new name[32]
 	ArrayGetString(g_ZombieClassName, g_ZombieClassNext[id], name, charsmax(name))
-	// ML support for class name
-	formatex(transkey, charsmax(transkey), "ZOMBIENAME %s", name)
-	if (GetLangTransKey(transkey) != TransKey_Bad) formatex(name, charsmax(name), "%L", id, transkey)
+	
 	
 	// Show selected zombie class
-	zp_colored_print(id, "%L: %s", id, "ZOMBIE_SELECT", name)
-	zp_colored_print(id, "%L: %d %L: %d %L: %.2fx %L %.2fx", id, "ZOMBIE_ATTRIB1", ArrayGetCell(g_ZombieClassHealth, g_ZombieClassNext[id]), id, "ZOMBIE_ATTRIB2", cs_maxspeed_display_value(maxspeed), id, "ZOMBIE_ATTRIB3", Float:ArrayGetCell(g_ZombieClassGravity, g_ZombieClassNext[id]), id, "ZOMBIE_ATTRIB4", Float:ArrayGetCell(g_ZombieClassKnockback, g_ZombieClassNext[id]))
+	zp_colored_print(id, "Da chon ^x04%s", name)
+	//zp_colored_print(id, "%L: %s", id, "ZOMBIE_SELECT", name)
+	//zp_colored_print(id, "%L: %d %L: %d %L: %.2fx %L %.2fx", id, "ZOMBIE_ATTRIB1", ArrayGetCell(g_ZombieClassHealth, g_ZombieClassNext[id]), id, "ZOMBIE_ATTRIB2", cs_maxspeed_display_value(maxspeed), id, "ZOMBIE_ATTRIB3", Float:ArrayGetCell(g_ZombieClassGravity, g_ZombieClassNext[id]), id, "ZOMBIE_ATTRIB4", Float:ArrayGetCell(g_ZombieClassKnockback, g_ZombieClassNext[id]))
 	
 	// Execute class select post forward
 	ExecuteForward(g_Forwards[FW_CLASS_SELECT_POST], g_ForwardResult, id, index)
