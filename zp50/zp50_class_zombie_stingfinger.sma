@@ -81,6 +81,7 @@ public plugin_precache()
 	
 	// Precache Sound
 	engfunc(EngFunc_PrecacheSound, PENETRATE_SOUND)
+	engfunc(EngFunc_PrecacheSound, HEAL_SOUND)
 }
 
 
