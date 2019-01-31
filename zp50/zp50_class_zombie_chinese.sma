@@ -42,17 +42,18 @@ public plugin_init() {
 }
 public zp_fw_zombie_skill1_active(id, classid) {
 	
-	if( classid == g_Chinese )
-	{
-		ScreenFade(id, 10.0, 0, 225, 0, 40)
-		cs_set_player_maxspeed(id, zclass_speed_skill);
-	}
+	if( classid != g_Chinese ) return;
+ 	
+	ScreenFade(id, 10.0, 0, 225, 0, 40)
+	cs_set_player_maxspeed(id, zclass_speed_skill);
+	
 }
 
 public zp_fw_zombie_skill1_activing(id, classid) {
 	
-	if( classid == g_Chinese )
-		cs_set_player_maxspeed(id, zclass_speed);
+	if( classid != g_Chinese ) return;
+	
+	cs_set_player_maxspeed(id, zclass_speed);
 }
 stock ScreenFade(plr, Float:fDuration, red, green, blue, alpha)
 {
