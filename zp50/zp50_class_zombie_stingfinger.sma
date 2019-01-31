@@ -177,6 +177,11 @@ public zp_fw_zombie_skill1_active(id , classid) {
 	
 	Do_Penetrate(id)
 }
+public zp_fw_zombie_skill2_active(id , classid) {
+	if( classid != g_StingFinger ) return;
+	
+	Do_Heal(id)
+}
 
 public Do_Heal(id)
 {	

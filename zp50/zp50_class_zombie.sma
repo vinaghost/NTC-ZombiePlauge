@@ -309,6 +309,10 @@ public deactive_skill1(id) {
 	new id_zom = g_ZombieClass[id];
 	UnSet_BitVar(g_skill1_active, id);
 	
+	new info[32]
+	ArrayGetString(g_ZombieClassSkillInfo1, id_zom, info, charsmax(info)) 
+	zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL1_DEACTIVE], g_ForwardResult, id, id_zom)
 	
 }
@@ -318,6 +322,11 @@ public deactive_skill2(id) {
 	UnSet_BitVar(g_skill2_active, id);
 	
 	new id_zom = g_ZombieClass[id];
+	
+	new info[32]
+	ArrayGetString(g_ZombieClassSkillInfo2, id_zom, info, charsmax(info)) 
+	zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_DEACTIVE], g_ForwardResult, id, id_zom)
 }
 public deactiving_skill1(id) {
@@ -824,6 +833,13 @@ public native_class_zombie_register(plugin_id, num_params)
 		ArrayPushCell(g_ZombieClassKnockbackFile, true)
 	ArrayPushCell(g_ZombieClassKnockback, knockback)
 	
+	ArrayPushString(g_ZombieClassSkillInfo1, "")
+	ArrayPushCell(g_ZombieTimeActiving_skill1, 0)
+	ArrayPushCell(g_ZombieTimeDeActive_skill1, 0)
+	
+	ArrayPushString(g_ZombieClassSkillInfo2, "")
+	ArrayPushCell(g_ZombieTimeActiving_skill2, 0)
+	ArrayPushCell(g_ZombieTimeDeActive_skill2, 0)
 	g_ZombieClassCount++
 	return g_ZombieClassCount - 1;
 }
