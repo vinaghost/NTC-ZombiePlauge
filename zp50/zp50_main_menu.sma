@@ -132,11 +132,7 @@ show_menu_main(id)
 	{
 		case 0: 
 		{
-			if (LibraryExists(LIBRARY_ZOMBIECLASSES, LibType_Library) && zp_class_zombie_get_count() > 1)
-				zp_class_zombie_show_menu(id)
-			else
-				zp_colored_print(id, "%L", id, "CMD_NOT_ZCLASSES")
-			
+			zp_class_zombie_show_menu(id)			
 
 		}
 		case 1:

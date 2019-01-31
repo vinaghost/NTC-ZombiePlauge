@@ -175,7 +175,7 @@ public plugin_natives()
 	
 	register_native("zp_class_zombie_register_1", "native_class_zombie_register_1")
 	register_native("zp_class_zombie_register_2", "native_class_zombie_register_2")
-		
+	
 	register_native("zp_class_zombie_get_id", "native_class_zombie_get_id")
 	register_native("zp_class_zombie_get_name", "native_class_zombie_get_name")
 	register_native("zp_class_zombie_get_real_name", "_class_zombie_get_real_name")
@@ -209,7 +209,7 @@ public plugin_natives()
 	g_ZombieClassSkillInfo2 = ArrayCreate(32, 1)
 	g_ZombieTimeDeActive_skill2 = ArrayCreate(1, 1)
 	g_ZombieTimeActiving_skill2 = ArrayCreate(1, 1)
-
+	
 }
 
 public client_putinserver(id)
@@ -242,7 +242,7 @@ public client_disconnect(id)
 	}
 	
 	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
-
+	
 	MENU_PAGE_CLASS = 0
 }
 
@@ -325,9 +325,13 @@ public deactive_skill1(id) {
 	new id_zom = g_ZombieClass[id];
 	UnSet_BitVar(g_skill1_active, id);
 	
-	new info[32]
-	ArrayGetString(g_ZombieClassSkillInfo1, id_zom, info, charsmax(info)) 
-	zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+	if( is_user_connected(id) 
+	&& zp_core_is_zombie(id) 
+	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
+		new info[32]
+		ArrayGetString(g_ZombieClassSkillInfo1, id_zom, info, charsmax(info)) 
+		zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+	}
 	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL1_DEACTIVE], g_ForwardResult, id, id_zom)
 	
@@ -338,10 +342,13 @@ public deactive_skill2(id) {
 	UnSet_BitVar(g_skill2_active, id);
 	
 	new id_zom = g_ZombieClass[id];
-	
+	if( is_user_connected(id) 
+	&& zp_core_is_zombie(id) 
+	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
 	new info[32]
 	ArrayGetString(g_ZombieClassSkillInfo2, id_zom, info, charsmax(info)) 
 	zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+}
 	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_DEACTIVE], g_ForwardResult, id, id_zom)
 }
@@ -375,7 +382,7 @@ public Show_Skill(taskid)
 		if (!is_user_alive(player))
 			return;
 	}
-		
+	
 	if (zp_core_is_zombie(player)) // zombies
 	{
 		if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(player)) return;
@@ -384,66 +391,66 @@ public Show_Skill(taskid)
 		Show_Skill2(player)
 	}
 	/*else // humans
-	{
-		
-	}*/
+{
 	
+}*/
+
 }
 
 public Show_Skill1(id)
 {
-	if( !ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) return;
+if( !ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) return;
+
+static info[32]
+ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
+
+if( Get_BitVar(g_skill1_activing, id) )
+{
+	set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
 	
-	static info[32]
-	ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
+} 
+else if(Get_BitVar(g_skill1_active, id)) {
 	
-	if( Get_BitVar(g_skill1_activing, id) )
-	{
-		set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
-		
-	} 
-	else if(Get_BitVar(g_skill1_active, id)) {
-		
-		set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
-	}
-	else 
-	{
-		set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
-	}	
-	
+	set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+}
+else 
+{
+	set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+}	
+
 }
 public Show_Skill2(id)
 {
-	if( !ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) ) return;
+if( !ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) ) return;
+
+static info[32]
+ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
+
+if( Get_BitVar(g_skill2_activing, id) )
+{
+	set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
 	
-	static info[32]
-	ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
+} 
+else if(Get_BitVar(g_skill2_active, id)) {
 	
-	if( Get_BitVar(g_skill2_activing, id) )
-	{
-		set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
-		
-	} 
-	else if(Get_BitVar(g_skill2_active, id)) {
-		
-		set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
-	}
-	else 
-	{
-		set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5)
-		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
-	}	
+	set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+}
+else 
+{
+	set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5)
+	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+}	
 }
 
 public show_class_menu(id)
 {
-	if (zp_core_is_zombie(id))
-		show_menu_zombieclass(id)
+if (zp_core_is_zombie(id))
+	show_menu_zombieclass(id)
 }
 
 public show_menu_zombieclass(id)
