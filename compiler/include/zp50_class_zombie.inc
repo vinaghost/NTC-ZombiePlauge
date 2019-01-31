@@ -203,4 +203,13 @@ forward zp_fw_class_zombie_select_pre(id, classid)
  * @param id			Player index.
  * @param classid		Internal zombie class ID.
  */
-forward zp_fw_class_zombie_select_post(id, classid)
+forward zp_fw_zombie_select_post(id, classid)
+
+forward zp_fw_zombie_skill1_active(id, classid)
+forward zp_fw_zombie_skill2_active(id, classid)
+	
+forward zp_fw_zombie_skill1_activing(id, classid)
+forward zp_fw_zombie_skill2_activing(id, classid)
+	
+forward zp_fw_zombie_skill1_deactive(id, classid)
+forward zp_fw_zombie_skill2_deactive(id, classid)
