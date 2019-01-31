@@ -21,7 +21,7 @@ public OnPlayerTakeDamagePost(victim, attacker)
 	if(!g_IsInfectionRound)
 		return HAM_IGNORED
 		
-	if(!zp_core_is_zombie(victim) && !zp_core_is_last_human(victim) && is_user_alive(victim) )
+	if(!zp_core_is_zombie(victim) && !zp_core_is_last_human(victim) && is_user_alive(victim) && zp_core_is_zombie(attacker) )
 	{
 		zp_core_infect(victim)
 	}
