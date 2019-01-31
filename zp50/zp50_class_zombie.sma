@@ -362,6 +362,8 @@ public Show_Skill(taskid)
 		
 	if (zp_core_is_zombie(player)) // zombies
 	{
+		if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(player)) return;
+		
 		Show_Skill1(player)
 		Show_Skill2(player)
 	}
