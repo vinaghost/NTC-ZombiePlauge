@@ -25,6 +25,8 @@ terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
 #include <zp50_colorchat>
 #include <zp50_class_zombie_const>
 
+#define LIBRARY_NEMESIS "zp50_class_nemesis"
+#include <zp50_class_nemesis>
 
 
 // Zombie Classes file
@@ -129,14 +131,14 @@ public plugin_init()
 	g_Forwards[FW_CLASS_SELECT_PRE] = CreateMultiForward("zp_fw_class_zombie_select_pre", ET_CONTINUE, FP_CELL, FP_CELL)
 	g_Forwards[FW_CLASS_SELECT_POST] = CreateMultiForward("zp_fw_class_zombie_select_post", ET_CONTINUE, FP_CELL, FP_CELL)
 	
-	g_Forwards[FW_CLASS_SKILL1_ACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill1_active", ET_CONTINUE, FP_CELL, FP_CELL)
-	g_Forwards[FW_CLASS_SKILL2_ACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill2_active", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL1_ACTIVE] = CreateMultiForward("zp_fw_zombie_skill1_active", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_ACTIVE] = CreateMultiForward("zp_fw_zombie_skill2_active", ET_CONTINUE, FP_CELL, FP_CELL)
 	
-	g_Forwards[FW_CLASS_SKILL1_ACTIVING] = CreateMultiForward("zp_fw_class_zombie_skill1_activing", ET_CONTINUE, FP_CELL, FP_CELL)
-	g_Forwards[FW_CLASS_SKILL2_ACTIVING] = CreateMultiForward("zp_fw_class_zombie_skill2_activing", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL1_ACTIVING] = CreateMultiForward("zp_fw_zombie_skill1_activing", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_ACTIVING] = CreateMultiForward("zp_fw_zombie_skill2_activing", ET_CONTINUE, FP_CELL, FP_CELL)
 	
-	g_Forwards[FW_CLASS_SKILL1_DEACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill1_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
-	g_Forwards[FW_CLASS_SKILL2_DEACTIVE] = CreateMultiForward("zp_fw_class_zombie_skill2_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL1_DEACTIVE] = CreateMultiForward("zp_fw_zombie_skill1_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_Forwards[FW_CLASS_SKILL2_DEACTIVE] = CreateMultiForward("zp_fw_zombie_skill2_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
 	
 	g_synchud1 = CreateHudSyncObj()
 	g_synchud2 = CreateHudSyncObj()
@@ -218,7 +220,13 @@ public client_putinserver(id)
 
 public client_disconnect(id)
 {
-	// Reset remembered menu pages
+	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
+	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
+	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
+	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
+	
+	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
+
 	MENU_PAGE_CLASS = 0
 }
 
@@ -228,6 +236,8 @@ public client_PreThink(id) {
 	{
 		if( !Get_BitVar(g_skill2_active, id) )
 		{
+			if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id)) return PLUGIN_CONTINUE;
+			
 			new button = pev(id, pev_button), old_button = pev(id, pev_oldbuttons)
 			
 			if((button & IN_RELOAD) && !(old_button & IN_RELOAD))
@@ -236,11 +246,15 @@ public client_PreThink(id) {
 			}
 		}
 	}
+	return PLUGIN_CONTINUE;
 }
 
 public active_skill1(id) {
 	if( !zp_core_is_zombie(id) ) return
+	
 	if( Get_BitVar(g_skill1_active, id) ) return;
+	
+	if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id)) return;
 	
 	new id_zom = g_ZombieClass[id];
 	
@@ -621,14 +635,7 @@ public zp_fw_core_cure(id, attacker)
 	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
 }
 
-public client_disconnect(id) {
-	if(task_exists(id + ID_DEACTIVE_1)) remove_task(id + ID_DEACTIVE_1)
-	if(task_exists(id + ID_DEACTIVE_2)) remove_task(id + ID_DEACTIVE_2)
-	if(task_exists(id + ID_DEACTIVING_1)) remove_task(id + ID_DEACTIVING_1)
-	if(task_exists(id + ID_DEACTIVING_2)) remove_task(id + ID_DEACTIVING_2)
-	
-	if(task_exists(id + ID_SHOWSKILL)) remove_task(id + ID_SHOWSKILL)
-}
+
 public native_class_zombie_get_current(plugin_id, num_params)
 {
 	new id = get_param(1)
