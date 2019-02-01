@@ -883,12 +883,12 @@ public LoadData()
 
 public Init_MYSQL()
 {
-	new host[64], user[32], pass[32], db[128];
-
-	get_pcvar_string(g_host, host, charsmax(host))
-	get_pcvar_string(g_user, user, charsmax(user))
-	get_pcvar_string(g_pass, pass, charsmax(pass))
-	get_pcvar_string(g_db, db, charsmax(db))
+	new host[64], user[64], pass[64], db[64]
+	
+	get_cvar_string("amx_sql_host", host, 63)
+	get_cvar_string("amx_sql_user", user, 63)
+	get_cvar_string("amx_sql_pass", pass, 63)
+	formatex(db, charsmax(db), "registersystem")
 
 	g_sqltuple = SQL_MakeDbTuple(host, user, pass, db)
 	formatex(query, charsmax(query), "CREATE TABLE IF NOT EXISTS registersystem (Name VARCHAR(35), Password VARCHAR(34), Status VARCHAR(10)) ; CREATE TABLE IF NOT EXISTS rs_commands (Command VARCHAR(64)) ; CREATE TABLE IF NOT EXISTS rs_names (Names VARCHAR(64))")
