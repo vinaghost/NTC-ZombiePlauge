@@ -68,7 +68,8 @@ handleMemoryPatches()
 
         check_and_print( "Check max value", address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
         check_and_print( "Set max value"  , address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
-    }
+	server_print("addaccount");
+   }
 
     address = initFunction( "JoiningThink", "CBasePlayer", .numPatches = 2 );
     {
@@ -76,6 +77,8 @@ handleMemoryPatches()
 
         check_and_print( "Check max value", address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
         check_and_print( "Set max value"  , address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
+	
+	server_print("joiningthink")
     }
 
     address = initFunction( "Reset", "CBasePlayer", .numPatches = 2 );
@@ -84,6 +87,8 @@ handleMemoryPatches()
 
         check_and_print( "Check max value", address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
         check_and_print( "Set max value"  , address = patchMemory( address, functionSize, MaxMoneyOriginalValue, MaxNewMoneyValue ) );
+	
+	server_print("reset")
     }
 
     address = initFunction( "PlayerThink", "CHalfLifeTraining", .numPatches = 2 );
@@ -148,7 +153,7 @@ check_and_print( const comment[], const address )
     }
     else
     {
-        Debug && log_amx( "^t^t[:(] - %d/%d (%d/%d) - failed to find value inside the function // %s", LocalCount, LocalMaxPatches, PatchesCount + 1, MaxMemoryPatches, comment );
+        server_print( "^t^t[:(] - %d/%d (%d/%d) - failed to find value inside the function // %s", LocalCount, LocalMaxPatches, PatchesCount + 1, MaxMemoryPatches, comment );
 
         plugin_end();
         set_fail_state( "Memory patch problem - Could not replace a value inside a function." );
