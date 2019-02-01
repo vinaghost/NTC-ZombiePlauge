@@ -10,7 +10,7 @@
 ================================================================================*/
 
 #include <amxmodx>
-#include <money_ul>
+#include <cstrike>
 #include <fakemeta>
 #include <hamsandwich>
 #include <cs_ham_bots_api>
@@ -122,7 +122,7 @@ public zp_fw_core_infect_post(id, attacker)
 {
 	// Reward money to zombies infecting humans?
 	if (is_user_connected(attacker) && attacker != id && get_pcvar_num(cvar_money_human_infected) > 0)
-		cs_set_user_money_ul(attacker, min(cs_get_user_money_ul(attacker) + get_pcvar_num(cvar_money_human_infected), CS_MONEY_LIMIT))
+		cs_set_user_money(attacker, min(cs_get_user_money(attacker) + get_pcvar_num(cvar_money_human_infected), CS_MONEY_LIMIT))
 }
 
 // Ham Take Damage Post Forward
@@ -161,7 +161,7 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToHumans[attacker] / get_pcvar_float(cvar_money_human_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				cs_set_user_money_ul(attacker, min(cs_get_user_money_ul(attacker) + (get_pcvar_num(cvar_money_damage) * how_many_rewards), CS_MONEY_LIMIT))
+				cs_set_user_money(attacker, min(cs_get_user_money(attacker) + (get_pcvar_num(cvar_money_damage) * how_many_rewards), CS_MONEY_LIMIT))
 				g_DamageDealtToHumans[attacker] -= get_pcvar_float(cvar_money_human_damaged_hp) * how_many_rewards
 			}
 		}
@@ -179,7 +179,7 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToZombies[attacker] / get_pcvar_float(cvar_money_zombie_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				cs_set_user_money_ul(attacker, min(cs_get_user_money_ul(attacker) + (get_pcvar_num(cvar_money_damage) * how_many_rewards), CS_MONEY_LIMIT))
+				cs_set_user_money(attacker, min(cs_get_user_money(attacker) + (get_pcvar_num(cvar_money_damage) * how_many_rewards), CS_MONEY_LIMIT))
 				g_DamageDealtToZombies[attacker] -= get_pcvar_float(cvar_money_zombie_damaged_hp) * how_many_rewards
 			}
 		}
@@ -198,7 +198,7 @@ public fw_PlayerKilled(victim, attacker, shouldgib)
 	set_msg_block(g_MsgMoney, BLOCK_SET)
 	
 	// Save attacker's money before the kill
-	g_MoneyBeforeKill[attacker] = cs_get_user_money_ul(attacker)
+	g_MoneyBeforeKill[attacker] = cs_get_user_money(attacker)
 }
 
 // Ham Player Killed Post Forward
@@ -214,36 +214,36 @@ public fw_PlayerKilled_Post(victim, attacker, shouldgib)
 	// Ignore money rewards for Nemesis?
 	if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(attacker) && get_pcvar_num(cvar_money_nemesis_ignore))
 	{
-		cs_set_user_money_ul(attacker, g_MoneyBeforeKill[attacker])
+		cs_set_user_money(attacker, g_MoneyBeforeKill[attacker])
 		return;
 	}
 
 	// Ignore money rewards for Assassin?
 	if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library) && zp_class_assassin_get(attacker) && get_pcvar_num(cvar_money_assassin_ignore))
 	{
-		cs_set_user_money_ul(attacker, g_MoneyBeforeKill[attacker])
+		cs_set_user_money(attacker, g_MoneyBeforeKill[attacker])
 		return;
 	}
 	
 	// Ignore money rewards for Survivor?
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(attacker) && get_pcvar_num(cvar_money_survivor_ignore))
 	{
-		cs_set_user_money_ul(attacker, g_MoneyBeforeKill[attacker])
+		cs_set_user_money(attacker, g_MoneyBeforeKill[attacker])
 		return;
 	}
 
 	// Ignore money rewards for Sniper?
 	if (LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(attacker) && get_pcvar_num(cvar_money_sniper_ignore))
 	{
-		cs_set_user_money_ul(attacker, g_MoneyBeforeKill[attacker])
+		cs_set_user_money(attacker, g_MoneyBeforeKill[attacker])
 		return;
 	}
 	
 	// Reward money to attacker for the kill
 	if (zp_core_is_zombie(victim))
-		cs_set_user_money_ul(attacker, min(g_MoneyBeforeKill[attacker] + get_pcvar_num(cvar_money_zombie_killed), CS_MONEY_LIMIT))
+		cs_set_user_money(attacker, min(g_MoneyBeforeKill[attacker] + get_pcvar_num(cvar_money_zombie_killed), CS_MONEY_LIMIT))
 	else
-		cs_set_user_money_ul(attacker, min(g_MoneyBeforeKill[attacker] + get_pcvar_num(cvar_money_human_killed), CS_MONEY_LIMIT))
+		cs_set_user_money(attacker, min(g_MoneyBeforeKill[attacker] + get_pcvar_num(cvar_money_human_killed), CS_MONEY_LIMIT))
 }
 
 public event_round_start()
@@ -262,7 +262,7 @@ public event_round_start()
 		if (!is_user_connected(id) || g_MoneyRewarded[id] == NO_DATA)
 			continue;
 		
-		g_MoneyAtRoundStart[id] = min(cs_get_user_money_ul(id) + g_MoneyRewarded[id], CS_MONEY_LIMIT)
+		g_MoneyAtRoundStart[id] = min(cs_get_user_money(id) + g_MoneyRewarded[id], CS_MONEY_LIMIT)
 		g_MoneyRewarded[id] = NO_DATA
 	}
 }
@@ -353,6 +353,3 @@ stock fm_cs_set_user_money(id, value)
 	
 	set_pdata_int(id, OFFSET_CSMONEY, value)
 }
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1033\\ f0\\ fs16 \n\\ par }
-*/

@@ -10,7 +10,7 @@
 ================================================================================*/
 
 #include <amxmodx>
-#include <money_ul>
+#include <cstrike>
 #include <zp50_core>
 #include <zp50_items>
 
@@ -27,7 +27,7 @@ public zp_fw_money_items_select_pre(id, itemid, ignorecost)
 		return ZP_ITEM_AVAILABLE;
 			
 	// Get current and required money
-	new current_money = cs_get_user_money_ul(id)
+	new current_money = cs_get_user_money(id)
 	new required_money = zp_money_items_get_cost(itemid)
 	
 	// Not enough money
@@ -46,9 +46,9 @@ public zp_fw_money_items_select_post(id, itemid, ignorecost)
 		return;
 	
 	// Get current and required money
-	new current_money = cs_get_user_money_ul(id)
+	new current_money = cs_get_user_money(id)
 	new required_money = zp_money_items_get_cost(itemid)
 	
 	// Deduct item's money after purchase event
-	cs_set_user_money_ul(id, current_money - required_money)
+	cs_set_user_money(id, current_money - required_money)
 }
