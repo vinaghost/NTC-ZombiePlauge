@@ -322,8 +322,10 @@ public active_skill2(id) {
 
 public deactive_skill1(id) {
 	id -= ID_DEACTIVE_1;
-	new id_zom = g_ZombieClass[id];
+	
 	UnSet_BitVar(g_skill1_active, id);
+	new id_zom = g_ZombieClass[id];
+	
 	
 	if( is_user_connected(id) 
 	&& zp_core_is_zombie(id) 
@@ -390,67 +392,63 @@ public Show_Skill(taskid)
 		Show_Skill1(player)
 		Show_Skill2(player)
 	}
-	/*else // humans
-{
 	
-}*/
-
 }
 
 public Show_Skill1(id)
 {
-if( !ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) return;
-
-static info[32]
-ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
-
-if( Get_BitVar(g_skill1_activing, id) )
-{
-	set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+	if( !ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) return;
 	
-} 
-else if(Get_BitVar(g_skill1_active, id)) {
+	static info[32]
+	ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
 	
-	set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
-}
-else 
-{
-	set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
-}	
-
+	if( Get_BitVar(g_skill1_activing, id) )
+	{
+		set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+		
+	} 
+	else if(Get_BitVar(g_skill1_active, id)) {
+		
+		set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+	}
+	else 
+	{
+		set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
+	}	
+	
 }
 public Show_Skill2(id)
 {
-if( !ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) ) return;
-
-static info[32]
-ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
-
-if( Get_BitVar(g_skill2_activing, id) )
-{
-	set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+	if( !ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) ) return;
 	
-} 
-else if(Get_BitVar(g_skill2_active, id)) {
+	static info[32]
+	ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
 	
-	set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
-}
-else 
-{
-	set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
-}	
+	if( Get_BitVar(g_skill2_activing, id) )
+	{
+		set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+		
+	} 
+	else if(Get_BitVar(g_skill2_active, id)) {
+		
+		set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+	}
+	else 
+	{
+		set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5)
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
+	}	
 }
 
 public show_class_menu(id)
 {
-if (zp_core_is_zombie(id))
-	show_menu_zombieclass(id)
+	if (zp_core_is_zombie(id))
+		show_menu_zombieclass(id)
 }
 
 public show_menu_zombieclass(id)

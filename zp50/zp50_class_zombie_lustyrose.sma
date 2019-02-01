@@ -22,7 +22,7 @@
 
 // Zombie Configs
 new zclass_name[] = "Lusty Rose"
-new zclass_desc[] = "Invisible"
+new zclass_desc[] = "Tang hinh"
 new const zclass_model[] = "LustyRose"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_LustyRose.mdl"
 new const zclass_clawsmodel_inv[] = "models/zombie_plague/v_knife_LustyRose.mdl"
