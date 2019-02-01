@@ -73,8 +73,8 @@ const Float:RANGE_INTERVAL = 0.1		/* It's like a 10 FPS server ¬ 0.1 */
 #include <cs_ham_bots_api>
 #define LIBRARY_GAMEMODES "zp50_gamemodes"
 #include <zp50_gamemodes>
-#define LIBRARY_RANDOM_SPAWN "zp50_random_spawn"
-#include <zp50_random_spawn>
+//#define LIBRARY_RANDOM_SPAWN "zp50_random_spawn"
+//#include <zp50_random_spawn>
 
 /*================================================================================
  [TODO]
@@ -232,8 +232,8 @@ new c_iColorFlag,
 
 /* Server global */
 new bool:g_bGamemodes,
-	bool:g_bDisableOnGamemode,
-	bool:g_bZpRandomSpawn
+	bool:g_bDisableOnGamemode
+	//bool:g_bZpRandomSpawn
 
 new g_iAddToFullPack,
 	g_iStartFrame,
@@ -347,7 +347,7 @@ public plugin_natives()
 }
 public module_filter(module[])
 {
-	if (equal(module, LIBRARY_BOTS_API) || equal(module, LIBRARY_GAMEMODES) || equal(module, LIBRARY_RANDOM_SPAWN))
+	if (equal(module, LIBRARY_BOTS_API) || equal(module, LIBRARY_GAMEMODES) /*|| equal(module, LIBRARY_RANDOM_SPAWN)*/)
 		return PLUGIN_HANDLED
 	
 	return PLUGIN_CONTINUE
@@ -1364,13 +1364,13 @@ public CacheCvars(entity)
 	}
 	
 	/* No CSDM spawns found */
-	if (!g_bZpRandomSpawn && !g_iSpawnCountCSDM && c_iUnstuck == 2)
+	/*if (!g_bZpRandomSpawn && !g_iSpawnCountCSDM && c_iUnstuck == 2)
 	{
 		set_pcvar_num(cvar_iSemiclipUnstuck, 1)
 		#if AMXX_VERSION_NUM < 183
 		c_iUnstuck = 1
 		#endif
-	}
+	}*/
 	
 	if (entity != TASK_CVARS)
 	{
@@ -1389,7 +1389,8 @@ public LoadSpawns()
 	}
 	
 	/* Zombie Plague 5.0 is running, check and cache ZP 5.0.7 random spawn */
-	g_bZpRandomSpawn = bool:LibraryExists(LIBRARY_RANDOM_SPAWN, LibType_Library)
+	
+	/*g_bZpRandomSpawn = bool:LibraryExists(LIBRARY_RANDOM_SPAWN, LibType_Library)
 	if (g_bZpRandomSpawn)
 	{
 		new iPluginId = is_plugin_loaded("zp50_random_spawn.amxx", true)
@@ -1397,15 +1398,15 @@ public LoadSpawns()
 		{
 			new szIgnore[2], szStatus[9]
 			get_plugin(iPluginId, szIgnore, 1, szIgnore, 1, szIgnore, 1, szIgnore, 1, szStatus, charsmax(szStatus))
-			
-			/* Good: running, debug, profile
-			   Bad : paused, bad load, stopped, locked, error */
+			*/
+			/* Good: running, debug, profile*/
+			 /*  Bad : paused, bad load, stopped, locked, error 
 			if (equal(szStatus, "running") || equal(szStatus, "debug") || equal(szStatus, "profile"))
 				return
 		}
 		g_bZpRandomSpawn = false
 	}
-	
+	*/
 	/* ZP 5.0.7 random spawn is not running */
 	new szConfigDir[32], szMapName[32], szFilePath[100], szLineData[64]
 	
@@ -1501,8 +1502,8 @@ DoRandomSpawn(id, type)
 			{
 				case ZP_TEAM_ZOMBIE: /* ZOMBIES */
 				{
-					if (g_bZpRandomSpawn && zp_random_spawn_do(id, 0))
-						return
+					//if (g_bZpRandomSpawn && zp_random_spawn_do(id, 0))
+						//return
 					
 					if (!g_iSpawnCountZombie)
 						return
@@ -1526,8 +1527,8 @@ DoRandomSpawn(id, type)
 				}
 				case ZP_TEAM_HUMAN: /* HUMANS */
 				{
-					if (g_bZpRandomSpawn && zp_random_spawn_do(id, 0))
-						return
+					//if (g_bZpRandomSpawn && zp_random_spawn_do(id, 0))
+						//return
 					
 					if (!g_iSpawnCountHuman)
 						return
@@ -1553,8 +1554,8 @@ DoRandomSpawn(id, type)
 		}
 		case 2: /* CSDM */
 		{
-			if (g_bZpRandomSpawn && zp_random_spawn_do(id, 1))
-				return
+			//if (g_bZpRandomSpawn && zp_random_spawn_do(id, 1))
+				//return
 			
 			if (!g_iSpawnCountCSDM)
 				return
