@@ -9,7 +9,7 @@
 #define VERSION "1.0"
 #define AUTHOR "VINAGHOST"
 
-new zclass_name[24] = "Chinese"
+new zclass_name[24] = "Chinese" 
 new zclass_desc[32] = "Chay nhanh"
 new zclass_desc1[32] = "Chay nhanh"
 new zclass_desc2[32] = ""
@@ -30,6 +30,10 @@ public plugin_init() {
 	
 	msg_ScreenFade = get_user_msgid( "ScreenFade")
 	
+	
+}
+public plugin_precache()
+{
 	// Register Zombie Class
 	g_Chinese = zp_class_zombie_register(zclass_name, zclass_desc, zclass_health, zclass_speed ,zclass_gravity)
 	

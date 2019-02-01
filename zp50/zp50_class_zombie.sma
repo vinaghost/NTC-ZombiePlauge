@@ -345,10 +345,10 @@ public deactive_skill2(id) {
 	if( is_user_connected(id) 
 	&& zp_core_is_zombie(id) 
 	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
-	new info[32]
-	ArrayGetString(g_ZombieClassSkillInfo2, id_zom, info, charsmax(info)) 
-	zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
-}
+		new info[32]
+		ArrayGetString(g_ZombieClassSkillInfo2, id_zom, info, charsmax(info)) 
+		zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
+	}
 	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_DEACTIVE], g_ForwardResult, id, id_zom)
 }
