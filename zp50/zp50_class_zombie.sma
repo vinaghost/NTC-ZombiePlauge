@@ -297,7 +297,6 @@ public active_skill1(id) {
 public active_skill2(id) {
 	
 	new id_zom = g_ZombieClass[id];
-	
 	ExecuteForward(g_Forwards[FW_CLASS_SKILL2_ACTIVE], g_ForwardResult, id, id_zom)
 	
 	if (g_ForwardResult >= ZP_CLASS_SKILL_CANT_ACTIVE)
@@ -322,7 +321,6 @@ public active_skill2(id) {
 
 public deactive_skill1(id) {
 	id -= ID_DEACTIVE_1;
-	
 	UnSet_BitVar(g_skill1_active, id);
 	new id_zom = g_ZombieClass[id];
 	
@@ -342,8 +340,9 @@ public deactive_skill1(id) {
 public deactive_skill2(id) {
 	id -= ID_DEACTIVE_2;
 	UnSet_BitVar(g_skill2_active, id);
-	
 	new id_zom = g_ZombieClass[id];
+	
+	
 	if( is_user_connected(id) 
 	&& zp_core_is_zombie(id) 
 	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
