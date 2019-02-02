@@ -26,7 +26,7 @@
 #include <zp50_class_sniper>
 
 #define MAXPLAYERS 32
-#define CS_MONEY_LIMIT 16000
+#define CS_MONEY_LIMIT 999999 // hay lam the ma 3 ngay eo tim ra, cu bi thut xuong eo biet li do
 #define NO_DATA -1
 
 // CS Player PData Offsets (win32)
@@ -353,6 +353,3 @@ stock fm_cs_set_user_money(id, value)
 	
 	set_pdata_int(id, OFFSET_CSMONEY, value)
 }
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1033\\ f0\\ fs16 \n\\ par }
-*/

@@ -82,11 +82,12 @@ public chat_log_sql()
 	
 	new msg[100];
 	get_string(4, msg, charsmax(msg));
-	
+	replace_all(msg, charsmax(msg), "'", "");
 	
 	new CsTeams:team = cs_get_user_team(id)
 	get_user_authid(id,authid,32)  
 	get_user_name(id,name,31)
+	replace_all(msg, charsmax(msg), "'", "")
 	get_user_ip(id, ip, 15, 1)
 	
 	get_time("%Y.%m.%d", datestr, 12)

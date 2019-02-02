@@ -327,7 +327,7 @@ public deactive_skill1(id) {
 	
 	if( is_user_connected(id) 
 	&& zp_core_is_zombie(id) 
-	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
+	&& (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && !zp_class_nemesis_get(id) ) ) {
 		new info[32]
 		ArrayGetString(g_ZombieClassSkillInfo1, id_zom, info, charsmax(info)) 
 		zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
@@ -345,7 +345,7 @@ public deactive_skill2(id) {
 	
 	if( is_user_connected(id) 
 	&& zp_core_is_zombie(id) 
-	&& LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id) ) {
+	&& (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && !zp_class_nemesis_get(id) ) ) {
 		new info[32]
 		ArrayGetString(g_ZombieClassSkillInfo2, id_zom, info, charsmax(info)) 
 		zp_colored_print(id, "^x04%s^x01 hoi phuc", info)
@@ -566,6 +566,27 @@ public menu_zombieclass(id, menuid, item)
 
 public zp_fw_core_infect_post(id, attacker)
 {
+	if(task_exists(id + ID_DEACTIVE_1)) 
+	{
+		remove_task(id + ID_DEACTIVE_1)
+		deactive_skill1(id + ID_DEACTIVE_1)
+	}
+	if(task_exists(id + ID_DEACTIVE_2))
+	{
+		remove_task(id + ID_DEACTIVE_2)
+		deactive_skill1(id + ID_DEACTIVE_2)
+	}
+	if(task_exists(id + ID_DEACTIVING_1))
+	{
+		remove_task(id + ID_DEACTIVING_1)
+		deactiving_skill1(id + ID_DEACTIVING_1)
+	}
+	if(task_exists(id + ID_DEACTIVING_2)) 
+	{
+		remove_task(id + ID_DEACTIVING_2)
+		deactiving_skill1(id + ID_DEACTIVING_2)
+	}
+	
 	// Show zombie class menu if they haven't chosen any (e.g. just connected)
 	if (g_ZombieClassNext[id] == ZP_INVALID_ZOMBIE_CLASS)
 	{
@@ -643,6 +664,7 @@ public zp_fw_core_infect_post(id, attacker)
 	
 	// Apply weapon restrictions for zombies
 	cs_set_player_weap_restrict(id, true, ZOMBIE_ALLOWED_WEAPONS_BITSUM, ZOMBIE_DEFAULT_ALLOWED_WEAPON)
+	
 	
 	set_task(1.0, "Show_Skill", id + ID_SHOWSKILL, _, _, "b")
 }

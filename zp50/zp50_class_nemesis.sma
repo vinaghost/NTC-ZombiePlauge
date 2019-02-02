@@ -52,7 +52,7 @@ new g_IsNemesis
 new cvar_nemesis_health, cvar_nemesis_base_health, cvar_nemesis_speed, cvar_nemesis_gravity
 new cvar_nemesis_glow
 new cvar_nemesis_aura, cvar_nemesis_aura_color_R, cvar_nemesis_aura_color_G, cvar_nemesis_aura_color_B
-new cvar_nemesis_damage, cvar_nemesis_kill_explode
+new /*cvar_nemesis_damage,*/ cvar_nemesis_kill_explode
 new cvar_nemesis_grenade_frost, cvar_nemesis_grenade_fire
 
 public plugin_init()
@@ -76,7 +76,7 @@ public plugin_init()
 	cvar_nemesis_aura_color_R = register_cvar("zp_nemesis_aura_color_R", "150")
 	cvar_nemesis_aura_color_G = register_cvar("zp_nemesis_aura_color_G", "0")
 	cvar_nemesis_aura_color_B = register_cvar("zp_nemesis_aura_color_B", "0")
-	cvar_nemesis_damage = register_cvar("zp_nemesis_damage", "2.0")
+	//cvar_nemesis_damage = register_cvar("zp_nemesis_damage", "2.0")
 	cvar_nemesis_kill_explode = register_cvar("zp_nemesis_kill_explode", "1")
 	cvar_nemesis_grenade_frost = register_cvar("zp_nemesis_grenade_frost", "0")
 	cvar_nemesis_grenade_fire = register_cvar("zp_nemesis_grenade_fire", "1")
@@ -189,7 +189,8 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type)
 		if (inflictor == attacker)
 		{
 			// Set nemesis damage
-			SetHamParamFloat(4, damage * get_pcvar_float(cvar_nemesis_damage))
+			new Health = get_user_health(victim);
+			SetHamParamFloat(4, float(Health))
 			return HAM_HANDLED;
 		}
 	}
