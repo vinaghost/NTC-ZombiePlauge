@@ -53,7 +53,6 @@ public plugin_init()
 
 public plugin_precache()
 {	
-	
 	// Register Zombie Class
 	g_LustyRose = zp_class_zombie_register(zclass_name, zclass_desc, zclass_health, zclass_speed, zclass_gravity)
 	
