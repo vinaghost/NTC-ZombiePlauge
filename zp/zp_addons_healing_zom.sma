@@ -20,10 +20,14 @@
 #define TASK_HEALING 650
 
 #define HEALTH 200
+
 new g_Moving;
 new g_health_bouns;
+new msg_ScreenFade;
+
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
+	msg_ScreenFade = get_user_msgid( "ScreenFade")
 }
 public plugin_cfg() {
 	g_health_bouns = get_cvar_num ("zp_infection_health_bonus")
@@ -65,6 +69,21 @@ public Healing(id) {
 	
 	else set_user_health(id, MaxHealth);
 	
-	
+	ScreenFade(id, 1.0, 0, 0, 255, 40)
 	set_task(1.0, "Healing", id + TASK_HEALING) 
+}
+stock ScreenFade(plr, Float:fDuration, red, green, blue, alpha)
+{
+	
+	message_begin(MSG_ONE_UNRELIABLE, msg_ScreenFade, {0, 0, 0}, plr);
+	write_short(floatround(4096.0 * fDuration, floatround_round));
+	write_short(floatround(4096.0 * fDuration, floatround_round));
+	write_short(4096);
+	write_byte(red);
+	write_byte(green);
+	write_byte(blue);
+	write_byte(alpha);
+	message_end();
+	
+	return 1;
 }
