@@ -2,6 +2,7 @@
 
 #include <amxmodx>
 #include <engine>
+#include <hamsandwich>
 #include <fun>
 #include <zp50_core>
 #include <zp50_class_zombie>
@@ -27,11 +28,23 @@ new msg_ScreenFade;
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
+	
+	RegisterHam(Ham_Killed,"player","HamHook_Player_Killed_Post",1)
+	
+	
 	msg_ScreenFade = get_user_msgid( "ScreenFade")
 }
 public plugin_cfg() {
 	g_health_bouns = get_cvar_num ("zp_infection_health_bonus")
 }
+public HamHook_Player_Killed_Post(id/*,killer,shouldgib*/)
+{ 	
+	if(task_exists(id+TASK_HEAL) )
+		remove_task(id + TASK_HEAL)
+	if(task_exists(id+TASK_HEALING) )
+		remove_task(id + TASK_HEALING)
+}
+
 public client_PostThink(id)
 {
 	if( !is_user_alive(id) ) return
@@ -56,7 +69,12 @@ public Heal(id) {
 	id -= TASK_HEAL;
 	set_task(1.0, "Healing", id + TASK_HEALING)
 }
-
+public zp_fw_core_cure_post(id) {
+	if(task_exists(id+TASK_HEAL) )
+		remove_task(id + TASK_HEAL)
+	if(task_exists(id+TASK_HEALING) )
+		remove_task(id + TASK_HEALING)
+}
 public Healing(id) {
 	id -= TASK_HEALING
 	if( Get_BitVar(g_Moving, id) ) return;
