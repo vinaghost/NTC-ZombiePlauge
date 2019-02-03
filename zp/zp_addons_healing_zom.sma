@@ -34,6 +34,9 @@ public plugin_cfg() {
 }
 public client_PostThink(id)
 {
+	if( !is_user_alive(id) ) return
+	if( !zp_core_is_zombie(id) return
+	
 	new Float:velocity[3]
 	get_user_velocity(id,velocity)
 	if(velocity[0]==0.0 && velocity[1]==0.0 && velocity[2]==0.0)

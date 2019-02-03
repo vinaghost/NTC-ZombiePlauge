@@ -17,10 +17,15 @@ public plugin_init() {
 
 public fw_PlayerTakeDamge_Pre(victim, inflictor, attacker, Float:damage, bits) 
 {
-	if( is_user_connected(attacker) ) return;
+	if( !is_user_connected(attacker) ) return;
+	
+	if( !is_user_alive(attacker) ) return;
+	
+	if( zp_core_is_zombie(attacker) )  return;
+	
 	
 	if( attacker == victim) return;
 	
-	if( !zp_core_is_zombie(attacker) && get_user_weapon(attacker) == CSW_HEGRENADE) 
+	if( get_user_weapon(attacker) == CSW_HEGRENADE) 
 		SetHamParamFloat(4, damage * 10)
 }
