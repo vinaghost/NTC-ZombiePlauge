@@ -19,7 +19,7 @@
 #define TASK_HEAL 560
 #define TASK_HEALING 650
 
-#define HEALTH 200
+#define HEALTH 100
 
 new g_Moving;
 new g_health_bouns;
@@ -35,7 +35,7 @@ public plugin_cfg() {
 public client_PostThink(id)
 {
 	if( !is_user_alive(id) ) return
-	if( !zp_core_is_zombie(id) return
+	if( !zp_core_is_zombie(id) ) return
 	
 	new Float:velocity[3]
 	get_user_velocity(id,velocity)
