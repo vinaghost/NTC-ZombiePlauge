@@ -81,7 +81,7 @@ public zp_fw_zombie_skill1_activing(id, classid) {
 public Do_Invisible(id)
 {	
 	// Set Render Red
-	set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 9)
+	set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 20)
 
 	// Set Fov
 	set_fov(id, INVISIBLE_FOV)
