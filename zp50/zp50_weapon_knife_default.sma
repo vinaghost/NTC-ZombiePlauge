@@ -20,8 +20,8 @@ public plugin_init() {
 }
 
 public plugin_precache() {
-	precache_model("models/v_hammer.mdl");
-	precache_model("models/v_knife_keris.mdl");
+	precache_model("models/zombie_plague/v_hammer.mdl");
+	precache_model("models/zombie_plague/v_knife_keris.mdl");
 }
 
 public zp_fw_wpn_select_post(id, itemid) {
@@ -29,12 +29,12 @@ public zp_fw_wpn_select_post(id, itemid) {
 	if( itemid == Keris) 
 	{
 		Set_BitVar(p_Keris, id);
-		cs_set_player_view_model(id, CSW_KNIFE, "models/v_knife_keris.mdl")
+		cs_set_player_view_model(id, CSW_KNIFE, "models/zombie_plague/v_knife_keris.mdl")
 	}
 		
 	else if( itemid == Hammer) {
 		Set_BitVar(p_Hammer, id);
-		cs_set_player_view_model(id, CSW_KNIFE, "models/v_hammer.mdl")
+		cs_set_player_view_model(id, CSW_KNIFE, "models/zombie_plague/v_hammer.mdl")
 	}
 }
 

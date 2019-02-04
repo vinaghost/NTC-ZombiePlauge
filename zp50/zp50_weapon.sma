@@ -55,9 +55,6 @@ new g_WeaponCount
 new p_Weapon[3][33]
 new p_AutoWeapon
 
-new g_CanBuySecondary = 0
-new g_CanBuyKnife = 0
-
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -66,10 +63,10 @@ public plugin_init() {
 	g_Forwards[FW_WPN_SELECT_POST] = CreateMultiForward("zp_fw_wpn_select_post", ET_IGNORE, FP_CELL, FP_CELL, FP_CELL)
 	g_Forwards[FW_WPN_REMOVE] = CreateMultiForward("zp_fw_wpn_remove", ET_IGNORE, FP_CELL, FP_CELL)
 	
-	register_clcmd("say /buy", "clcmd_buy")
-	register_clcmd("say buy", "clcmd_buy")
-	register_clcmd("say /guns", "clcmd_buy")
-	register_clcmd("say guns", "clcmd_buy")
+	register_clcmd("say /buy", "show_buy_menu")
+	register_clcmd("say buy", "show_buy_menu")
+	register_clcmd("say /guns", "show_buy_menu")
+	register_clcmd("say guns", "show_buy_menu")
 }
 public plugin_natives()
 {
@@ -94,6 +91,7 @@ public plugin_natives()
 	g_WeaponName = ArrayCreate(32, 1)
 	g_WeaponCost = ArrayCreate(1, 1)
 	g_WeaponType = ArrayCreate(1,1)
+	g_WeaponFree = ArrayCreate(1,1)
 	
 }
 public module_filter(const module[])
@@ -113,8 +111,6 @@ public native_filter(const name[], index, trap)
 
 public zp_fw_core_cure_post(id, attacker)
 {
-	
-	remove_task(id)
 	set_task(0.1, "show_menu_main", id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
@@ -195,6 +191,8 @@ public show_menu_main(id) {
 	
 	
 	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
+	
+	menu_display(id, menu)
 }
 
 public menu_main( id, menu, item )
@@ -204,8 +202,6 @@ public menu_main( id, menu, item )
 	switch (item) {
 		case 0: {
 			show_primary_menu(id)
-			Set_BitVar(g_CanBuySecondary, id) 
-			Set_BitVar(g_CanBuyKnife, id)
 		}
 			
 		case 1:  {
@@ -231,7 +227,7 @@ public show_primary_menu(id) {
 	
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi chinh^nDang co %d AP", zp_ammopacks_get(id)) 
-	new menuid = menu_create(title, "weapon_menu");
+	new menuid = menu_create(title, "primary_menu");
 	
 	static menu[128], name[32], cost, free, type;
 	new index, itemdata[2]
@@ -291,13 +287,43 @@ public show_primary_menu(id) {
 	
 	menu_display(id, menuid, 0)
 }
+
+public primary_menu(id, menuid, item)
+{
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	if (!is_user_alive(id) || zp_core_is_zombie(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	new itemdata[2], dummy, itemid, free
+	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
+	itemid = itemdata[0]
+	free = itemdata[1]
+	
+	
+	buy_weapon(id, itemid, free)
+	
+	
+	p_Weapon[ZP_PRIMARY][id] = itemid;
+	show_secondary_menu(id)
+		
+	return PLUGIN_HANDLED;
+}	
+
 
 public show_secondary_menu(id) {
 	if( !is_user_alive(id) ) return;
 	
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi phu^nDang co %d AP", zp_ammopacks_get(id)) 
-	new menuid = menu_create(title, "weapon_menu");
+	new menuid = menu_create(title, "secondary_menu");
 	
 	static menu[128], name[32], cost, free, type;
 	new index, itemdata[2]
@@ -358,12 +384,44 @@ public show_secondary_menu(id) {
 	menu_display(id, menuid, 0)
 }
 
+public secondary_menu(id, menuid, item)
+{
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	if (!is_user_alive(id) || zp_core_is_zombie(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	new itemdata[2], dummy, itemid, free
+	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
+	itemid = itemdata[0]
+	free = itemdata[1]
+	
+	
+	buy_weapon(id, itemid, free)
+	
+	
+	
+	p_Weapon[ZP_SECONDAYRY][id] = itemid
+	show_knife_menu(id)
+		
+		
+	return PLUGIN_HANDLED;
+}
+
+
 public show_knife_menu(id) {
 	if( !is_user_alive(id) ) return;
 	
 	new title[64];
 	formatex(title, charsmax(title), "Chon dao^nDang co %d AP", zp_ammopacks_get(id)) 
-	new menuid = menu_create(title, "weapon_menu");
+	new menuid = menu_create(title, "knife_menu");
 	
 	static menu[128], name[32], cost, free, type;
 	new index, itemdata[2]
@@ -424,7 +482,7 @@ public show_knife_menu(id) {
 	menu_display(id, menuid, 0)
 }
 
-public weapon_menu(id, menuid, item)
+public knife_menu(id, menuid, item)
 {
 	if (item == MENU_EXIT)
 	{
@@ -446,22 +504,12 @@ public weapon_menu(id, menuid, item)
 	
 	buy_weapon(id, itemid, free)
 	
-	if( Get_BitVar(g_CanBuySecondary, id)  ) {
-		p_Weapon[ZP_PRIMARY][id] = itemid;
-		show_secondary_menu(id)
-		UnSet_BitVar(g_CanBuySecondary, id) 
-	}
-	else if( Get_BitVar(g_CanBuyKnife, id) ) {
-		p_Weapon[ZP_SECONDAYRY][id] = itemid
-		show_knife_menu(id)
-		UnSet_BitVar(g_CanBuyKnife, id) 
-	}
-	else {
-		p_Weapon[ZP_KNIFE][id] = itemid
-		Set_BitVar(p_AutoWeapon, id)
-		menu_destroy(menuid)
-	}
+	
 		
+	p_Weapon[ZP_KNIFE][id] = itemid
+	menu_destroy(menuid)
+
+	Set_BitVar(p_AutoWeapon,id)
 	return PLUGIN_HANDLED;
 }	
 
