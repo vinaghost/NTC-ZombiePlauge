@@ -7,6 +7,9 @@
 #include <zp50_core>
 #include <zp50_class_zombie>
 
+#define LIBRARY_NEMESIS "zp50_class_nemesis"
+#include <zp50_class_nemesis>
+
 
 #define PLUGIN "[ZP] Addons: Healing for zombie"
 #define VERSION "1.0"
@@ -36,6 +39,24 @@ public plugin_init() {
 }
 public plugin_cfg() {
 	g_health_bouns = get_cvar_num ("zp_infection_health_bonus")
+}
+public plugin_natives() {
+	set_module_filter("module_filter")
+	set_native_filter("native_filter")
+}
+public module_filter(const module[])
+{
+	if (equal(module, LIBRARY_NEMESIS))
+		return PLUGIN_HANDLED;
+	
+	return PLUGIN_CONTINUE;
+}
+public native_filter(const name[], index, trap)
+{
+	if (!trap)
+		return PLUGIN_HANDLED;
+	
+	return PLUGIN_CONTINUE;
 }
 public HamHook_Player_Killed_Post(id/*,killer,shouldgib*/)
 { 	
@@ -77,6 +98,10 @@ public zp_fw_core_cure_post(id) {
 }
 public Healing(id) {
 	id -= TASK_HEALING
+	
+	if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id))
+		return;
+		
 	if( Get_BitVar(g_Moving, id) ) return;
 	
 	new Health = get_user_health(id) + HEALTH;
