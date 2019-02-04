@@ -19,10 +19,6 @@
 #define VERSION "1.0"
 #define AUTHOR "VINAGHOST"
 
-#define Get_BitVar(%1,%2) (%1 & (1 << (%2 & 31)))
-#define Set_BitVar(%1,%2) %1 |= (1 << (%2 & 31))
-#define UnSet_BitVar(%1,%2) %1 &= ~(1 << (%2 & 31))
-
 // CS Player CBase Offsets (win32)
 /*
 const PDATA_SAFE = 2
@@ -117,10 +113,58 @@ public native_filter(const name[], index, trap)
 
 public zp_fw_core_cure_post(id, attacker)
 {
+	
 	remove_task(id)
 	set_task(0.1, "show_menu_main", id)
 }
+public zp_fw_core_infect_pre(id, attacker) {
+	
+	if(p_Weapon[ZP_PRIMARY][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
+	}
+	
+	if(p_Weapon[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDAYRY][id])
+	}
+	
+	if(p_Weapon[ZP_KNIFE][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_KNIFE][id])
+	}
+	
 
+}
+public client_connect(id) {
+	UnSet_BitVar(p_AutoWeapon,id) 
+	
+	p_Weapon[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
+	p_Weapon[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
+	p_Weapon[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
+}
+public client_disconnect(id) {
+	if(p_Weapon[ZP_PRIMARY][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
+	}
+	
+	if(p_Weapon[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDAYRY][id])
+	}
+	
+	if(p_Weapon[ZP_KNIFE][id] != ZP_INVALID_WEAPON ) {
+		
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_KNIFE][id])
+	}
+	
+	p_Weapon[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
+	p_Weapon[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
+	p_Weapon[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
+	
+	UnSet_BitVar(p_AutoWeapon,id)
+}
 public show_menu_main(id) {
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
 		return;
@@ -139,7 +183,7 @@ public show_menu_main(id) {
 	{
 		new primary[32], secondary[32], knife[32];
 		ArrayGetString(g_WeaponName, p_Weapon[ZP_PRIMARY][id], primary, charsmax(primary))
-		ArrayGetString(g_WeaponName, p_Weapon[ZP_SECONDAYR][id], secondary, charsmax(secondary))
+		ArrayGetString(g_WeaponName, p_Weapon[ZP_SECONDAYRY][id], secondary, charsmax(secondary))
 		ArrayGetString(g_WeaponName, p_Weapon[ZP_KNIFE][id], knife, charsmax(knife))
 		
 		formatex(item, charsmax(item), "CHON LAI VU KHI^n- %s^n- %s^n- %s",  primary, secondary, knife);
@@ -178,7 +222,7 @@ public auto_take_weapons(id) {
 	if( !is_user_alive(id) ) return
 	
 	buy_weapon(id, p_Weapon[ZP_PRIMARY][id], 1)
-	buy_weapon(id, p_Weapon[ZP_SECONDAYR][id], 1)
+	buy_weapon(id, p_Weapon[ZP_SECONDAYRY][id], 1)
 	buy_weapon(id, p_Weapon[ZP_KNIFE][id], 1)
 }
 
@@ -266,7 +310,7 @@ public show_secondary_menu(id) {
 			continue;
 		
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYR) 
+		if( type != ZP_SECONDAYRY) 
 			continue;
 			
 		free = ArrayGetCell(g_WeaponFree, index)	
@@ -291,7 +335,7 @@ public show_secondary_menu(id) {
 			continue;
 		
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYR) 
+		if( type != ZP_SECONDAYRY) 
 			continue;
 			
 		free = ArrayGetCell(g_WeaponFree, index)	
@@ -403,15 +447,20 @@ public weapon_menu(id, menuid, item)
 	buy_weapon(id, itemid, free)
 	
 	if( Get_BitVar(g_CanBuySecondary, id)  ) {
+		p_Weapon[ZP_PRIMARY][id] = itemid;
 		show_secondary_menu(id)
 		UnSet_BitVar(g_CanBuySecondary, id) 
 	}
 	else if( Get_BitVar(g_CanBuyKnife, id) ) {
+		p_Weapon[ZP_SECONDAYRY][id] = itemid
 		show_knife_menu(id)
 		UnSet_BitVar(g_CanBuyKnife, id) 
 	}
-	else
+	else {
+		p_Weapon[ZP_KNIFE][id] = itemid
+		Set_BitVar(p_AutoWeapon, id)
 		menu_destroy(menuid)
+	}
 		
 	return PLUGIN_HANDLED;
 }	
@@ -699,7 +748,7 @@ stock strip_weapons(id, stripwhat)
 		weaponid = weapons[index]
 		
 		if ((stripwhat == ZP_PRIMARY && ((1<<weaponid) & PRIMARY_WEAPONS_BIT_SUM) )
-		|| (stripwhat == ZP_SECONDAYR && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM)) )
+		|| (stripwhat == ZP_SECONDAYRY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM)) )
 		
 		{
 			// Get weapon name
