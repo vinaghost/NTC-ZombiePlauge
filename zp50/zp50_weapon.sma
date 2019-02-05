@@ -20,14 +20,8 @@
 #define AUTHOR "VINAGHOST"
 
 // CS Player CBase Offsets (win32)
-/*
 const PDATA_SAFE = 2
 const OFFSET_ACTIVE_ITEM = 373
-*/
-// CS Player CBase Offsets (linux)
-const OFFSET_LINUX = 5 // offsets 5 higher in Linux builds
-const OFFSET_ACTIVE_ITEM = 378
-
 
 new const ZP_EXTRAWEAPON_FILE[] = "zp_extraweapons.ini"
 
@@ -55,13 +49,16 @@ new g_WeaponCount
 new p_Weapon[3][33]
 new p_AutoWeapon
 
-
+new g_MaxPlayer;
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
 	g_Forwards[FW_WPN_SELECT_PRE] = CreateMultiForward("zp_fw_wpn_select_pre", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL)
 	g_Forwards[FW_WPN_SELECT_POST] = CreateMultiForward("zp_fw_wpn_select_post", ET_IGNORE, FP_CELL, FP_CELL, FP_CELL)
 	g_Forwards[FW_WPN_REMOVE] = CreateMultiForward("zp_fw_wpn_remove", ET_IGNORE, FP_CELL, FP_CELL)
+	
+	g_MaxPlayer = get_maxplayers()
+	
 	
 	register_clcmd("say /buy", "show_buy_menu")
 	register_clcmd("say buy", "show_buy_menu")
@@ -111,6 +108,9 @@ public native_filter(const name[], index, trap)
 
 public zp_fw_core_cure_post(id, attacker)
 {
+	strip_weapons(id, ZP_PRIMARY)
+	strip_weapons(id, ZP_SECONDAYRY)
+	
 	set_task(0.1, "show_menu_main", id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
@@ -307,9 +307,7 @@ public primary_menu(id, menuid, item)
 	itemid = itemdata[0]
 	free = itemdata[1]
 	
-	
 	buy_weapon(id, itemid, free)
-	
 	
 	p_Weapon[ZP_PRIMARY][id] = itemid;
 	show_secondary_menu(id)
@@ -504,8 +502,6 @@ public knife_menu(id, menuid, item)
 	
 	buy_weapon(id, itemid, free)
 	
-	
-		
 	p_Weapon[ZP_KNIFE][id] = itemid
 	menu_destroy(menuid)
 
@@ -631,7 +627,16 @@ public native_weapons_register(plugin_id, num_params)
 		
 	ArrayPushCell(g_WeaponType, type)
 	
-	ArrayPushCell(g_WeaponFree, cost ? 1 : 0 );
+	
+	new free = 0;
+	if( !cost ) 
+	{
+		for(new i = 1; i <= g_MaxPlayer; i++) {
+			Set_BitVar(free, i);
+		}
+	}
+	ArrayPushCell(g_WeaponFree, free)
+	
 	
 	g_WeaponCount++
 	return g_WeaponCount - 1;
@@ -775,14 +780,23 @@ buy_weapon(id, itemid, ignorecost = 0)
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		return;
 	
+	new type = ArrayGetCell(g_WeaponType, itemid)
+	
+	
+	if( type != ZP_KNIFE)
+		strip_weapons(id, type)
+		
+		
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
 	
 	new free = ArrayGetCell(g_WeaponFree, itemid)
-	
-	Set_BitVar(free, id)
+	if( !Get_BitVar(free, id) )
+		Set_BitVar(free, id)
 	
 	ArraySetCell(g_WeaponFree, itemid, free)
+	
 }
+// Strip primary/secondary/grenades
 stock strip_weapons(id, stripwhat)
 {
 	// Get user weapons
@@ -795,9 +809,8 @@ stock strip_weapons(id, stripwhat)
 		// Prevent re-indexing the array
 		weaponid = weapons[index]
 		
-		if ((stripwhat == ZP_PRIMARY && ((1<<weaponid) & PRIMARY_WEAPONS_BIT_SUM) )
+		if ((stripwhat == ZP_PRIMARY && ((1<<weaponid) & PRIMARY_WEAPONS_BIT_SUM))
 		|| (stripwhat == ZP_SECONDAYRY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM)) )
-		
 		{
 			// Get weapon name
 			new wname[32]
@@ -837,6 +850,7 @@ stock ham_strip_weapon(index, const weapon[])
 	set_pev(index, pev_weapons, pev(index, pev_weapons) & ~(1<<weaponid))
 	return true;
 }
+
 // Find entity by its owner (from fakemeta_util)
 stock fm_find_ent_by_owner(entity, const classname[], owner)
 {
@@ -846,4 +860,10 @@ stock fm_find_ent_by_owner(entity, const classname[], owner)
 
 // Get User Current Weapon Entity
 stock fm_cs_get_current_weapon_ent(id)
-	return get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_LINUX);
+{
+	// Prevent server crash if entity's private data not initalized
+	if (pev_valid(id) != PDATA_SAFE)
+		return -1;
+	
+	return get_pdata_cbase(id, OFFSET_ACTIVE_ITEM);
+}

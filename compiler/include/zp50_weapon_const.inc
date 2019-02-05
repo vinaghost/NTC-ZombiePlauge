@@ -12,5 +12,9 @@
 #define ZP_WEAPON_DONT_SHOW 2
 
 #define ZP_PRIMARY 0
-#define ZP_SECONDAYR 1
+#define ZP_SECONDAYRY 1
 #define ZP_KNIFE 2
+
+#define Get_BitVar(%1,%2) (%1 & (1 << (%2 & 31)))
+#define Set_BitVar(%1,%2) %1 |= (1 << (%2 & 31))
+#define UnSet_BitVar(%1,%2) %1 &= ~(1 << (%2 & 31))
