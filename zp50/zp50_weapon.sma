@@ -108,9 +108,6 @@ public native_filter(const name[], index, trap)
 
 public zp_fw_core_cure_post(id, attacker)
 {
-	strip_weapons(id, ZP_PRIMARY)
-	strip_weapons(id, ZP_SECONDAYRY)
-	
 	set_task(0.1, "show_menu_main", id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
@@ -189,7 +186,6 @@ public show_menu_main(id) {
 		
 	menu_additem(menu, item);
 	
-	
 	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
 	
 	menu_display(id, menu)
@@ -198,6 +194,9 @@ public show_menu_main(id) {
 public menu_main( id, menu, item )
 {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return PLUGIN_CONTINUE;
+	
+	strip_weapons(id, ZP_PRIMARY)
+	strip_weapons(id, ZP_SECONDAYRY)
 	
 	switch (item) {
 		case 0: {

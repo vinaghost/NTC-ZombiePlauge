@@ -23,7 +23,6 @@ public fw_PlayerTakeDamge_Pre(victim, inflictor, attacker, Float:damage, bits)
 	
 	if( zp_core_is_zombie(attacker) )  return;
 	
-	
 	if( attacker == victim) return;
 	
 	if( get_user_weapon(attacker) == CSW_HEGRENADE) 

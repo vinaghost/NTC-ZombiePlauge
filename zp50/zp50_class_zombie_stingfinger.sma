@@ -86,9 +86,7 @@ public plugin_precache()
 	engfunc(EngFunc_PrecacheSound, HEAL_SOUND)
 }
 
-public plugin_cfg() {
-	g_health_bouns = get_cvar_num ("zp_infection_health_bonus")
-}
+
 
 public zp_fw_class_zombie_select_post(id, ClassID)
 {
