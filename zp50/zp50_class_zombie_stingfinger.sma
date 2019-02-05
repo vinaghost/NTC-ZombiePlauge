@@ -53,6 +53,9 @@ new g_StingFinger
 new g_TempingAttack
 new g_MaxPlayers
 new msg_ScreenFade 
+
+new g_health_bouns;
+
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
@@ -83,6 +86,9 @@ public plugin_precache()
 	engfunc(EngFunc_PrecacheSound, HEAL_SOUND)
 }
 
+public plugin_cfg() {
+	g_health_bouns = get_cvar_num ("zp_infection_health_bonus")
+}
 
 public zp_fw_class_zombie_select_post(id, ClassID)
 {
@@ -191,12 +197,16 @@ public Do_Heal(id)
 	EmitSound(id, CHAN_ITEM, HEAL_SOUND)
 	
 	ScreenFade(id, 1.5, 0, 255, 0, 40)
-	new newHealth = get_user_health(id) + 500;
+	new Health = get_user_health(id) + 500;
+	new MaxHealth = zp_class_zombie_get_max_health(id, zp_class_zombie_get_current(id) )
 	
-	if( newHealth > zclass_health )
-		set_user_health(id, newHealth)
-	else
-		set_user_health(id, get_user_health(id) + 500)
+	if( zp_core_is_first_zombie(id) ) {
+		MaxHealth += g_health_bouns
+	}
+	
+	if( Health < MaxHealth ) set_user_health(id, Health);
+	
+	else set_user_health(id, MaxHealth);
 }
 
 public Do_Penetrate(id)
