@@ -30,7 +30,6 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
 	register_event("CurWeapon","event_curweapon","be", "1=1")
-	register_event("DeathMsg", "event_DeathMsg", "a", "1>0")
 	
 	RegisterHam(Ham_TakeDamage, "player", "player_TakeDamage")
 	
