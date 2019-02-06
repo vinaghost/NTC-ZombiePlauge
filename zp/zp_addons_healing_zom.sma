@@ -99,6 +99,8 @@ public zp_fw_core_cure_post(id) {
 public Healing(id) {
 	id -= TASK_HEALING
 	
+	if( !is_user_alive(id) ) return 
+	
 	if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id))
 		return;
 		
