@@ -16,13 +16,11 @@ public plugin_init() {
 
 public timer() {
 	
-	if( ready ) {
+	if( ready > 0 ) {
+		
+		
 		ready --;
 		set_task(1.0, "timer");
-	}
-	else
-	{
-		server_cmd("sv_restart 1")
 	}
 		
 }
