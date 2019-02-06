@@ -3,6 +3,7 @@
 **IP:** *103.48.193.60:27016*
 
 Báo lỗi và đóng góp ý kiến ? Vào phần Issues
+
 Code của VINA có vấn đề ? Có code hay hơn ? Vào phần Pull request
 
 Vina sẽ tiếp thu ý kiến và thực hiện trong thời gian sớm nhất có thể

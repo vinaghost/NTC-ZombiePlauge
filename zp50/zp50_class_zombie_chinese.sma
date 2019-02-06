@@ -19,7 +19,7 @@ new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_chinese.mdl"
 new const zclass_health = 1500;
 new const Float:zclass_gravity = 0.84;
 new const Float:zclass_speed = 1.1;
-new const Float:zclass_speed_skill = 1.7;
+new const Float:zclass_speed_skill = 2.0;
 new const Float:zclass_knockback = 1.3;
 
 new msg_ScreenFade

@@ -3,7 +3,7 @@
 #include <zp50_core>
 #include <cs_ham_bots_api>
 
-#define PLUGIN "[ZP] Addons: Human knife"
+#define PLUGIN "[ZP] Addons: Human nade"
 #define VERSION "1.0"
 #define AUTHOR "VINAGHOST"
 
@@ -23,10 +23,8 @@ public fw_PlayerTakeDamge_Pre(victim, inflictor, attacker, Float:damage, bits)
 	
 	if( zp_core_is_zombie(attacker) )  return;
 	
-	if( !zp_core_is_last_human(attacker) ) return;
-	
 	if( attacker == victim) return;
 	
-	if( get_user_weapon(attacker) == CSW_KNIFE) 
+	if( get_user_weapon(attacker) == CSW_HEGRENADE) 
 		SetHamParamFloat(4, damage * 10)
 }

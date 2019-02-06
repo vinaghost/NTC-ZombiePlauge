@@ -540,7 +540,7 @@ show_money_items_menu(id)
 	{
 		ExecuteForward(m_Forwards[FW_ITEM_SELECT_PRE], g_ForwardResult, id, index, 0)
 		
-		if (g_ForwardResult >.= ZP_ITEM_DONT_SHOW)
+		if (g_ForwardResult >= ZP_ITEM_DONT_SHOW)
 			continue;
 		
 		ArrayGetString(m_ItemName, index, name, charsmax(name))

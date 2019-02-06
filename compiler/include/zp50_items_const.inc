@@ -10,7 +10,3 @@
 #define ZP_ITEM_AVAILABLE 0
 #define ZP_ITEM_NOT_AVAILABLE 1
 #define ZP_ITEM_DONT_SHOW 2
-
-
-#define ZP_ITEM_ZOMBIE 0
-#define ZP_ITEM_HUMAN 1
