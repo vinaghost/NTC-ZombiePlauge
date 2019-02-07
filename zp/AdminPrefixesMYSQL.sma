@@ -224,7 +224,7 @@ public QueryCreateTable(failstate, Handle:query, error[], errcode, data[], datas
 	}
 	else
 	{
-		server_print("%s MYSQL connection succesful!", in_prefix)
+		server_print("%s MYSQL connection succesful in %.0fs", in_prefix, queuetime)
 		mysql_connected = true
 		LoadFlagsPrefixes(0)
 		LoadBadPrefixes(0)

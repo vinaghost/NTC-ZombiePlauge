@@ -10,7 +10,7 @@ public plugin_init()
 }
 
 
-public zp_wpn_select_pre(id, itemid, ignorecost)
+public zp_fw_wpn_select_pre( id, itemid, ignorecost)
 {
 	// Ignore item costs?
 	if (ignorecost)
@@ -27,7 +27,7 @@ public zp_wpn_select_pre(id, itemid, ignorecost)
 	return ZP_WEAPON_AVAILABLE;
 }
 
-public zp_fw_ap_items_select_post(id, itemid, ignorecost)
+public zp_fw_wpn_select_post(id, itemid, ignorecost)
 {
 	// Ignore item costs?
 	if (ignorecost)

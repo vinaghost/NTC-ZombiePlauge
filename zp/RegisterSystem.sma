@@ -597,13 +597,13 @@ public plugin_cfg()
 	if(!get_pcvar_num(g_on))
 		return PLUGIN_HANDLED
 
-	server_print(" ")
+	/*server_print(" ")
 	server_print(separator_1)
 	server_print("Title	: Register System")
 	server_print("Version	: %s", VERSION)
 	server_print("Author	: m0skVi4a ;]")
 	server_print("Site	: https://forums.alliedmods.net/showthread.php?t=171460")
-	server_print(separator_2)
+	server_print(separator_2)*/
 
 	get_time("%H:%M:%S", sz_time, charsmax(sz_time))
 
@@ -655,7 +655,7 @@ public plugin_cfg()
 				}
 				else
 				{
-					server_print("[%s] [OK] > Read cvar ^"%s^" ^"%s^"", sz_time, cvar, param)
+					//server_print("[%s] [OK] > Read cvar ^"%s^" ^"%s^"", sz_time, cvar, param)
 					server_cmd("%s %s", cvar, param)
 					count++
 				}
@@ -684,7 +684,7 @@ public plugin_cfg()
 	server_print(separator_1)
 	server_print(" ")
 
-	set_task(1.0, "LoadData")
+	set_task(0.5, "LoadData")
 	
 	return PLUGIN_CONTINUE
 }
@@ -911,7 +911,7 @@ public QueryCreateTable(failstate, Handle:query1, error[], errcode, data[], data
 	}
 	else
 	{
-		server_print("%s MYSQL connection succesful!", prefix)
+		server_print("[REGISTER SYSTEM] MYSQL connection succesful in %.0fs", queuetime)
 
 		new data[1];
 
