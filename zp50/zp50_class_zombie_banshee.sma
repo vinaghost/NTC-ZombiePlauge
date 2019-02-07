@@ -148,16 +148,12 @@ public zp_fw_core_spawn_post(id) {
 public zp_fw_zombie_skill1_active(id ,classid)
 {
 	if( classid != g_Zombie_Banshee) 
-		return;
+		return ZP_CLASS_SKILL_ACTIVE;
 	if(Get_BitVar(g_Pulling, id))
-		return
+		return ZP_CLASS_SKILL_CANT_ACTIVE;
 	if(!(pev(id, pev_flags) & FL_ONGROUND))
 	{
-		return
-	}
-	if(pev(id, pev_flags) & FL_DUCKING)
-	{
-		return
+		return ZP_CLASS_SKILL_CANT_ACTIVE;
 	}
 		
 	Do_Pulling(id)
