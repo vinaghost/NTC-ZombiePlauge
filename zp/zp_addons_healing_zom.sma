@@ -117,8 +117,8 @@ public Healing(id) {
 	
 	else set_user_health(id, MaxHealth);
 	
-	ScreenFade(id, 1.0, 0, 0, 255, 40)
-	set_task(1.0, "Healing", id + TASK_HEALING) 
+	ScreenFade(id, 4.0, 0, 0, 255, 40)
+	set_task(8.0, "Healing", id + TASK_HEALING) 
 }
 stock ScreenFade(plr, Float:fDuration, red, green, blue, alpha)
 {
