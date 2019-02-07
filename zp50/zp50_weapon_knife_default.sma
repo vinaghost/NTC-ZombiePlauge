@@ -100,8 +100,6 @@ public fw_ham_TakeDamage(victim, inflictor, attacker, Float:dmg, dmgbits)
 	
 	if( victim == attacker ) return;
 	
-	if ( zp_core_is_last_human(attacker) ) return;
-	
 	if( ( Get_BitVar(h_CrowBar, attacker)  || Get_BitVar(h_Machete, attacker) || Get_BitVar(h_Axe, attacker) )
 		&& get_user_weapon(attacker) == CSW_KNIFE) 
 			SetHamParamFloat(4, dmg * 6);
