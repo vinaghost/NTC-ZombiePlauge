@@ -272,7 +272,7 @@ public show_primary_menu(id) {
 			continue;
 		
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
-			
+		cost = ArrayGetCell(g_WeaponCost, index)	
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
 		else
@@ -366,7 +366,9 @@ public show_secondary_menu(id) {
 			continue;
 		
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
-			
+		
+		cost = ArrayGetCell(g_WeaponCost, index)
+		
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
 		else
