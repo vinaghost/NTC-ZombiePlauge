@@ -157,6 +157,7 @@ public zp_fw_zombie_skill1_active(id ,classid)
 	}
 		
 	Do_Pulling(id)
+	return ZP_CLASS_SKILL_ACTIVE;
 }
 
 public Do_Pulling(id)
