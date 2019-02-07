@@ -25,16 +25,16 @@
 
 // Zombie Configs
 new zclass_name[24] = "Banshee"
-new zclass_desc[24] = "Pulling & Chaos"
-new zclass_desc1[24] = "Pulling"
+new zclass_desc[24] = "Keo human"
+new zclass_desc1[24] = "Keo human"
 new const zclass_model[] = "Banshee"
-new const zclass_clawsmodel[] = "zombie_plauge/zombie/v_knife_Banshee"
+new const zclass_clawsmodel[] = "zombie_plague/v_knife_Banshee.mdl"
 new const Float:zclass_gravity = 0.80
 new const Float:zclass_speed = 280.0
 new const Float:zclass_knockback = 1.5
 new const zclass_health = 1200
 
-new const Target_Sound[] = "zombie_plauge/human_surprise.wav"
+new const Target_Sound[] = "zombie_plague/human_surprise.wav"
 
 // Bat
 #define BAT_CREATETIME 1.0
@@ -45,11 +45,11 @@ new const Target_Sound[] = "zombie_plauge/human_surprise.wav"
 #define PULLING_PLAYERANIM_LOOP 152
 
 #define BAT_CLASSNAME "bat"
-#define BAT_MODEL "models/zombie_plauge/bat_witch.mdl"
-#define BAT_FLYSOUND "zombie_plauge/zombie/banshee_pulling_fire.wav"
-#define BAT_PULLINGSOUND "zombie_plauge/zombie/zombi_banshee_laugh.wav"
-#define BAT_EXPSOUND "zombie_plauge/zombie/skill/bat_exp.wav"
-#define BAT_EXPSPR "sprites/zombie_plauge/ef_bat.spr"
+#define BAT_MODEL "models/zombie_plague/bat_witch.mdl"
+#define BAT_FLYSOUND "zombie_plague/zombie/banshee_pulling_fire.wav"
+#define BAT_PULLINGSOUND "zombie_plague/zombie/zombi_banshee_laugh.wav"
+#define BAT_EXPSOUND "zombie_plague/zombie/skill/bat_exp.wav"
+#define BAT_EXPSPR "sprites/zombie_plague/ef_bat.spr"
 
 #define BAT_SPEED 600
 #define BAT_MAXDISTANCE 700
@@ -135,25 +135,29 @@ public native_filter(const name[], index, trap)
 	
 	return PLUGIN_CONTINUE;
 }
+public event_new_round() {
+	
+	remove_entity_name(BAT_CLASSNAME)
+
+}
 public zp_fw_core_spawn_post(id) {
 	if(Get_BitVar(g_Pulling, id))
 		UnSet_BitVar(g_Pulling, id)
 }
 
-public zp_fw_zombie_skill1_active(id)
+public zp_fw_zombie_skill1_active(id ,classid)
 {
+	if( classid != g_Zombie_Banshee) 
+		return ZP_CLASS_SKILL_ACTIVE;
 	if(Get_BitVar(g_Pulling, id))
-		return
+		return ZP_CLASS_SKILL_CANT_ACTIVE;
 	if(!(pev(id, pev_flags) & FL_ONGROUND))
 	{
-		return
-	}
-	if(pev(id, pev_flags) & FL_DUCKING)
-	{
-		return
+		return ZP_CLASS_SKILL_CANT_ACTIVE;
 	}
 		
 	Do_Pulling(id)
+	return ZP_CLASS_SKILL_ACTIVE;
 }
 
 public Do_Pulling(id)
