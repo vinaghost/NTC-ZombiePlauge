@@ -49,15 +49,9 @@ public plugin_natives()
 
 public check_sql()
 {
+	new errorcode;
 	
-	new host[64], user[64], pass[64], db[64],errorcode
-	
-	get_cvar_string("amx_sql_host", host, 63)
-	get_cvar_string("amx_sql_user", user, 63)
-	get_cvar_string("amx_sql_pass", pass, 63)
-	get_cvar_string("amx_sql_db", db, 63)
-	
-	g_SqlX = SQL_MakeDbTuple(host, user, pass, db)
+	g_SqlX = SQL_MakeStdTuple()
 	g_SqlConnection = SQL_Connect(g_SqlX,errorcode,g_error,511);
 	
 	if (!g_SqlConnection) {
@@ -72,7 +66,7 @@ public check_sql()
 public chat_log_sql() 
 {   
 	static datestr[11]
-	new authid[32],name[32],ip[16],timestr[9]
+	new authid[32],name[32], name2[32],ip[16],timestr[9]
 	
 	new id = get_param(1);
 	new tag[32]
@@ -80,14 +74,16 @@ public chat_log_sql()
 	
 	new team_chat = get_param(3);
 	
-	new msg[100];
+	new msg[100], msg2[100];
 	get_string(4, msg, charsmax(msg));
-	replace_all(msg, charsmax(msg), "'", "");
+	MakeStringSQLSafe(msg, msg2, charsmax(msg2))
 	
 	new CsTeams:team = cs_get_user_team(id)
 	get_user_authid(id,authid,32)  
+	
 	get_user_name(id,name,31)
-	replace_all(msg, charsmax(msg), "'", "")
+	MakeStringSQLSafe(name, name2, charsmax(name2))
+	
 	get_user_ip(id, ip, 15, 1)
 	
 	get_time("%Y.%m.%d", datestr, 12)
@@ -121,6 +117,10 @@ public QueryHandle(FailState,Handle:Query,Error[],Errcode,Data[],DataSize)
 	}
 	return PLUGIN_CONTINUE
 }
-
-
-
+MakeStringSQLSafe(const input[], output[], len)
+{
+	copy(output, len, input);
+	replace_all(output, len, "'", "*");
+	replace_all(output, len, "^"", "*");
+	replace_all(output, len, "`", "*");
+}
