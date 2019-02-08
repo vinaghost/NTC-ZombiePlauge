@@ -215,10 +215,6 @@
 //Start of CVAR pointers
 new g_on;
 new g_save;
-new g_host;
-new g_user;
-new g_pass;
-new g_db;
 new g_setinfo_pr;
 new g_regtime;
 new g_logtime;
@@ -367,14 +363,12 @@ new const g_cvars[][][] =
 public plugin_init() 
 {
 	register_plugin("Register System", VERSION, "m0skVi4a ;]")
-
+	
+	set_task(0.5, "Init_MYSQL")
+	
 	g_on = register_cvar(g_cvars[0][0], g_cvars[0][1])
 	g_save = register_cvar(g_cvars[1][0], g_cvars[1][1])
 	g_member = register_cvar(g_cvars[2][0], g_cvars[2][1])
-	g_host = register_cvar(g_cvars[3][0], g_cvars[3][1])
-	g_user = register_cvar(g_cvars[4][0], g_cvars[4][1])
-	g_pass = register_cvar(g_cvars[5][0], g_cvars[5][1])
-	g_db = register_cvar(g_cvars[6][0], g_cvars[6][1])
 	g_setinfo_pr = register_cvar(g_cvars[7][0], g_cvars[7][1])
 	g_regtime = register_cvar(g_cvars[8][0], g_cvars[8][1])
 	g_logtime = register_cvar(g_cvars[9][0], g_cvars[9][1])
@@ -684,14 +678,14 @@ public plugin_cfg()
 	server_print(separator_1)
 	server_print(" ")
 
-	set_task(0.5, "LoadData")
+	
 	
 	return PLUGIN_CONTINUE
 }
 
 public LoadData()
 {
-	if(get_pcvar_num(g_save))
+	/*if(get_pcvar_num(g_save))
 	{
 		Init_MYSQL()
 		return
@@ -703,7 +697,7 @@ public LoadData()
 			write_file(reg_file,";Register System file^n;Modifying may cause the clients to can not Login!^n^n")
 			server_print("%s Could not find Register System file -  %s   Creating new...", prefix, reg_file)
 		}
-	}
+	}*/
 	
 	if(get_pcvar_num(g_comm) == 1)
 	{
