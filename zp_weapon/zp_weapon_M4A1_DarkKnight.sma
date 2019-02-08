@@ -46,13 +46,13 @@ new const WeaponSounds[6][] =
 // Weapon Config
 #define DAMAGE_A 60 // 60 for Zombie
 #define DAMAGE_B 200 // 200 for Zombie
-#define ACCURACY 70 // 0 - 100 ; -1 Default
-#define CLIP 50
+#define ACCURACY 30 // 0 - 100 ; -1 Default
+#define CLIP 30
 #define BPAMMO 250
-#define SPEED_A 0.0875
-#define SPEED_B 0.25
+#define SPEED_A 0.08
+#define SPEED_B 0.5
 #define RECOIL 0.75
-#define RELOAD_TIME 2.0
+#define RELOAD_TIME 5.0
 
 // Muzzleflash
 #define MUZZLEFLASH1 "sprites/muzzleflash43.spr"

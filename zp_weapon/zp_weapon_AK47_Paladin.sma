@@ -43,10 +43,10 @@ new const WeaponSounds[5][] =
 // Weapon Config
 #define DAMAGE_A 66 // 66 for Zombie
 #define DAMAGE_B 360 // 360 for Zombie
-#define ACCURACY 70 // 0 - 100 ; -1 Default
-#define CLIP 50
-#define BPAMMO 250
-#define SPEED_A 0.0775
+#define ACCURACY 30 // 0 - 100 ; -1 Default
+#define CLIP 30
+#define BPAMMO 90
+#define SPEED_A 0.09
 #define SPEED_B 0.5
 #define RECOIL 0.75
 #define RELOAD_TIME 2.0

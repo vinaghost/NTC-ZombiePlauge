@@ -59,7 +59,6 @@ public plugin_init() {
 	
 	g_MaxPlayer = get_maxplayers()
 	
-	
 	register_clcmd("say /buy", "show_buy_menu")
 	register_clcmd("say buy", "show_buy_menu")
 	register_clcmd("say /guns", "show_buy_menu")
@@ -108,6 +107,8 @@ public native_filter(const name[], index, trap)
 
 public zp_fw_core_cure_post(id, attacker)
 {
+	strip_weapons(id, ZP_PRIMARY)
+	strip_weapons(id, ZP_SECONDAYRY)
 	set_task(0.1, "show_menu_main", id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
@@ -137,6 +138,7 @@ public client_connect(id) {
 	p_Weapon[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
 }
 public client_disconnect(id) {
+	
 	if(p_Weapon[ZP_PRIMARY][id] != ZP_INVALID_WEAPON ) {
 		
 		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
@@ -152,11 +154,18 @@ public client_disconnect(id) {
 		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_KNIFE][id])
 	}
 	
-	p_Weapon[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
-	p_Weapon[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
-	p_Weapon[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
-	
-	UnSet_BitVar(p_AutoWeapon,id)
+	new cost, free;
+	for(new i = 0; i < g_WeaponCount; i++) {
+		cost = ArrayGetCell(g_WeaponCost, i)
+		
+		if( !cost ) continue;
+		
+		free = ArrayGetCell(g_WeaponFree, i)
+		
+		UnSet_BitVar(free, id)
+		
+		ArraySetCell(g_WeaponFree, i , free)
+	}		
 }
 public show_menu_main(id) {
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
@@ -216,6 +225,9 @@ public menu_main( id, menu, item )
 public auto_take_weapons(id) {
 	if( !is_user_alive(id) ) return
 	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+	
 	buy_weapon(id, p_Weapon[ZP_PRIMARY][id], 1)
 	buy_weapon(id, p_Weapon[ZP_SECONDAYRY][id], 1)
 	buy_weapon(id, p_Weapon[ZP_KNIFE][id], 1)
@@ -224,12 +236,15 @@ public auto_take_weapons(id) {
 public show_primary_menu(id) {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
 	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+	
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi chinh^nDang co %d AP", zp_ammopacks_get(id)) 
 	new menuid = menu_create(title, "primary_menu");
 	
 	static menu[128], name[32], cost, free, type;
-	new index, itemdata[2]
+	new index, itemdata[3]
 	
 	for (index = 0; index < g_WeaponCount; index++)
 	{
@@ -252,6 +267,7 @@ public show_primary_menu(id) {
 		
 		itemdata[0] = index
 		itemdata[1] = 1
+		itemdata[2] = g_ForwardResult
 		
 		menu_additem(menuid, menu, itemdata)
 	}
@@ -281,6 +297,7 @@ public show_primary_menu(id) {
 			
 		itemdata[0] = index
 		itemdata[1] = 0
+		itemdata[1] = g_ForwardResult
 		menu_additem(menuid, menu, itemdata)
 	}
 	
@@ -301,16 +318,25 @@ public primary_menu(id, menuid, item)
 		return PLUGIN_HANDLED;
 	}
 		
-	new itemdata[2], dummy, itemid, free
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return PLUGIN_HANDLED;
+		
+		
+	new itemdata[3], dummy, itemid, free, result;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
+	result = itemdata[2]
 	
-	buy_weapon(id, itemid, free)
-	
-	p_Weapon[ZP_PRIMARY][id] = itemid;
-	show_secondary_menu(id)
+	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+		show_primary_menu(id)
+	else
+	{
+		buy_weapon(id, itemid, free)
 		
+		p_Weapon[ZP_PRIMARY][id] = itemid;
+		show_secondary_menu(id)
+	}
 	return PLUGIN_HANDLED;
 }	
 
@@ -318,12 +344,15 @@ public primary_menu(id, menuid, item)
 public show_secondary_menu(id) {
 	if( !is_user_alive(id) ) return;
 	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+	
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi phu^nDang co %d AP", zp_ammopacks_get(id)) 
 	new menuid = menu_create(title, "secondary_menu");
 	
 	static menu[128], name[32], cost, free, type;
-	new index, itemdata[2]
+	new index, itemdata[3]
 	
 	for (index = 0; index < g_WeaponCount; index++)
 	{
@@ -346,6 +375,7 @@ public show_secondary_menu(id) {
 		
 		itemdata[0] = index
 		itemdata[1] = 1
+		itemdata[2] = g_ForwardResult
 		
 		menu_additem(menuid, menu, itemdata)
 	}
@@ -377,6 +407,7 @@ public show_secondary_menu(id) {
 			
 		itemdata[0] = index
 		itemdata[1] = 0
+		itemdata[2] = g_ForwardResult
 		menu_additem(menuid, menu, itemdata)
 	}
 	
@@ -388,27 +419,34 @@ public secondary_menu(id, menuid, item)
 	if (item == MENU_EXIT)
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
 		
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return PLUGIN_CONTINUE;
 		
-	new itemdata[2], dummy, itemid, free
+	new itemdata[3], dummy, itemid, free, result
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
+	result = itemdata[2]
 	
-	
-	buy_weapon(id, itemid, free)
-	
-	
-	
-	p_Weapon[ZP_SECONDAYRY][id] = itemid
-	show_knife_menu(id)
+	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+		show_secondary_menu(id)
+	else
+	{
+		
+		buy_weapon(id, itemid, free)
+				
+		p_Weapon[ZP_SECONDAYRY][id] = itemid
+		show_knife_menu(id)
+	}
 		
 		
 	return PLUGIN_HANDLED;
@@ -418,12 +456,16 @@ public secondary_menu(id, menuid, item)
 public show_knife_menu(id) {
 	if( !is_user_alive(id) ) return;
 	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return
+		
 	new title[64];
 	formatex(title, charsmax(title), "Chon dao^nDang co %d AP", zp_ammopacks_get(id)) 
 	new menuid = menu_create(title, "knife_menu");
 	
 	static menu[128], name[32], cost, free, type;
-	new index, itemdata[2]
+	new index, itemdata[3]
 	
 	for (index = 0; index < g_WeaponCount; index++)
 	{
@@ -446,6 +488,7 @@ public show_knife_menu(id) {
 		
 		itemdata[0] = index
 		itemdata[1] = 1
+		itemdata[2] = g_ForwardResult
 		
 		menu_additem(menuid, menu, itemdata)
 	}
@@ -477,6 +520,8 @@ public show_knife_menu(id) {
 			
 		itemdata[0] = index
 		itemdata[1] = 0
+		itemdata[2] = g_ForwardResult
+		
 		menu_additem(menuid, menu, itemdata)
 	}
 	
@@ -488,35 +533,50 @@ public knife_menu(id, menuid, item)
 	if (item == MENU_EXIT)
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
 		
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
+	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return PLUGIN_CONTINUE
 		
-	new itemdata[2], dummy, itemid, free
+		
+	new itemdata[3], dummy, itemid, free, result
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
+	result = itemdata[2]
 	
-	
-	buy_weapon(id, itemid, free)
-	
-	p_Weapon[ZP_KNIFE][id] = itemid
-	menu_destroy(menuid)
+	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+		show_knife_menu(id)
+	else
+	{
+		buy_weapon(id, itemid, free)
+		
+		p_Weapon[ZP_KNIFE][id] = itemid
+		
+		Set_BitVar(p_AutoWeapon,id)
+		menu_destroy(menuid)
+	}
 
-	Set_BitVar(p_AutoWeapon,id)
 	return PLUGIN_HANDLED;
 }	
 
 public show_buy_menu(id) {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
 	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+		
 	new title[64];
-	formatex(title, charsmax(title), "Chon dao^nDang co %d AP", zp_ammopacks_get(id)) 
+	formatex(title, charsmax(title), "Mua vu khi AP^nDang co %d AP", zp_ammopacks_get(id)) 
 	new menuid = menu_create(title, "buy_menu");
 	
 	static menu[128], name[32], cost, free
@@ -552,14 +612,18 @@ public buy_menu(id, menuid, item){
 	if (item == MENU_EXIT)
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
 		
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
 	{
 		menu_destroy(menuid)
-		return PLUGIN_HANDLED;
+		return PLUGIN_CONTINUE;
 	}
+	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return PLUGIN_CONTINUE
 	
 	
 	new itemdata[2], dummy, itemid, allow
@@ -581,6 +645,7 @@ public buy_menu(id, menuid, item){
 	}
 	
 	buy_weapon(id, itemid)
+	show_buy_menu(id)
 	
 	return PLUGIN_HANDLED;
 }

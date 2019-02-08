@@ -24,6 +24,8 @@ new Array:g_ambience_durations_handle
 public plugin_init()
 {
 	register_plugin("[ZP] Ambience Sonds", ZP_VERSION_STRING, "ZP Dev Team")
+	
+	register_event("HLTV", "event_new_round", "a", "1=0", "2=0") 
 	register_event("30", "event_intermission", "a")
 }
 
@@ -73,6 +75,11 @@ public plugin_precache()
 		}
 		ArrayPushCell(g_ambience_durations_handle, ambience_durations)
 	}
+	
+	
+	
+	
+	
 }
 
 // Event Map Ended
