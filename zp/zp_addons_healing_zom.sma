@@ -23,7 +23,7 @@
 #define TASK_HEAL 560
 #define TASK_HEALING 650
 
-#define HEALTH 100
+#define HEALTH 200
 
 new g_Moving;
 new g_health_bouns;
@@ -117,7 +117,7 @@ public Healing(id) {
 	
 	else set_user_health(id, MaxHealth);
 	
-	ScreenFade(id, 4.0, 0, 0, 255, 40)
+	//ScreenFade(id, 4.0, 0, 0, 255, 40)
 	set_task(8.0, "Healing", id + TASK_HEALING) 
 }
 stock ScreenFade(plr, Float:fDuration, red, green, blue, alpha)
