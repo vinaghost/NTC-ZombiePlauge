@@ -105,11 +105,15 @@ public native_filter(const name[], index, trap)
 	return PLUGIN_CONTINUE;
 }
 
-public zp_fw_core_cure_post(id, attacker)
+public zp_fw_core_cure_pre(id, attacker)
 {
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+		
 	strip_weapons(id, ZP_PRIMARY)
 	strip_weapons(id, ZP_SECONDAYRY)
-	set_task(0.1, "show_menu_main", id)
+	
+	show_menu_main(id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
 	
@@ -204,8 +208,9 @@ public menu_main( id, menu, item )
 {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return PLUGIN_CONTINUE;
 	
-	strip_weapons(id, ZP_PRIMARY)
-	strip_weapons(id, ZP_SECONDAYRY)
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return PLUGIN_CONTINUE;
+	
 	
 	switch (item) {
 		case 0: {
@@ -297,7 +302,7 @@ public show_primary_menu(id) {
 			
 		itemdata[0] = index
 		itemdata[1] = 0
-		itemdata[1] = g_ForwardResult
+		itemdata[2] = g_ForwardResult
 		menu_additem(menuid, menu, itemdata)
 	}
 	
@@ -322,13 +327,14 @@ public primary_menu(id, menuid, item)
 		return PLUGIN_HANDLED;
 		
 		
-	new itemdata[3], dummy, itemid, free, result;
+	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
-	result = itemdata[2]
 	
-	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_primary_menu(id)
 	else
 	{
@@ -431,13 +437,14 @@ public secondary_menu(id, menuid, item)
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
 		return PLUGIN_CONTINUE;
 		
-	new itemdata[3], dummy, itemid, free, result
+	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
-	result = itemdata[2]
 	
-	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_secondary_menu(id)
 	else
 	{
@@ -547,13 +554,14 @@ public knife_menu(id, menuid, item)
 		return PLUGIN_CONTINUE
 		
 		
-	new itemdata[3], dummy, itemid, free, result
+	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 	free = itemdata[1]
-	result = itemdata[2]
 	
-	if( result >=ZP_WEAPON_NOT_AVAILABLE )
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_knife_menu(id)
 	else
 	{
@@ -626,15 +634,18 @@ public buy_menu(id, menuid, item){
 		return PLUGIN_CONTINUE
 	
 	
-	new itemdata[2], dummy, itemid, allow
+	new itemdata[2], dummy, itemid;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
-	allow = itemdata[1]
 	
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, 0)
 	
-	
-	if( !allow ) {
-		
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
+	{
+		show_buy_menu(id)
+	}
+	else 
+	{
 		new type = ArrayGetCell(g_WeaponType, itemid)
 		
 		if( type != ZP_KNIFE ) {
@@ -642,10 +653,10 @@ public buy_menu(id, menuid, item){
 		}
 		
 		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, itemid)
+		
+		
+		buy_weapon(id, itemid)
 	}
-	
-	buy_weapon(id, itemid)
-	show_buy_menu(id)
 	
 	return PLUGIN_HANDLED;
 }
