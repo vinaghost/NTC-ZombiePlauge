@@ -4,7 +4,7 @@
 #include <zp50_core>
 #include <zp50_grenade_frost>
 
-#define PLUGIN "[ZP 5.0] Anti Forst for First Zombie"
+#define PLUGIN "[ZP 5.0] First Zombie"
 #define VERSION "1.0"
 #define AUTHOR "VINAGHOST"
 
