@@ -51,7 +51,7 @@ new const Target_Sound[] = "zombie_plague/human_surprise.wav"
 #define BAT_EXPSOUND "zombie_plague/zombie/skill/bat_exp.wav"
 #define BAT_EXPSPR "sprites/zombie_plague/ef_bat.spr"
 
-#define BAT_SPEED 600
+#define BAT_SPEED 1200
 #define BAT_MAXDISTANCE 700
 #define BAT_LIVETIME 15
 
@@ -178,7 +178,7 @@ public Do_Pulling(id)
 	emit_sound(id, CHAN_ITEM, BAT_PULLINGSOUND, VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 	
 	// Start Stamping
-	set_task(BAT_CREATETIME, "Create_Bat", id)
+	Create_Bat(id)
 }
 
 public Do_FakeAttack(id)
