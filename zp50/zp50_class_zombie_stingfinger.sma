@@ -7,6 +7,7 @@
 #include <hamsandwich>
 #include <xs>
 
+#include <zombieplague>
 #include <zp50_class_zombie>
 
 
@@ -53,8 +54,6 @@ new g_StingFinger
 new g_TempingAttack
 new g_MaxPlayers
 new msg_ScreenFade 
-
-new g_health_bouns;
 
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -184,7 +183,6 @@ public zp_fw_zombie_skill2_active(id , classid) {
 	
 	Do_Heal(id)
 }
-
 public Do_Heal(id)
 {	
 	set_weapons_timeidle(id, 1.5)
@@ -196,15 +194,13 @@ public Do_Heal(id)
 	
 	ScreenFade(id, 1.5, 0, 255, 0, 40)
 	new Health = get_user_health(id) + 500;
-	new MaxHealth = zp_class_zombie_get_max_health(id, zp_class_zombie_get_current(id) )
 	
-	if( zp_core_is_first_zombie(id) ) {
-		MaxHealth += g_health_bouns
-	}
+	new MaxHealth = zp_get_zombie_maxhealth(id)
 	
-	if( Health < MaxHealth ) set_user_health(id, Health);
-	
-	else set_user_health(id, MaxHealth);
+	if( Health < MaxHealth ) 
+		set_user_health(id, Health);
+	else 
+		set_user_health(id, MaxHealth);
 }
 
 public Do_Penetrate(id)
