@@ -22,12 +22,19 @@
 #define LIBRARY_SNIPER "zp50_class_sniper"
 #include <zp50_class_sniper>
 #include <zp50_ammopacks>
+#include <zp50_items>
+#include <zp50_colorchat>
 
 #define MAXPLAYERS 32
 
-new g_MaxPlayers
+#define ITEM_NAME "x2 AP"
+#define ITEM_COST 5
 
-native zp_get_doubleAP(id)
+#define Get_BitVar(%1,%2) (%1 & (1 << (%2 & 31)))
+#define Set_BitVar(%1,%2) %1 |= (1 << (%2 & 31))
+#define UnSet_BitVar(%1,%2) %1 &= ~(1 << (%2 & 31))
+
+new g_MaxPlayers
 
 new Float:g_DamageDealtToZombies[MAXPLAYERS+1]
 new Float:g_DamageDealtToHumans[MAXPLAYERS+1]
@@ -39,6 +46,7 @@ new cvar_ammop_human_infected
 new cvar_ammop_nemesis_ignore, cvar_ammop_survivor_ignore
 new cvar_ammop_assassin_ignore, cvar_ammop_sniper_ignore
 
+new g_ItemID, g_Double
 public plugin_init()
 {
 	register_plugin("[ZP] Rewards: Ammo Packs", ZP_VERSION_STRING, "ZP Dev Team")
@@ -75,6 +83,10 @@ public plugin_init()
 	RegisterHamBots(Ham_Killed, "fw_PlayerKilled_Post", 1)
 	
 	g_MaxPlayers = get_maxplayers()
+	
+	
+	g_ItemID = zp_ap_items_register(ITEM_NAME, ITEM_COST)
+	
 }
 
 public plugin_natives()
@@ -96,12 +108,46 @@ public native_filter(const name[], index, trap)
 		
 	return PLUGIN_CONTINUE;
 }
+public zp_fw_ap_items_select_pre(id, itemid, ignorecost)
+{
+	if (itemid != g_ItemID)
+		return ZP_ITEM_AVAILABLE;
+	
+	if (  Get_BitVar(g_Double, id)  )
+		return ZP_ITEM_NOT_AVAILABLE;
+	
+	return ZP_ITEM_AVAILABLE;
+}
 
+public zp_fw_ap_items_select_post(id, itemid, ignorecost)
+{
+	// This is not our item
+	if (itemid != g_ItemID)
+		return;
+	
+	Set_BitVar(g_Double, id);
+	
+	zp_colored_print(id, "Da kich hoat %s", ITEM_NAME);
+}
+
+public client_disconnect(id) {
+	if(Get_BitVar(g_Double, id) )
+		UnSet_BitVar(g_Double, id)
+		
+	// Clear damage after disconnecting
+	g_DamageDealtToZombies[id] = 0.0
+	g_DamageDealtToHumans[id] = 0.0
+}
 public zp_fw_core_infect_post(id, attacker)
 {
 	// Reward ammo packs to zombies infecting humans?
 	if (is_user_connected(attacker) && attacker != id && get_pcvar_num(cvar_ammop_human_infected) > 0)
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_infected) * ( 1 + zp_get_doubleAP(attacker) ))
+	{
+		if( Get_BitVar(g_Double, id) )
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_infected) * 2)
+		else
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_infected))
+	}
 }
 
 // Ham Take Damage Post Forward
@@ -140,7 +186,11 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToHumans[attacker] / get_pcvar_float(cvar_ammop_human_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * ( 1 + zp_get_doubleAP(attacker))) )
+				if( Get_BitVar(g_Double, attacker) )
+					zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * 2 ) )
+				else
+					zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards) )
+				
 				g_DamageDealtToHumans[attacker] -= get_pcvar_float(cvar_ammop_human_damaged_hp) * how_many_rewards
 			}
 		}
@@ -158,7 +208,11 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 			new how_many_rewards = floatround(g_DamageDealtToZombies[attacker] / get_pcvar_float(cvar_ammop_zombie_damaged_hp), floatround_floor)
 			if (how_many_rewards > 0)
 			{
-				zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * ( 1 + zp_get_doubleAP(attacker))) )
+				if( Get_BitVar(g_Double, attacker) )
+					zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards * 2 ) )
+				else
+					zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + (get_pcvar_num(cvar_ammop_damage) * how_many_rewards  ) )
+				
 				g_DamageDealtToZombies[attacker] -= get_pcvar_float(cvar_ammop_zombie_damaged_hp) * how_many_rewards
 			}
 		}
@@ -189,10 +243,19 @@ public fw_PlayerKilled_Post(victim, attacker, shouldgib)
 		return;
 	
 	// Reward ammo packs to attacker for the kill
-	if (zp_core_is_zombie(victim))
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_zombie_killed) * ( 1 + zp_get_doubleAP(attacker) ) )
+	if( Get_BitVar(g_Double, attacker) ) {
+		if (zp_core_is_zombie(victim))
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_zombie_killed) * 2 )
+		else
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_killed) * 2 )
+	}
 	else
-		zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_killed) * ( 1 + zp_get_doubleAP(attacker)  ))
+	{
+		if (zp_core_is_zombie(victim))
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_zombie_killed))
+		else
+			zp_ammopacks_set(attacker, zp_ammopacks_get(attacker) + get_pcvar_num(cvar_ammop_human_killed))
+	}
 }
 
 public zp_fw_gamemodes_end()
@@ -242,9 +305,4 @@ public zp_fw_gamemodes_end()
 	}
 }
 
-public client_disconnect(id)
-{
-	// Clear damage after disconnecting
-	g_DamageDealtToZombies[id] = 0.0
-	g_DamageDealtToHumans[id] = 0.0
-}
+
