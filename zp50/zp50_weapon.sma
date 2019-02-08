@@ -10,6 +10,8 @@
 #include <zp50_colorchat>
 #include <zp50_weapon_const>
 
+#include <zp50_items>
+
 #define LIBRARY_SURVIVOR "zp50_class_survivor"
 #include <zp50_class_survivor>
 #define LIBRARY_SNIPER "zp50_class_sniper"
@@ -50,6 +52,8 @@ new p_Weapon[3][33]
 new p_AutoWeapon
 
 new g_MaxPlayer;
+
+new g_DoubleFrost, h_DoubleFrost;
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
@@ -63,6 +67,8 @@ public plugin_init() {
 	register_clcmd("say buy", "show_buy_menu")
 	register_clcmd("say /guns", "show_buy_menu")
 	register_clcmd("say guns", "show_buy_menu")
+	
+	g_DoubleFrost = zp_ap_items_register("x2 Frost Nade", 15)
 }
 public plugin_natives()
 {
@@ -104,7 +110,18 @@ public native_filter(const name[], index, trap)
 	
 	return PLUGIN_CONTINUE;
 }
-
+public zp_fw_ap_items_select_pre(id, itemid) {
+	if( itemid != g_DoubleFrost ) return ZP_ITEM_AVAILABLE;
+	
+	if( Get_BitVar(h_DoubleFrost, id) ) return ZP_ITEM_NOT_AVAILABLE;
+	
+	return ZP_ITEM_AVAILABLE;
+}
+public zp_fw_ap_items_select_post(id, itemid) {
+	if( itemid != g_DoubleFrost ) return;
+	
+	Set_BitVar(h_DoubleFrost, id)
+}
 public zp_fw_core_cure_pre(id, attacker)
 {
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
@@ -136,6 +153,8 @@ public zp_fw_core_infect_pre(id, attacker) {
 }
 public client_connect(id) {
 	UnSet_BitVar(p_AutoWeapon,id) 
+	
+	UnSet_BitVar(h_DoubleFrost, id) 
 	
 	p_Weapon[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
 	p_Weapon[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
@@ -236,6 +255,12 @@ public auto_take_weapons(id) {
 	buy_weapon(id, p_Weapon[ZP_PRIMARY][id], 1)
 	buy_weapon(id, p_Weapon[ZP_SECONDAYRY][id], 1)
 	buy_weapon(id, p_Weapon[ZP_KNIFE][id], 1)
+	
+	give_item(id, "weapon_hegrenade")
+	give_item(id, "weapon_flashbang")
+	
+	if(Get_BitVar(h_DoubleFrost, id) )
+		give_item(id, "weapon_flashbang")
 }
 
 public show_primary_menu(id) {
@@ -570,6 +595,12 @@ public knife_menu(id, menuid, item)
 		p_Weapon[ZP_KNIFE][id] = itemid
 		
 		Set_BitVar(p_AutoWeapon,id)
+		
+		give_item(id, "weapon_hegrenade")
+		give_item(id, "weapon_flashbang")
+		
+		if(Get_BitVar(h_DoubleFrost, id) )
+			give_item(id, "weapon_flashbang")
 		menu_destroy(menuid)
 	}
 
