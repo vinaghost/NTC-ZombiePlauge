@@ -357,7 +357,7 @@ public primary_menu(id, menuid, item)
 	itemid = itemdata[0]
 	free = ArrayGetCell(g_WeaponFree, itemid)
 	
-	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, Get_BitVar(free,id))
 	
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_primary_menu(id)
@@ -467,7 +467,7 @@ public secondary_menu(id, menuid, item)
 	itemid = itemdata[0]
 	free = ArrayGetCell(g_WeaponFree, itemid)
 	
-	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, Get_BitVar(free,id))
 	
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_secondary_menu(id)
@@ -584,7 +584,7 @@ public knife_menu(id, menuid, item)
 	itemid = itemdata[0]
 	free = ArrayGetCell(g_WeaponFree, itemid)
 	
-	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, Get_BitVar(free,id))
 	
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		show_knife_menu(id)
@@ -901,10 +901,11 @@ buy_weapon(id, itemid, ignorecost = 0)
 	
 	new free = ArrayGetCell(g_WeaponFree, itemid)
 	if( !Get_BitVar(free, id) )
+	{
 		Set_BitVar(free, id)
 	
-	ArraySetCell(g_WeaponFree, itemid, free)
-	
+		ArraySetCell(g_WeaponFree, itemid, free)
+	}
 }
 // Strip primary/secondary/grenades
 stock strip_weapons(id, stripwhat)

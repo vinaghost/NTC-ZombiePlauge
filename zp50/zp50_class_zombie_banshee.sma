@@ -166,9 +166,6 @@ public Do_Pulling(id)
 
 	Do_FakeAttack(id)
 	
-	set_weapons_timeidle(id, 9999.0)
-	set_player_nextattack(id, 9999.0)
-
 	set_weapon_anim(id, PULLING_CLAWANIM)
 	set_pev(id, pev_framerate, 0.35)
 	set_pev(id, pev_sequence, PULLING_PLAYERANIM)
@@ -199,9 +196,6 @@ public Create_Bat(id)
 		return
 	
 	Do_FakeAttack(id)
-	
-	set_weapons_timeidle(id, 9999.0)
-	set_player_nextattack(id, 9999.0)
 	
 	set_weapon_anim(id, PULLING_CLAWANIM_LOOP)
 	
@@ -269,9 +263,6 @@ public Delay_Anim(id)
 		return
 		
 	Do_FakeAttack(id)
-	
-	set_weapons_timeidle(id, 9999.0)
-	set_player_nextattack(id, 9999.0)
 	
 	set_weapon_anim(id, PULLING_CLAWANIM_LOOP)
 	

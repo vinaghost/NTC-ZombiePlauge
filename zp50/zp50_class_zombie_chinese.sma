@@ -41,7 +41,7 @@ public plugin_precache()
 	zp_class_zombie_register_model(g_Chinese, zclass_model)
 	zp_class_zombie_register_claw(g_Chinese, zclass_clawsmodel)
 	
-	zp_class_zombie_register_1(g_Chinese, zclass_desc1, 40, 10)
+	zp_class_zombie_register_1(g_Chinese, zclass_desc1, 50, 10)
 	zp_class_zombie_register_2(g_Chinese, zclass_desc2, 0)
 }
 public zp_fw_zombie_skill1_active(id, classid) {
