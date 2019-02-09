@@ -130,7 +130,7 @@ public zp_fw_core_cure_pre(id, attacker)
 	strip_weapons(id, ZP_PRIMARY)
 	strip_weapons(id, ZP_SECONDAYRY)
 	
-	show_menu_main(id)
+	set_task(0.1, "show_menu_main", id)
 }
 public zp_fw_core_infect_pre(id, attacker) {
 	
