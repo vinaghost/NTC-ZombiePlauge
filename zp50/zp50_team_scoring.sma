@@ -131,7 +131,7 @@ public zp_fw_gamemodes_end()
 {
 	// Determine round winner, show HUD notice
 	new sound[SOUND_MAX_LENGTH]
-	if (!zp_core_get_zombie_count())
+	if (zp_core_get_human_count())
 	{
 		// Human team wins
 		if (get_pcvar_num(cvar_winner_show_hud))
@@ -148,7 +148,7 @@ public zp_fw_gamemodes_end()
 		
 		g_ScoreHumans++
 	}
-	else if (!zp_core_get_human_count())
+	else /*if (!zp_core_get_human_count())*/
 	{
 		// Zombie team wins
 		if (get_pcvar_num(cvar_winner_show_hud))
@@ -165,7 +165,7 @@ public zp_fw_gamemodes_end()
 		
 		g_ScoreZombies++
 	}
-	else
+	/*else
 	{
 		// No one wins
 		if (get_pcvar_num(cvar_winner_show_hud))
@@ -179,7 +179,7 @@ public zp_fw_gamemodes_end()
 			ArrayGetString(g_sound_win_no_one, random_num(0, ArraySize(g_sound_win_no_one) - 1), sound, charsmax(sound))
 			PlaySoundToClients(sound, 1)
 		}
-	}
+	}*/
 }
 
 // Block some text messages

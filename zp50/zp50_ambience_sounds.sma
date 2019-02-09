@@ -21,6 +21,11 @@ new const ZP_SETTINGS_FILE[] = "zombieplague.ini"
 new Array:g_ambience_sounds_handle
 new Array:g_ambience_durations_handle
 
+new const startgame[][] = {
+	"sound/NTC/ntc_start83.mp3",
+	"sound/NTC/ntc_start832.mp3",
+	"sound/NTC/ntc_start31152.mp3"
+}
 public plugin_init()
 {
 	register_plugin("[ZP] Ambience Sonds", ZP_VERSION_STRING, "ZP Dev Team")
@@ -31,6 +36,9 @@ public plugin_init()
 
 public plugin_precache()
 {
+	for (new i = 0; i < 3; i ++ ) {
+		precache_generic(startgame[i]);
+	}
 	g_ambience_sounds_handle = ArrayCreate(1, 1)
 	g_ambience_durations_handle = ArrayCreate(1, 1)
 	
@@ -80,6 +88,9 @@ public plugin_precache()
 	
 	
 	
+}
+public event_new_round() {
+	PlaySoundToClients(startgame[random_num(0,2)] )
 }
 
 // Event Map Ended
