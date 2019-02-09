@@ -91,7 +91,7 @@ public chat_log_sql()
 	
 	//server_print("'%s','%s','%s','%s','%s', '%d', '%d', '%s','%s','%s'", name,authid,ip,tag, TEAMNAME[_:team], team_chat, is_user_alive(id),datestr,timestr,msg)
 	new query[512]
-	formatex(query,charsmax(query),"INSERT into %s (name,authid,ip,tag,team,team_chat,alive,date_chat,time_chat,message) values ('%s','%s','%s','%s','%s', '%d', '%d', '%s','%s','%s')",table, name,authid,ip,tag, TEAMNAME[_:team], team_chat, is_user_alive(id),datestr,timestr,msg)
+	formatex(query,charsmax(query),"INSERT into %s (name,authid,ip,tag,team,team_chat,alive,date_chat,time_chat,message) values ('%s','%s','%s','%s','%s', '%d', '%d', '%s','%s','%s')",table, name2,authid,ip,tag, TEAMNAME[_:team], team_chat, is_user_alive(id),datestr,timestr,msg2)
 	
 	SQL_ThreadQuery(g_SqlX,"QueryHandle",query)
 } 
