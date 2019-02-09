@@ -355,7 +355,7 @@ public primary_menu(id, menuid, item)
 	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
-	free = itemdata[1]
+	free = ArrayGetCell(g_WeaponFree, itemid)
 	
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
 	
@@ -363,7 +363,7 @@ public primary_menu(id, menuid, item)
 		show_primary_menu(id)
 	else
 	{
-		buy_weapon(id, itemid, free)
+		buy_weapon(id, itemid, Get_BitVar(free,id) )
 		
 		p_Weapon[ZP_PRIMARY][id] = itemid;
 		show_secondary_menu(id)
@@ -465,7 +465,7 @@ public secondary_menu(id, menuid, item)
 	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
-	free = itemdata[1]
+	free = ArrayGetCell(g_WeaponFree, itemid)
 	
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
 	
@@ -474,7 +474,7 @@ public secondary_menu(id, menuid, item)
 	else
 	{
 		
-		buy_weapon(id, itemid, free)
+		buy_weapon(id, itemid, Get_BitVar(free, id) )
 				
 		p_Weapon[ZP_SECONDAYRY][id] = itemid
 		show_knife_menu(id)
@@ -582,7 +582,7 @@ public knife_menu(id, menuid, item)
 	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
-	free = itemdata[1]
+	free = ArrayGetCell(g_WeaponFree, itemid)
 	
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, free)
 	
@@ -590,7 +590,7 @@ public knife_menu(id, menuid, item)
 		show_knife_menu(id)
 	else
 	{
-		buy_weapon(id, itemid, free)
+		buy_weapon(id, itemid, Get_BitVar(free,id) )
 		
 		p_Weapon[ZP_KNIFE][id] = itemid
 		
