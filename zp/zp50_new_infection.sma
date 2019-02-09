@@ -23,7 +23,7 @@ public OnPlayerTakeDamagePost(victim, attacker)
 		
 	if(!zp_core_is_zombie(victim) && !zp_core_is_last_human(victim) && is_user_alive(victim) &&  attacker > 0 && attacker  < 33 )
 	{
-		zp_core_infect(victim);
+		zp_core_infect(victim, attacker);
 	}
 	
 	return HAM_IGNORED
