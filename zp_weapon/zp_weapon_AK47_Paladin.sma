@@ -72,6 +72,9 @@ new g_HamBot
 new g_IsConnected, g_IsAlive, g_PlayerWeapon[33]
 
 new g_AK47
+
+#define SATTHUONG 300.0
+new g_DanSet[33], Float:g_SatThuong[33];
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -99,6 +102,7 @@ public plugin_init()
 	RegisterHam(Ham_Weapon_Reload, weapon_base, "fw_Weapon_Reload_Post", 1)	
 	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_Weapon_PrimaryAttack")
 	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_Weapon_PrimaryAttack_Post", 1)
+	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_TakeDamage_Post", 1)
 	
 	RegisterHam(Ham_TraceAttack, "worldspawn", "fw_TraceAttack_World")
 	RegisterHam(Ham_TraceAttack, "player", "fw_TraceAttack_Player")	
@@ -192,6 +196,7 @@ public zp_fw_wpn_select_post(id, itemid)
 	Set_BitVar(g_Had_Base, id)
 	give_item(id, weapon_base)
 	
+	g_DanSet[id ]= 0;
 	// Clip & Ammo
 	static Ent; Ent = fm_get_user_weapon_entity(id, CSW_BASE)
 	if(!pev_valid(Ent)) return
@@ -210,10 +215,13 @@ public zp_fw_wpn_select_post(id, itemid)
 public zp_fw_wpn_remove(id, itemid)
 {
 	if( itemid == g_AK47 )
+	{
 		Remove_Base(id)
+	}
 }
 public Remove_Base(id)
 {
+	g_DanSet[id] = 0;
 	UnSet_BitVar(g_Had_Base, id)
 }
 
@@ -568,12 +576,34 @@ public fw_TraceAttack_Player(Victim, Attacker, Float:Damage, Float:Direction[3],
 	static Float:flEnd[3]
 	get_tr2(Ptr, TR_vecEndPos, flEnd)	
 		
-	if(cs_get_user_zoom(Attacker) != CS_SET_AUGSG552_ZOOM) SetHamParamFloat(3, float(DAMAGE_A))
-	else SetHamParamFloat(3, float(DAMAGE_B))
+	if(cs_get_user_zoom(Attacker) != CS_SET_AUGSG552_ZOOM) {
+		SetHamParamFloat(3, float(DAMAGE_A))
+	}
+	else {
+		if( g_DanSet[id] ) {
+			SetHamParamFloat(3, float(DAMAGE_B))
+			g_DanSet --;
+		}
+		else
+		{
+			client_print(Attacker, print_center, "Đạn China ... Đạn China ...");
+		}
+	}
+	
+	CheckSatThuong(Attacker)
 	
 	return HAM_HANDLED
 }
 
+public CheckSatThuong(id) {
+	
+	if( g_SatThuong[id] >= SATTHUONG )
+	{
+		g_DanSet[id] ++;
+		client_print(id, print_center, "Đạn sét: %d", g_DanSet[id])
+		g_SatThuong -= SATTHUONG;
+	}
+}
 
 public fw_Weapon_PrimaryAttack(Ent)
 {
