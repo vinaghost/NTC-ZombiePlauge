@@ -13,7 +13,6 @@ new has_item
 new using_item
 
 new sync_hud1
-new cvar_deadlyshot_cost
 new cvar_deadlyshot_time
 
 new g_deadlyshot
@@ -25,7 +24,6 @@ public plugin_init()
 	register_event("HLTV", "event_newround", "a", "1=0", "2=0")
 	RegisterHam(Ham_TraceAttack, "player", "fw_traceattack")
 	
-	cvar_deadlyshot_cost = register_cvar("ds_cost", "25")
 	cvar_deadlyshot_time = register_cvar("ds_time", "10.0")
 	
 	register_clcmd("drop", "active")
@@ -56,7 +54,7 @@ public zp_fw_money_items_select_post(id, itemid)
 	
 	if(!Get_BitVar(has_item,id) || Get_BitVar(using_item,id) )
 	{
-		zp_colored_print(id, "Da mua ^x04DEADLY SHOT^x01 nhan G de kich hoat");
+		zp_colored_print(id, "Da mua ^x04DEADLY SHOT^x01. Nhan G de kich hoat");
 		
 		Set_BitVar(has_item,id)
 		UnSet_BitVar(using_item,id)
@@ -77,12 +75,12 @@ public show_hud(id)
 	id -= TASK_HUD
 	
 	
-	if(has_item[id])
+	if(Get_BitVar(has_item,id))
 	{
 		set_hudmessage(0, 255, 0, -1.0, 0.88, 0, 2.0, 1.0)
 		ShowSyncHudMsg(id, sync_hud1, "[G] Deadly Shot")
 	}
-	else if(using_item[id]) {
+	else if(Get_BitVar(using_item,id)) {
 		set_hudmessage(0, 0, 255, -1.0, 0.88, 0, 2.0, 1.0)
 		ShowSyncHudMsg(id, sync_hud1, "[G] Deadly Shot")
 	}
