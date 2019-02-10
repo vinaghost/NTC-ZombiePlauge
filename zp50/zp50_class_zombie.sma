@@ -556,7 +556,7 @@ public zp_fw_core_infect_post(id, attacker)
 	if(task_exists(id + ID_DEACTIVE_2))
 	{
 		remove_task(id + ID_DEACTIVE_2)
-		deactive_skill1(id + ID_DEACTIVE_2)
+		deactive_skill2(id + ID_DEACTIVE_2)
 	}
 	if(task_exists(id + ID_DEACTIVING_1))
 	{
@@ -566,7 +566,7 @@ public zp_fw_core_infect_post(id, attacker)
 	if(task_exists(id + ID_DEACTIVING_2)) 
 	{
 		remove_task(id + ID_DEACTIVING_2)
-		deactiving_skill1(id + ID_DEACTIVING_2)
+		deactiving_skill2(id + ID_DEACTIVING_2)
 	}
 	
 	// Show zombie class menu if they haven't chosen any (e.g. just connected)
