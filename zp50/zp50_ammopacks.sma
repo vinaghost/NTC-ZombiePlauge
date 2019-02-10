@@ -1,15 +1,16 @@
 /*================================================================================
-	
-	-----------------------
-	-*- [ZP] Ammo Packs -*-
-	-----------------------
-	
-	This plugin is part of Zombie Plague Mod and is distributed under the
-	terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
-	
+
+-----------------------
+-*- [ZP] Ammo Packs -*-
+-----------------------
+
+This plugin is part of Zombie Plague Mod and is distributed under the
+terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
+
 ================================================================================*/
 
 #include <amxmodx>
+#include <amxmisc>
 #include <fakemeta>
 #include <zp50_core>
 
@@ -45,6 +46,8 @@ public plugin_init()
 	
 	register_event("ResetHUD", "event_reset_hud", "be")
 	register_message(get_user_msgid("Money"), "message_money")
+	
+	register_clcmd ( "zp_giveap", "CmdGiveAP", ADMIN_RCON, "- zp_giveap <name> <amount> : Give Ammo Packs" );
 }
 
 public plugin_natives()
@@ -53,7 +56,30 @@ public plugin_natives()
 	register_native("zp_ammopacks_get", "native_ammopacks_get")
 	register_native("zp_ammopacks_set", "native_ammopacks_set")
 }
-
+public CmdGiveAP ( id, level, cid )
+{
+	if ( !cmd_access ( id, level, cid, 3 ) )
+	{
+		return PLUGIN_HANDLED;
+	}
+	
+	new s_Name[ 32 ], s_Amount[ 4 ];
+	
+	read_argv ( 1, s_Name, charsmax ( s_Name ) );
+	read_argv ( 2, s_Amount, charsmax ( s_Amount ) );
+	
+	new i_Target = cmd_target ( id, s_Name, 2 );
+	
+	if ( !i_Target )
+	{
+		client_print ( id, print_console, "(!) Player not found" );
+		return PLUGIN_HANDLED;
+	}
+	
+	g_AmmoPacks[i_Target] =  max ( 1, str_to_num ( s_Amount ) );
+	
+	return PLUGIN_HANDLED;
+}
 public native_ammopacks_get(plugin_id, num_params)
 {
 	new id = get_param(1)
