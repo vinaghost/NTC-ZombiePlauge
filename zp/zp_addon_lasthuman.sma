@@ -29,8 +29,8 @@ public twist(id, Float:dmg)
 {
 
 	new Float:val = dmg * 0.5
-	new Float:maxdeg = (val * 1.2)
-	new Float:mindeg = (val * 0.7)
+	new Float:maxdeg = (val * 0.6)
+	new Float:mindeg = (val * 0.35)
 
 	new Float:pLook[3]
 	for (new i = 0; i <= 2; i++) 
