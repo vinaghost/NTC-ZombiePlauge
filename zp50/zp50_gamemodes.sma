@@ -28,6 +28,8 @@
 #define LIBRARY_SNIPER "zp50_class_sniper"
 #include <zp50_class_sniper>
 
+#include <zp50_items>
+
 #define TASK_GAMEMODE 100
 
 // HUD messages
@@ -89,6 +91,7 @@ public plugin_init()
 	
 	g_MaxPlayers = get_maxplayers()
 	g_HudSync = CreateHudSyncObj()
+	
 }
 
 public plugin_natives()
