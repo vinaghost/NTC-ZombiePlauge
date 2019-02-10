@@ -82,6 +82,8 @@ public plugin_init()
 	RegisterHam(Ham_Touch, "weapon_shield", "fw_TouchWeapon")
 	RegisterHam(Ham_Killed, "player", "fw_PlayerKilled")
 	RegisterHamBots(Ham_Killed, "fw_PlayerKilled")
+	RegisterHam(Ham_TakeDamage, "player", "fw_PlayerTakeDamage")
+	RegisterHamBots(Ham_TakeDamage, "fw_PlayerTakeDamage")
 	register_forward(FM_ClientDisconnect, "fw_ClientDisconnect_Post", 1)
 	
 	g_MaxPlayers = get_maxplayers()
@@ -195,7 +197,13 @@ public fw_PlayerKilled(victim, attacker, shouldgib)
 			remove_task(victim+TASK_AURA)
 	}
 }
-
+public fw_PlayerTakeDamage(victim, inflictor, attacker, Float:damage, bits) {
+	if (flag_get(g_IsSurvivor, victim))
+	{
+		
+		SetHamParamFloat(4, damage*3);
+	}
+}
 public zp_fw_core_spawn_post(id)
 {
 	if (flag_get(g_IsSurvivor, id))
