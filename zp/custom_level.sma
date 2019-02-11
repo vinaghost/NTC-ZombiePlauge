@@ -223,7 +223,10 @@ public plugin_init()
 		set_task(1.0, "ShowScore", 0, _, _, "b")
 	}
 }
-
+public plugin_natives() {
+	register_native("zp_get_user_exp", "native_get_user_exp");
+	register_native("zp_get_user_rank", "native_get_user_level")
+}
 public plugin_precache()
 {
 	new szFile[35]
@@ -262,6 +265,19 @@ public plugin_end()
 	nvault_close(g_iVault)
 }
 
+public native_get_user_exp(iPlugin,iParams) {
+	new id = get_param(1);
+	
+	return g_iXP[id];
+}
+public native_get_user_rank(iPlugin,iParams) {
+	new id = get_param(1);
+	new str[33];
+	formatex(str, charsmax(str), "%s", RANKS[g_iXP[id]])
+	set_string(2, str, charsmax(str))
+}
+	
+	
 public zp_round_ended(iTeam)
 {
 	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
