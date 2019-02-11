@@ -31,8 +31,7 @@
 #define ANIME_DRAW 2 // can -1
 #define ANIME_IDLE 0 // can -1
 
-new const WeaponSounds[5][] =
-{
+new const WeaponSounds[5][] = {
 	"weapons/ak47buff-1.wav",
 	"weapons/ak47buff-2.wav",
 	"weapons/ak47buff_idle.wav",
@@ -102,10 +101,12 @@ public plugin_init()
 	RegisterHam(Ham_Weapon_Reload, weapon_base, "fw_Weapon_Reload_Post", 1)	
 	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_Weapon_PrimaryAttack")
 	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_Weapon_PrimaryAttack_Post", 1)
-	RegisterHam(Ham_Weapon_PrimaryAttack, weapon_base, "fw_TakeDamage_Post", 1)
 	
 	RegisterHam(Ham_TraceAttack, "worldspawn", "fw_TraceAttack_World")
 	RegisterHam(Ham_TraceAttack, "player", "fw_TraceAttack_Player")	
+	
+	RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage_Player")
+	
 	
 	// Cache
 	g_MsgCurWeapon = get_user_msgid("CurWeapon")
@@ -155,7 +156,7 @@ public fw_PrecacheEvent_Post(type, const name[])
 
 public client_putinserver(id)
 {
-        Safety_Connected(id)
+	Safety_Connected(id)
 	
 	if(!g_HamBot && is_user_bot(id))
 	{
@@ -163,16 +164,16 @@ public client_putinserver(id)
 		set_task(0.1, "Register_HamBot", id)
 	}
 }
- 
+
 public Register_HamBot(id)
 {
 	Register_SafetyFuncBot(id)
 	RegisterHamFromEntity(Ham_TraceAttack, id, "fw_TraceAttack_Player")	
 }
- 
+
 public client_disconnect(id)
 {
-        Safety_Disconnected(id)
+	Safety_Disconnected(id)
 }
 /*
 public Mileage_WeaponGet(id, ItemID)
@@ -233,7 +234,7 @@ public Event_CurWeapon(id)
 	if((CSWID == CSW_BASE && g_OldWeapon[id] != CSW_BASE) && Get_BitVar(g_Had_Base, id))
 	{
 		if(SubModel != -1) Draw_NewWeapon(id, CSWID)
-	} else if((CSWID == CSW_BASE && g_OldWeapon[id] == CSW_BASE) && Get_BitVar(g_Had_Base, id)) {
+		} else if((CSWID == CSW_BASE && g_OldWeapon[id] == CSW_BASE) && Get_BitVar(g_Had_Base, id)) {
 		static Ent; Ent = fm_get_user_weapon_entity(id, CSW_BASE)
 		if(!pev_valid(Ent))
 		{
@@ -247,7 +248,7 @@ public Event_CurWeapon(id)
 		
 		set_pdata_float(Ent, 46, Speed, 4)
 		set_pdata_float(Ent, 47, Speed, 4)
-	} else if(CSWID != CSW_BASE && g_OldWeapon[id] == CSW_BASE) {
+		} else if(CSWID != CSW_BASE && g_OldWeapon[id] == CSW_BASE) {
 		if(SubModel != -1) Draw_NewWeapon(id, CSWID)
 	}
 	
@@ -267,7 +268,7 @@ public Draw_NewWeapon(id, CSW_ID)
 			engfunc(EngFunc_SetModel, ent, MODEL_P)	
 			set_pev(ent, pev_body, SUBMODEL)
 		}
-	} else {
+		} else {
 		static ent
 		ent = fm_get_user_weapon_entity(id, CSW_BASE)
 		
@@ -295,7 +296,7 @@ public fw_PlaybackEvent(flags, invoker, eventid, Float:delay, Float:origin[3], F
 		return FMRES_IGNORED
 	
 	engfunc(EngFunc_PlaybackEvent, flags | FEV_HOSTONLY, invoker, eventid, delay, origin, angles, fparam1, fparam2, iParam1, iParam2, bParam1, bParam2)
-
+	
 	Set_WeaponAnim(invoker, ANIME_SHOOT)
 	if(cs_get_user_zoom(invoker) != CS_SET_AUGSG552_ZOOM) emit_sound(invoker, CHAN_WEAPON, WeaponSounds[0], 1.0, 0.4, 0, 94 + random_num(0, 15))
 	else {
@@ -332,13 +333,13 @@ public fw_SetModel(entity, model[])
 			set_pev(weapon, pev_impulse, WEAPON_CODE)
 			engfunc(EngFunc_SetModel, entity, MODEL_W)
 			set_pev(entity, pev_body, SUBMODEL)
-		
+			
 			Remove_Base(iOwner)
 			
 			return FMRES_SUPERCEDE
 		}
 	}
-
+	
 	return FMRES_IGNORED;
 }
 
@@ -348,7 +349,7 @@ public fw_CmdStart(id, uc_handle, seed)
 		return FMRES_IGNORED	
 	if(get_player_weapon(id) != CSW_BASE || !Get_BitVar(g_Had_Base, id))
 		return FMRES_IGNORED
-		
+	
 	static Button; Button = get_uc(uc_handle, UC_Buttons)	
 	
 	if(Button & IN_ATTACK2)
@@ -373,7 +374,7 @@ public fw_AddToFullPack_Post(esState, iE, iEnt, iHost, iHostFlags, iPlayer, pSet
 		if(Get_BitVar(g_Muzzleflash, iHost))
 		{
 			set_es(esState, ES_Frame, float(random_num(0, 2)))
-				
+			
 			set_es(esState, ES_RenderMode, kRenderTransAdd)
 			set_es(esState, ES_RenderAmt, 255.0)
 			
@@ -381,22 +382,22 @@ public fw_AddToFullPack_Post(esState, iE, iEnt, iHost, iHostFlags, iPlayer, pSet
 			//remove_task(iHost+WEAPON_CODE)
 			set_task(0.001, "Set_NextMuzzleflash", iHost+WEAPON_CODE)
 		}
-			
+		
 		set_es(esState, ES_Skin, iHost)
 		set_es(esState, ES_Body, 1)
 		set_es(esState, ES_AimEnt, iHost)
 		set_es(esState, ES_MoveType, MOVETYPE_FOLLOW)
-	} else if(iEnt == g_Muzzleflash_Ent2) {
+		} else if(iEnt == g_Muzzleflash_Ent2) {
 		if(Get_BitVar(g_Muzzleflash2, iHost))
 		{
 			set_es(esState, ES_Frame, float(random_num(0, 2)))
-				
+			
 			set_es(esState, ES_RenderMode, kRenderTransAdd)
 			set_es(esState, ES_RenderAmt, 255.0)
 			
 			UnSet_BitVar(g_Muzzleflash2, iHost)
 		}
-			
+		
 		set_es(esState, ES_Skin, iHost)
 		set_es(esState, ES_Body, 1)
 		set_es(esState, ES_AimEnt, iHost)
@@ -426,7 +427,7 @@ public fw_Item_Deploy_Post(Ent)
 		return
 	if(!Get_BitVar(g_Had_Base, Id))
 		return
-		
+	
 	static SubModel; SubModel = SUBMODEL
 	
 	set_pev(Id, pev_viewmodel2, MODEL_V)
@@ -440,7 +441,7 @@ public fw_Item_AddToPlayer_Post(Ent, id)
 {
 	if(!pev_valid(Ent))
 		return HAM_IGNORED
-		
+	
 	if(pev(Ent, pev_impulse) == WEAPON_CODE)
 	{
 		Set_BitVar(g_Had_Base, id)
@@ -468,7 +469,7 @@ public fw_Item_PostFrame(ent)
 	{
 		static temp1
 		temp1 = min(CLIP - iClip, bpammo)
-
+		
 		set_pdata_int(ent, 51, iClip + temp1, 4)
 		cs_set_user_bpammo(id, CSW_BASE, bpammo - temp1)		
 		
@@ -487,17 +488,17 @@ public fw_Weapon_Reload(ent)
 		return HAM_IGNORED
 	if(!Get_BitVar(g_Had_Base, id))
 		return HAM_IGNORED	
-
+	
 	g_Clip[id] = -1
-		
+	
 	static BPAmmo; BPAmmo = cs_get_user_bpammo(id, CSW_BASE)
 	static iClip; iClip = get_pdata_int(ent, 51, 4)
-		
+	
 	if(BPAmmo <= 0)
 		return HAM_SUPERCEDE
 	if(iClip >= CLIP)
 		return HAM_SUPERCEDE		
-			
+	
 	g_Clip[id] = iClip	
 	
 	return HAM_HANDLED
@@ -535,7 +536,7 @@ public fw_Weapon_WeaponIdle_Post( iEnt )
 		return
 	if(!Get_BitVar(g_Had_Base, Id))
 		return
-		
+	
 	static Idle; Idle = ANIME_IDLE
 	
 	if(Idle != -1 && get_pdata_float(iEnt, 48, 4) <= 0.25)
@@ -551,15 +552,15 @@ public fw_TraceAttack_World(Victim, Attacker, Float:Damage, Float:Direction[3], 
 		return HAM_IGNORED	
 	if(get_player_weapon(Attacker) != CSW_BASE || !Get_BitVar(g_Had_Base, Attacker))
 		return HAM_IGNORED
-		
+	
 	static Float:flEnd[3], Float:vecPlane[3]
-		
+	
 	get_tr2(Ptr, TR_vecEndPos, flEnd)
 	get_tr2(Ptr, TR_vecPlaneNormal, vecPlane)		
-			
+	
 	Make_BulletHole(Attacker, flEnd, Damage)
 	Make_BulletSmoke(Attacker, Ptr)
-
+	
 	if(cs_get_user_zoom(Attacker) != CS_SET_AUGSG552_ZOOM) SetHamParamFloat(3, float(DAMAGE_A))
 	else SetHamParamFloat(3, float(DAMAGE_B))
 	
@@ -572,36 +573,49 @@ public fw_TraceAttack_Player(Victim, Attacker, Float:Damage, Float:Direction[3],
 		return HAM_IGNORED	
 	if(get_player_weapon(Attacker) != CSW_BASE || !Get_BitVar(g_Had_Base, Attacker))
 		return HAM_IGNORED
-
+	
 	static Float:flEnd[3]
 	get_tr2(Ptr, TR_vecEndPos, flEnd)	
-		
+	
 	if(cs_get_user_zoom(Attacker) != CS_SET_AUGSG552_ZOOM) {
 		SetHamParamFloat(3, float(DAMAGE_A))
 	}
 	else {
-		if( g_DanSet[id] ) {
-			SetHamParamFloat(3, float(DAMAGE_B))
-			g_DanSet --;
-		}
-		else
-		{
-			client_print(Attacker, print_center, "Đạn China ... Đạn China ...");
-		}
+		SetHamParamFloat(3, float(DAMAGE_B))
 	}
 	
-	CheckSatThuong(Attacker)
 	
 	return HAM_HANDLED
 }
-
+public fw_TakeDamage_Player(victim, inflictor, attacker, Float:damage, bits) {
+	if(!is_connected(attacker))
+		return HAM_IGNORED	
+	if(get_player_weapon(attacker) != CSW_BASE || !Get_BitVar(g_Had_Base, attacker))
+		return HAM_IGNORED
+	
+	
+	if(cs_get_user_zoom(attacker) != CS_SET_AUGSG552_ZOOM)
+		CheckSatThuong(attacker)
+	else {
+		if( g_DanSet[attacker] ) {
+			g_DanSet[attacker] --;
+		}
+		else
+		{
+			client_print(attacker, print_center, "Đạn China ... Đạn China ...");
+			return HAM_SUPERCEDE
+		}		
+		
+	}
+	return HAM_HANDLED
+}
 public CheckSatThuong(id) {
 	
 	if( g_SatThuong[id] >= SATTHUONG )
 	{
 		g_DanSet[id] ++;
 		client_print(id, print_center, "Đạn sét: %d", g_DanSet[id])
-		g_SatThuong -= SATTHUONG;
+		g_SatThuong[id] -= SATTHUONG;
 	}
 }
 
@@ -612,7 +626,7 @@ public fw_Weapon_PrimaryAttack(Ent)
 		return
 	if(!Get_BitVar(g_Had_Base, id))
 		return
-
+	
 	pev(id, pev_punchangle, g_Recoil[id])
 }
 
@@ -623,7 +637,7 @@ public fw_Weapon_PrimaryAttack_Post(Ent)
 		return
 	if(!Get_BitVar(g_Had_Base, id))
 		return
-
+	
 	static Float:Push[3]
 	pev(id, pev_punchangle, Push)
 	xs_vec_sub(Push, g_Recoil[id], Push)
@@ -640,7 +654,7 @@ public fw_Weapon_PrimaryAttack_Post(Ent)
 	{
 		static Float:Accuracy
 		Accuracy = (float(100 - ACCURACY) * 1.5) / 100.0
-
+		
 		set_pdata_float(Ent, 62, Accuracy, 4);
 	}
 }
@@ -675,8 +689,10 @@ public Shock_Damage(id)
 		if(get_distance_f(Origin, Origin2) > RANGE_SHOCK)
 			continue
 		
+		
 		ExecuteHamB(Ham_TakeDamage, i, Ent, id, float(DAMAGE_B), DMG_BULLET)
 	}
+	
 }
 
 /* ===============================
@@ -716,7 +732,7 @@ public Safety_CurWeapon(id)
 {
 	if(!is_alive(id))
 		return
-		
+	
 	static CSW; CSW = read_data(2)
 	if(g_PlayerWeapon[id] != CSW) g_PlayerWeapon[id] = CSW
 }
@@ -725,7 +741,7 @@ public fw_Safety_Spawn_Post(id)
 {
 	if(!is_user_alive(id))
 		return
-		
+	
 	Set_BitVar(g_IsAlive, id)
 }
 
@@ -740,7 +756,7 @@ public is_connected(id)
 		return 0
 	if(!Get_BitVar(g_IsConnected, id))
 		return 0
-
+	
 	return 1
 }
 
@@ -750,7 +766,7 @@ public is_alive(id)
 		return 0
 	if(!Get_BitVar(g_IsAlive, id))
 		return 0
-		
+	
 	return 1
 }
 
@@ -814,16 +830,16 @@ stock Make_BulletSmoke(id, TrResult)
 	
 	get_weapon_attachment(id, vecSrc)
 	global_get(glb_v_forward, vecEnd)
-    
+	
 	xs_vec_mul_scalar(vecEnd, 8192.0, vecEnd)
 	xs_vec_add(vecSrc, vecEnd, vecEnd)
-
+	
 	get_tr2(TrResult, TR_vecEndPos, vecSrc)
 	get_tr2(TrResult, TR_vecPlaneNormal, vecEnd)
-    
+	
 	xs_vec_mul_scalar(vecEnd, 2.5, vecEnd)
 	xs_vec_add(vecSrc, vecEnd, vecEnd)
-    
+	
 	TE_FLAG |= TE_EXPLFLAG_NODLIGHTS
 	TE_FLAG |= TE_EXPLFLAG_NOSOUND
 	TE_FLAG |= TE_EXPLFLAG_NOPARTICLES
@@ -902,7 +918,7 @@ stock Set_WeaponIdleTime(id, WeaponId ,Float:TimeIdle)
 	static entwpn; entwpn = fm_get_user_weapon_entity(id, WeaponId)
 	if(!pev_valid(entwpn)) 
 		return
-		
+	
 	set_pdata_float(entwpn, 46, TimeIdle, 4)
 	set_pdata_float(entwpn, 47, TimeIdle, 4)
 	set_pdata_float(entwpn, 48, TimeIdle + 0.5, 4)
