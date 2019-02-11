@@ -320,9 +320,9 @@ public show_primary_menu(id) {
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)	
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d", name, cost)
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 			
 			
 		itemdata[0] = index
@@ -431,9 +431,9 @@ public show_secondary_menu(id) {
 		cost = ArrayGetCell(g_WeaponCost, index)
 		
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d", name, cost)
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 			
 			
 		itemdata[0] = index
@@ -545,9 +545,9 @@ public show_knife_menu(id) {
 		cost = ArrayGetCell(g_WeaponCost, index)
 		
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d", name, cost)
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 			
 			
 		itemdata[0] = index
@@ -635,9 +635,9 @@ public show_buy_menu(id) {
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 			
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d", name, cost)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d", name, cost)
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 			
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
