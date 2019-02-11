@@ -108,9 +108,9 @@ public get_weapon(id)
 	give_item(id, wp_baseon_classname)
 	engclient_cmd(id, wp_baseon_classname)
 	
-	//cs_set_user_bpammo(id, CSW_FIVESEVEN, 200)	
+	cs_set_user_bpammo(id, CSW_FIVESEVEN, 90)	
 	
-	static ent; ent = fm_get_user_weapon_entity(id, CSW_FIVESEVEN)
+	/*static ent; ent = fm_get_user_weapon_entity(id, CSW_FIVESEVEN)
 	if(pev_valid(ent)) cs_set_weapon_ammo(ent, DEFAULT_CLIP)
 	
 	engfunc(EngFunc_MessageBegin, MSG_ONE_UNRELIABLE, get_user_msgid("CurWeapon"), {0, 0, 0}, id)
@@ -119,7 +119,7 @@ public get_weapon(id)
 	write_byte(DEFAULT_CLIP)
 	message_end()	
 	
-	engclient_cmd(id, wp_baseon_classname)
+	engclient_cmd(id, wp_baseon_classname)*/
 }
 
 public zp_fw_wpn_remove(id, ItemID)
