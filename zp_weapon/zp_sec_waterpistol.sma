@@ -108,7 +108,7 @@ public get_weapon(id)
 	give_item(id, wp_baseon_classname)
 	engclient_cmd(id, wp_baseon_classname)
 	
-	cs_set_user_bpammo(id, CSW_FIVESEVEN, 90)	
+	cs_set_user_bpammo(id, WP_BASEON, DEFAULT_CLIP)	
 	
 	/*static ent; ent = fm_get_user_weapon_entity(id, CSW_FIVESEVEN)
 	if(pev_valid(ent)) cs_set_weapon_ammo(ent, DEFAULT_CLIP)

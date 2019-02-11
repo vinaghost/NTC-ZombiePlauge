@@ -6,6 +6,8 @@
 #include <zp50_gamemodes>
 #include <zp50_colorchat>
 
+#define LIBRARY_NEMESIS "zp50_class_nemesis"
+#include <zp50_class_nemesis>
 
 #define PLUGIN "[ZP] Item: Buy Nemesis"
 #define VERSION "1.0"
@@ -30,6 +32,7 @@ public plugin_cfg()
 public event_new_round() {
 	if( h_Nem ) {
 		zp_gamemodes_start(g_GameModeNemesisID, index)
+		zp_class_nemesis_set(index)
 		h_Nem = false;
 		index = -1;
 	}
