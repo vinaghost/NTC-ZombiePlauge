@@ -364,7 +364,7 @@ public plugin_init()
 {
 	register_plugin("Register System", VERSION, "m0skVi4a ;]")
 	
-	set_task(0.5, "Init_MYSQL")
+	set_task(0.1, "Init_MYSQL")
 	
 	g_on = register_cvar(g_cvars[0][0], g_cvars[0][1])
 	g_save = register_cvar(g_cvars[1][0], g_cvars[1][1])
@@ -1951,8 +1951,7 @@ public Login(id)
 			client_printcolor(id, "%L", LANG_SERVER, "LOG_LOGING", prefix)
 		}
 		
-		client_cmd(id, "say menu");
-		client_cmd(id, "jointeam");
+		client_cmd(id, "menu");
 	}
 	
 	
