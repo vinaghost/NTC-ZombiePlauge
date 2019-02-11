@@ -103,11 +103,13 @@ show_menu_main(id)
 	
 	menu_additem(menu, "Nang cap vat pham");
 	
+	menu_additem(menu, "Nang cap sung va vu khi khong ban ra dan");
+	
 	menu_additem(menu, "Doi mat khau");
 	
 	menu_additem(menu, "Mua do bang $ ( 1 round )");
 	
-	menu_additem(menu, "Bang xep hang (* chua lam ._. *)");
+	menu_additem(menu, "Bang xep hang");
 	
 	menu_additem(menu, "Event/Su kien: (* chua lam not ._, *)");
 	
@@ -142,12 +144,20 @@ show_menu_main(id)
 				if (is_user_alive(id))
 					zp_ap_items_show_menu(id)
 				else
-					zp_colored_print(id, "%L", id, "CANT_BUY_ITEMS_DEAD")
+					zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
 			}
 			else
 				zp_colored_print(id, "%L", id, "CMD_NOT_EXTRAS")
 		}
-		case 2: 
+		case 2:
+		{
+			if(is_user_alive(id) ) {
+				client_cmd(id, "say /guns");
+			}
+			else
+				zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
+		}
+		case 3: 
 		{
 			if(LibraryExists(LIBRARY_REGISTER_SYSTEM, LibType_Library) && get_cant_change_pass_time(id) > 0 )
 			{
@@ -156,31 +166,32 @@ show_menu_main(id)
 			else
 				client_cmd(id, "messagemode CHANGE_PASS_NEW")
 		}
-		case 3: // Human Classes
+		case 4: // Human Classes
 		{
 			if (LibraryExists(LIBRARY_ITEMS, LibType_Library))
 			{
 				if (is_user_alive(id))
 					zp_money_items_show_menu(id)
 				else
-					zp_colored_print(id, "%L", id, "CANT_BUY_ITEMS_DEAD")
+					
+					zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
 			}
 			else
 				zp_colored_print(id, "%L", id, "CMD_NOT_EXTRAS")
 		}
-		case 4:
+		case 5:
+		{
+			client_cmd(id, "say /cltop");
+		}
+		case 6: 
 		{
 			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
 		}
-		case 5: 
+		case 7:
 		{
 			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
 		}
-		case 6:
-		{
-			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
-		}
-		case 7: // Admin Menu
+		case 8: // Admin Menu
 		{
 			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
 		}
