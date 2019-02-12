@@ -171,7 +171,7 @@ public Init_MYSQL()
 	}
 	
 	new Handle:Queries
-	Queries = SQL_PrepareQuery( SqlConnection, "CREATE TABLE IF NOT EXISTS level_zp (name CHAR(30) NOT NULL, exp INT NOT NULL DEFAULT 0, level INT NOT NULL DEFAULT 0, PRIMARY KEY (name));")
+	Queries = SQL_PrepareQuery( SqlConnection, "CREATE TABLE IF NOT EXISTS level_zp (name CHAR(30) NOT NULL, exp INT NOT NULL DEFAULT 0, level INT NOT NULL DEFAULT 0, rank VARCHAR(33) NOT NULL, PRIMARY KEY (name));")
 	
 	if( !SQL_Execute( Queries ) )
 	{
@@ -593,7 +593,10 @@ SaveData(id) {
 	formatex( szTemp, charsmax( szTemp ),"DELETE FROM level_zp WHERE name = '%s'", g_sName[id])
 	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 	
-	formatex( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level) VALUES( '%s', '%d', '%d')", g_sName[id], g_iXP[id], g_iLevel[id])
+	formatex( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level, rank) VALUES( '%s', '%d', '%d', '%s')", g_sName[id], g_iXP[id], g_iLevel[id], RANKS[g_iLevel[id]])
+	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
+	
+	formatex( szTemp, charsmax( szTemp ),"DELETE FROM level_zp WHERE name = ''", g_sName[id])
 	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 }
 
@@ -616,7 +619,7 @@ public LoadPoints_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data
 		if( SQL_NumResults( Query ) < 1 )
 		{
 			new szTemp[ 512 ]
-			format( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level) VALUES( '%s', '%d', '%d')", g_sName[id], g_iXP[id], g_iLevel[id] )
+			formatex( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level, rank) VALUES( '%s', '%d', '%d', '%s')", g_sName[id], g_iXP[id], g_iLevel[id], RANKS[g_iLevel[id]])
 			
 			SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 		} 
