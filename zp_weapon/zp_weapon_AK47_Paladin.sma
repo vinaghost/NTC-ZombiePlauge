@@ -72,7 +72,7 @@ new g_IsConnected, g_IsAlive, g_PlayerWeapon[33]
 
 new g_AK47
 
-#define SATTHUONG 300.0
+#define SATTHUONG 500.0
 new g_DanSet[33], Float:g_SatThuong[33];
 public plugin_init()
 {
@@ -198,6 +198,8 @@ public zp_fw_wpn_select_post(id, itemid)
 	give_item(id, weapon_base)
 	
 	g_DanSet[id ]= 0;
+	g_SatThuong[id] = 0.0
+	
 	// Clip & Ammo
 	static Ent; Ent = fm_get_user_weapon_entity(id, CSW_BASE)
 	if(!pev_valid(Ent)) return
@@ -223,6 +225,7 @@ public zp_fw_wpn_remove(id, itemid)
 public Remove_Base(id)
 {
 	g_DanSet[id] = 0;
+	g_SatThuong[id] = 0.0
 	UnSet_BitVar(g_Had_Base, id)
 }
 
@@ -595,7 +598,10 @@ public fw_TakeDamage_Player(victim, inflictor, attacker, Float:damage, bits) {
 	
 	
 	if(cs_get_user_zoom(attacker) != CS_SET_AUGSG552_ZOOM)
+	{
+		g_SatThuong[attacker] += damage
 		CheckSatThuong(attacker)
+	}
 	else {
 		if( g_DanSet[attacker] ) {
 			g_DanSet[attacker] --;
