@@ -224,7 +224,7 @@ public plugin_init()
 	}
 }
 public plugin_natives() {
-	register_native("zp_get_user_exp", "native_get_user_exp");
+	register_native("zp_get_user_level", "native_get_user_level");
 	register_native("zp_get_user_rank", "native_get_user_level")
 }
 public plugin_precache()
@@ -265,16 +265,16 @@ public plugin_end()
 	nvault_close(g_iVault)
 }
 
-public native_get_user_exp(iPlugin,iParams) {
+public native_get_user_level(iPlugin,iParams) {
 	new id = get_param(1);
 	
-	return g_iXP[id];
+	return g_iLevel[id];
 }
 public native_get_user_rank(iPlugin,iParams) {
 	new id = get_param(1);
 	new str[33];
-	formatex(str, charsmax(str), "%s", RANKS[g_iXP[id]])
-	set_string(2, str, charsmax(str))
+	formatex(str, charsmax(str), "%s", RANKS[g_iLevel[id]])
+	set_string(2, str, get_param(3) )
 }
 	
 	

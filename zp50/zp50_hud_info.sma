@@ -48,6 +48,9 @@ const HUD_STATS_SPEC_B = 255
 
 const PEV_SPEC_TARGET = pev_iuser2
 
+native zp_get_user_level(id)
+native zp_get_user_rank(id, rank[], len)
+native cs_get_user_money_ul(id)
 new g_MsgSync
 
 public plugin_init()
@@ -161,14 +164,21 @@ public ShowHUD(taskid)
 	{
 		new player_name[32]
 		get_user_name(player, player_name, charsmax(player_name))
+		new rank[33], level;
 		
+		zp_get_user_rank(player, rank, charsmax(rank))
+		level = zp_get_user_level(player)
 		// Show name, health, class, and money
 		set_hudmessage(HUD_STATS_SPEC_R, HUD_STATS_SPEC_G, HUD_STATS_SPEC_B, HUD_SPECT_X, HUD_SPECT_Y, 0, 6.0, 1.1, 0.0, 0.0, -1)
 		
-		if (LibraryExists(LIBRARY_AMMOPACKS, LibType_Library))
-			ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "AMMO_PACKS1", zp_ammopacks_get(player))
-		else
-			ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L $ %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "MONEY1", cs_get_user_money(player))
+		//if (LibraryExists(LIBRARY_AMMOPACKS, LibType_Library))
+		
+		//ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "AMMO_PACKS1", zp_ammopacks_get(player))
+		
+		ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "Level: %d - Cap bac: %s^nName: %s^nHP: %d - Class: %s^nAP: %d - Money: %d", level, rank, player_name, get_user_health(player), class_name, zp_ammopacks_get(player), cs_get_user_money_ul(player) )
+		
+		//else
+		//	ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L $ %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "MONEY1", cs_get_user_money(player))
 	}
 	else
 	{

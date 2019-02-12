@@ -111,7 +111,7 @@ show_menu_main(id)
 	
 	menu_additem(menu, "Bang xep hang");
 	
-	menu_additem(menu, "Event/Su kien: (* chua lam not ._, *)");
+	menu_additem(menu, "Event/Su kien: (* chua lam ._, *)");
 	
 	menu_additem(menu, "Giao luu voi Mod (* chua lam luon .-. *)");
 	
