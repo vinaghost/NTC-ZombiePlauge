@@ -9,6 +9,8 @@
 #define TASK_HUD 5345634
 #define TASK_REMOVE 2423423
 
+#define SPRAY 201
+
 new has_item
 new using_item
 
@@ -26,7 +28,7 @@ public plugin_init()
 	
 	cvar_deadlyshot_time = register_cvar("ds_time", "10.0")
 	
-	register_clcmd("drop", "active")
+	//register_clcmd("drop", "active")
 	
 	sync_hud1 = CreateHudSyncObj(random_num(1, 10))
 	g_deadlyshot = zp_money_items_register("Deadly Shot", 10000)
@@ -78,14 +80,23 @@ public show_hud(id)
 	if(Get_BitVar(has_item,id))
 	{
 		set_hudmessage(0, 255, 0, -1.0, 0.88, 0, 2.0, 1.0)
-		ShowSyncHudMsg(id, sync_hud1, "[G] Deadly Shot")
+		ShowSyncHudMsg(id, sync_hud1, "[T] Deadly Shot")
 	}
 	else if(Get_BitVar(using_item,id)) {
 		set_hudmessage(0, 0, 255, -1.0, 0.88, 0, 2.0, 1.0)
-		ShowSyncHudMsg(id, sync_hud1, "[G] Deadly Shot")
+		ShowSyncHudMsg(id, sync_hud1, "[T] Deadly Shot")
 	}
 }
-
+public client_impulse(id, impulse)
+{
+	if(impulse == SPRAY)
+	{
+		active(id)
+		return PLUGIN_HANDLED;
+	}
+	
+	return PLUGIN_CONTINUE;
+}
 public active(id)
 {
 	if(Get_BitVar(has_item,id) && !Get_BitVar(using_item,id) )
