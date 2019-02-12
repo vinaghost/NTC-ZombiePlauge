@@ -14,19 +14,12 @@
 #define AUTHOR "VINAGHOST"
 
 new g_Nem, index, bool:h_Nem;
-new g_GameModeNemesisID
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0")  
 	
 	g_Nem = zp_money_items_register("Mua Nemesis" , 80000);
-}
-
-public plugin_cfg()
-{
-    g_GameModeNemesisID = zp_gamemodes_get_id("Nemesis Mode")
-   
 }
 
 public event_new_round() {
