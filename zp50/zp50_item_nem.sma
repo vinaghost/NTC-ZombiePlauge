@@ -31,7 +31,6 @@ public plugin_cfg()
 
 public event_new_round() {
 	if( h_Nem ) {
-		zp_gamemodes_start(g_GameModeNemesisID, index)
 		zp_class_nemesis_set(index)
 		h_Nem = false;
 		index = -1;
