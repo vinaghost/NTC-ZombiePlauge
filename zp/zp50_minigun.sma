@@ -62,8 +62,11 @@ public native_filter(const name[], index, trap)
 }
 public zp_round_started(gamemode, id)
 {
-	if( LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) )
-		Set_BitVar(hasMinigun,id )
+	if( LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_is_survivor_round() ) 
+	{
+		if( zp_class_survivor_get(id) )
+			Set_BitVar(hasMinigun,id )
+	}
 	
 }
 public zp_fw_core_spawn_post(id) {
