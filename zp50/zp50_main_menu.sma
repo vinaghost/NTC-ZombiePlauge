@@ -105,13 +105,13 @@ show_menu_main(id)
 	
 	menu_additem(menu, "Nang cap sung va vu khi khong ban ra dan");
 	
-	menu_additem(menu, "Doi mat khau");
-	
 	menu_additem(menu, "Mua do bang $ ( 1 round )");
+	
+	menu_additem(menu, "Doi mat khau");
 	
 	menu_additem(menu, "Bang xep hang");
 	
-	menu_additem(menu, "Event/Su kien: (* chua lam ._, *)");
+	menu_additem(menu, "Update rank");
 	
 	menu_additem(menu, "Giao luu voi Mod (* chua lam luon .-. *)");
 	
@@ -157,16 +157,7 @@ show_menu_main(id)
 			else
 				zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
 		}
-		case 3: 
-		{
-			if(LibraryExists(LIBRARY_REGISTER_SYSTEM, LibType_Library) && get_cant_change_pass_time(id) > 0 )
-			{
-				zp_colored_print(id, "Khong the doi pass trong %d", get_cant_change_pass_time(id))
-			}
-			else
-				client_cmd(id, "messagemode CHANGE_PASS_NEW")
-		}
-		case 4: // Human Classes
+		case 3: // Human Classes
 		{
 			if (LibraryExists(LIBRARY_ITEMS, LibType_Library))
 			{
@@ -179,13 +170,26 @@ show_menu_main(id)
 			else
 				zp_colored_print(id, "%L", id, "CMD_NOT_EXTRAS")
 		}
+		case 4: 
+		{
+			if(LibraryExists(LIBRARY_REGISTER_SYSTEM, LibType_Library) && get_cant_change_pass_time(id) > 0 )
+			{
+				zp_colored_print(id, "Khong the doi pass trong %d", get_cant_change_pass_time(id))
+			}
+			else
+				client_cmd(id, "messagemode CHANGE_PASS_NEW")
+		}
+		
 		case 5:
 		{
-			client_cmd(id, "say /cltop");
+			client_cmd(id, "say /top");
 		}
 		case 6: 
 		{
-			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
+			client_cmd(id, "say /save");
+			
+			client_cmd(id, "say /ranks");
+			
 		}
 		case 7:
 		{
