@@ -46,10 +46,31 @@ const HUD_STATS_SPEC_B = 255
 #define TASK_SHOWHUD 100
 #define ID_SHOWHUD (taskid - TASK_SHOWHUD)
 
+new const RANKS[][]= {
+	"Binh nhì", // 0
+	"Binh nhất", // 1
+	"Hạ sĩ", // 2
+	"Trung sĩ", // 3
+	"Thiếu uý", // 4
+	"Trung úy", // 5
+	"Thượng uý", // 6
+	"Đại úy", // 7
+	"Thiếu tá", // 8
+	"Trung tá", // 9
+	"Thượng tá", // 10
+	"Đại tá", // 12
+	"Thiếu tướng", // 13
+	"Trung tướng", // 14
+	"Thượng tướng", //15
+	"Đại tướng", // 16
+	"Tư lệnh", // 17
+	"Tổng tư lệnh" // 18
+}
+
 const PEV_SPEC_TARGET = pev_iuser2
 
 native zp_get_user_level(id)
-native zp_get_user_rank(id, rank[], len)
+//native zp_get_user_rank(id, rank[], len)
 native cs_get_user_money_ul(id)
 new g_MsgSync
 
@@ -164,9 +185,9 @@ public ShowHUD(taskid)
 	{
 		new player_name[32]
 		get_user_name(player, player_name, charsmax(player_name))
-		new rank[33], level;
+		new level;
 		
-		zp_get_user_rank(player, rank, charsmax(rank))
+		//zp_get_user_rank(player, rank, charsmax(rank))
 		level = zp_get_user_level(player)
 		// Show name, health, class, and money
 		set_hudmessage(HUD_STATS_SPEC_R, HUD_STATS_SPEC_G, HUD_STATS_SPEC_B, HUD_SPECT_X, HUD_SPECT_Y, 0, 6.0, 1.1, 0.0, 0.0, -1)
@@ -175,7 +196,7 @@ public ShowHUD(taskid)
 		
 		//ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "AMMO_PACKS1", zp_ammopacks_get(player))
 		
-		ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "Level: %d - Cap bac: %s^nName: %s^nHP: %d - Class: %s^nAP: %d - Money: %d", level, rank, player_name, get_user_health(player), class_name, zp_ammopacks_get(player), cs_get_user_money_ul(player) )
+		ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "Level: %d - Cap bac: %s^nName: %s^nHP: %d - Class: %s^nAP: %d - Money: %d", level, RANKS[level], player_name, get_user_health(player), class_name, zp_ammopacks_get(player), cs_get_user_money_ul(player) )
 		
 		//else
 		//	ShowSyncHudMsg(ID_SHOWHUD, g_MsgSync, "%L: %s^nHP: %d - %L %s - %L $ %d", ID_SHOWHUD, "SPECTATING", player_name, get_user_health(player), ID_SHOWHUD, "CLASS_CLASS", class_name, ID_SHOWHUD, "MONEY1", cs_get_user_money(player))
