@@ -1,19 +1,19 @@
 /*
 
-	Copyright(C). 2014. zmd94 ;)
-	
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-	
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Copyright(C). 2014. zmd94 ;)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 // Uncomment 'IM_USING_ZP50' if your server is running ZP50 and above
@@ -33,10 +33,10 @@
 //#define CHANGE_NAME
 
 #include <amxmodx>
+#include <amxmisc>
 #include <fakemeta>
 #include <hamsandwich>
-#include <nvault_util>
-#include <nvault>
+#include <sqlx>
 #include <engine>
 #include <fun>
 #if defined IM_USING_ZP50
@@ -45,9 +45,7 @@
 #endif
 
 new const VERSION[] = "3.2"
-new const VAULTNAME[] = "custom_level"
-new const RANKS[][]=
-{
+new const RANKS[][]= {
 	"Binh nhì", // 0
 	"Binh nhất", // 1
 	"Hạ sĩ", // 2
@@ -67,8 +65,7 @@ new const RANKS[][]=
 	"Tư lệnh", // 17
 	"Tổng tư lệnh" // 18
 }
-new const EXP[] =
-{
+new const EXP[] = {
 	0, // 0
 	15, // 1
 	100, // 2
@@ -95,6 +92,7 @@ new const EXP[] =
 #define TOPLEVEL 15
 #define TASK_INFO 2399
 
+#define CONNECT_TASK	1024
 // Bool
 new bool:g_bKilledZombie[MAXPLAYERS+1][33]
 
@@ -103,125 +101,48 @@ new g_szMotd[1536]
 new g_sName[MAXPLAYERS+1][32]
 
 // Variables
+new g_iRank[MAXPLAYERS+1] 
 new g_iLevel[MAXPLAYERS+1], g_iXP[MAXPLAYERS+1] 
 new g_iDamage[MAXPLAYERS+1][33], g_iSprite[MAXPLAYERS+1]
-new g_iSteamID[MAXPLAYERS+1][32]
 
 new g_iZombieScore, g_iHumanScore
-new g_iVault, g_msgSayText
+new g_msgSayText
 
-new g_iELevelBonus, g_iEAPRewards, g_iEHitRecieved, g_iEHitDealt, g_iEShowScore, g_iEHumanWin, g_iEHumanWinBonus
-, g_iEZombieWinBonus, g_iEZombieInfectBonus, g_iESurvKillBonus, g_iENemKillBonus, g_iEDamageEXP
-, g_iEHPBonus, g_iEArmorBonus
-
-new g_iSaveType, /*g_iConnectMessage, */g_iELevelIcon, g_iLevelIconTime, g_iEInformHud, g_iHudLocation
-, g_iHudColors, g_iScoreColors, g_iHumanEXP, g_iZombieEXP, g_iHeadShotEXP, g_iLevelEXPBonus, g_iLevelHPBonus
-, g_iLevelArBonus, g_iLevelAPBonus, g_iHumanWinEXP, g_iZombieWinEXP, g_iInfectEXP, g_iSurKillEXP
-, g_iNemKillEXP, g_iDamageAmount, g_iDamageEXP
-
-#if defined IM_USING_ZP50
 new g_iMaxHealth[MAXPLAYERS+1]
-new g_iEAssistEXP, g_iAssistEXP, g_iAssistDivide
-#endif
 
-#if defined DATA_EXPIRED
-new g_iDataExpired
-#endif
+new Handle:g_SqlTuple, g_iCount
+
+new ScoreHud
 
 public plugin_init()
 {
 	// Original plugin is by Excalibur007. ;)
 	register_plugin("Custom Level", VERSION, "zmd94")
 	
-	/*register_dictionary("custom_level.txt")
-	
-	#if defined CUSTOM_CHAT
-	register_clcmd("say", "custom_say")
-	register_clcmd("say_team", "custom_say_team")
-	#endif
-	*//
-	register_clcmd("say /cles", "custom_menu")
-	register_clcmd("say_team /cles", "custom_menu")
-	register_clcmd("say /clnext", "show_stats")
-	register_clcmd("say_team /clnext", "show_stats")
-	register_clcmd("say /cltop", "show_global_top")
-	register_clcmd("say_team /cltop", "show_global_top")
-	register_clcmd("say /ontop", "show_online_top")
-	register_clcmd("say_team /ontop", "show_online_top")
-	register_clcmd("say /savecl", "save_data")
-	register_clcmd("say_team /savecl", "save_data")
+	register_clcmd("say /rank", "show_stats")
+	register_clcmd("say_team /rank", "show_stats")
+	register_clcmd("say /top", "show_global_top")
+	register_clcmd("say_team /top", "show_global_top")
+	register_clcmd("say /save", "save_data")
+	register_clcmd("say_team /save", "save_data")
 	
 	register_clcmd("free_give","cl_give", ADMIN_FLAG, "Enable to give free EXP")
-
+	
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0")
 	register_event("Damage", "event_Damage", "be", "2!0", "3=0", "4!0")
 	register_event("DeathMsg", "event_DeathMsg", "a", "1>0")
 	register_event("StatusValue", "event_StatusValue", "be", "1=2", "2!0")
 	register_event("TextMsg", "event_Restart", "a", "2&#Game_C", "2&#Game_w")
 	
-	RegisterHam(Ham_Spawn, "player", "fw_PlayerRespawn", 1)
-	
-	#if defined CHANGE_NAME
-	register_forward( FM_ClientUserInfoChanged, "FwdClientUserInfoChanged" )
-	#endif
-	
-	g_iSaveType = register_cvar("cl_save_type", "2") // 1; Save the EXP via player steamID | 2; Save the EXP via player name 
-	#if defined DATA_EXPIRED
-	g_iDataExpired = register_cvar("cl_data_expired", "5") // This will remove all entries in the vault that are X days old 
-	#endif
-	
-	//g_iConnectMessage = register_cvar("cl_connect_message", "1") // Enable connect message
-	g_iHumanEXP = register_cvar("cl_human_EXP", "1") // Amount of EXP gain from killing a zombie without headshot
-	g_iZombieEXP = register_cvar("cl_zombie_EXP", "1") // Amount of EXP gain from killing a human
-	g_iHeadShotEXP = register_cvar("cl_level_head_EXP", "2") //  Amount of EXP gain from killing a zombie with headshot
-	g_iELevelIcon = register_cvar("cl_level_icon", "1") // Enable level icon
-	g_iLevelIconTime = register_cvar("cl_level_icon_time", "1.5") // The time for the icon to stay displaying
-	g_iELevelBonus = register_cvar("cl_level_bonus", "1") // Enable level bonus
-	g_iLevelEXPBonus = register_cvar("cl_EXP_bonus", "3") // Amount of EXP gain when level up 
-	g_iEHPBonus = register_cvar("cl_enable_health_bonus", "0") // Enable HP bonus
-	g_iLevelHPBonus = register_cvar("cl_health_bonus", "25")  // The values of health reward 
-	g_iEArmorBonus = register_cvar("cl_enable_armor_bonus", "1") // Enable armor bonus
-	g_iLevelArBonus = register_cvar("cl_armor_bonus", "10") // The values of armor reward 
-	g_iEAPRewards = register_cvar("cl_enable_AP_bonus", "0") // Enable ammo packs reward when level up
-	g_iLevelAPBonus = register_cvar("cl_AP_amount", "10") // The values of ammo packs reward 
-	g_iEInformHud = register_cvar("cl_level_hud", "0") // Enable level hud information
-	g_iHudColors = register_cvar("cl_hud_colors", "255 0 0")
-	g_iHudLocation = register_cvar("cl_hud_position", "2") // 1; The position of hud information is in the left | 2; The position of hud information is in the right
-	g_iEDamageEXP = register_cvar("cl_level_damage", "1") // Enable human to recieve EXP from dealing a damage 
-	g_iDamageAmount = register_cvar("cl_damage_amount", "3000") // Amount of damage need to recieve EXP for human
-	g_iDamageEXP = register_cvar("cl_damage_EXP_amount", "1") // Amount of EXP gain from dealing a damage
-	g_iEHitRecieved = register_cvar("cl_show_hit_recieved", "1") // Enable showing recieved damage 
-	g_iEHitDealt = register_cvar("cl_show_hit_dealt", "1") // Enable showing dealt damage
-	g_iEShowScore = register_cvar("cl_show_score", "1") // Enable showing score for zombie and human
-	g_iScoreColors = register_cvar("cl_score_colors", "0 255 0")
-	g_iEHumanWin = register_cvar("cl_human_win", "1") // Enable human to be a winner if nobody win
-	g_iEHumanWinBonus = register_cvar("cl_human_win_bonus", "1") // Enable win bonus for human
-	g_iHumanWinEXP = register_cvar("cl_human_win_amount", "1") // EXP given to human for winning
-	g_iEZombieWinBonus = register_cvar("cl_zombie_win_bonus", "1") // Enable win bonus for zombie
-	g_iZombieWinEXP = register_cvar("cl_zombie_win_amount", "1") // EXP given to zombie for winning
-	g_iEZombieInfectBonus = register_cvar("cl_zombie_infect_bonus", "1") // Enable EXP bonus for zombie when infecting human
-	g_iInfectEXP = register_cvar("cl_zombie_infect_amount", "1") // EXP given to zombie for infecting human
-	g_iESurvKillBonus = register_cvar("cl_survivor_kill_bonus", "1") // Enable kill bonus when killing survivor
-	g_iSurKillEXP = register_cvar("cl_survivor_bonus_amount", "2") // Then amount of EXP bonus by killing survivor
-	g_iENemKillBonus = register_cvar("cl_nemesis_kill_bonus", "1") // Enable kill bonus when killing nemesis
-	g_iNemKillEXP = register_cvar("cl_nemesis_bonus_amount", "2") // Then amount of EXP bonus by killing nemesis
-	#if defined IM_USING_ZP50
-	g_iEAssistEXP = register_cvar("cl_enable_assist", "1") // Enable EXP given for assisting players
-	g_iAssistEXP = register_cvar("cl_level_assist_EXP", "1") // Amount of EXP gain from assisting a non-zombie killer.
-	g_iAssistDivide = register_cvar("cl_level_assist_divide", "5") // Amount of damage [Zombie Max health / CVAR] needed to get an assist
-	#endif
 	
 	g_msgSayText = get_user_msgid("SayText")
 	
-	/*#if defined CUSTOM_CHAT
-	register_message(g_msgSayText, "message_SayText")
-	#endif
-	*/
 	// Score Inform. ;)
-	if(get_pcvar_num(g_iEShowScore))
-	{
-		set_task(1.0, "ShowScore", 0, _, _, "b")
-	}
+	set_task(1.0, "ShowScore", 0, _, _, "b")
+	
+	ScoreHud = CreateHudSyncObj()
+	
+	set_task(0.5, "Init_MYSQL")
 }
 public plugin_natives() {
 	register_native("zp_get_user_level", "native_get_user_level");
@@ -237,34 +158,76 @@ public plugin_precache()
 	}
 	
 }
-
-public plugin_cfg()
+public Init_MYSQL()
 {
-	new sCFGdir[32]
-	get_configsdir(sCFGdir, charsmax(sCFGdir))
-	server_cmd("exec %s/cl_system.cfg", sCFGdir)
+	g_SqlTuple = SQL_MakeStdTuple()
+	new g_Error[ 512 ]
+	new ErrorCode
+	new Handle:SqlConnection = SQL_Connect( g_SqlTuple, ErrorCode, g_Error, charsmax( g_Error ) )
 	
-	g_iVault = nvault_open(VAULTNAME)
-	if(g_iVault == INVALID_HANDLE)
+	if( SqlConnection == Empty_Handle )
 	{
-		new szText[128]; formatex(szText, 127, "Error opening CLeS database [%s]", VAULTNAME);
-		set_fail_state(szText)
+		set_fail_state( g_Error )
 	}
 	
-	server_print("[RANK] [%s] successfully loaded!", VAULTNAME)
+	new Handle:Queries
+	Queries = SQL_PrepareQuery( SqlConnection, "CREATE TABLE IF NOT EXISTS level_zp (name CHAR(30) NOT NULL, exp INT NOT NULL DEFAULT 0, level INT NOT NULL DEFAULT 0, PRIMARY KEY (name));")
 	
-	#if defined DATA_EXPIRED
-	nvault_prune(g_iVault, 0, get_systime() - (86400 * get_pcvar_num(g_iDataExpired)))
-	#endif
+	if( !SQL_Execute( Queries ) )
+	{
+		SQL_QueryError( Queries, g_Error, charsmax( g_Error ) )
+		set_fail_state( g_Error )
+	}
 	
-	FormatTop(TOPLEVEL)
+	SQL_FreeHandle( Queries )
+	SQL_FreeHandle( SqlConnection )
+	
+	server_print("[CUSTOM LEVEL] MYSQL connection succesful")
+	MakeTop15( )
 }
-
-public plugin_end()
+public plugin_end( )
 {
-	nvault_close(g_iVault)
+	SQL_FreeHandle( g_SqlTuple )
 }
 
+public client_authorized( id )
+{
+	set_task( 4.0, "Delayed_client_authorized", id + CONNECT_TASK )	
+}
+
+public Delayed_client_authorized( id )
+{	
+	id -= CONNECT_TASK
+	
+	get_user_info( id, "name", g_sName[ id ], charsmax( g_sName[ ] ) )
+	
+	replace_all( g_sName[ id ], charsmax( g_sName[ ] ), "'", "*" )
+	replace_all( g_sName[ id ], charsmax( g_sName[ ] ), "^"", "*" )
+	replace_all( g_sName[ id ], charsmax( g_sName[ ] ), "`", "*" )
+	replace_all( g_sName[ id ], charsmax( g_sName[ ] ), "�", "*" )
+	
+	g_iLevel[id] = 0
+	g_iXP[id] = 0
+	
+	LoadData( id )
+}
+
+public client_disconnect( id )
+{	
+	SaveData(id)
+	if( task_exists( id+TASK_INFO ) )
+	{
+		remove_task( id+TASK_INFO)
+	}
+	
+	if( task_exists( id + CONNECT_TASK ) )
+	{
+		remove_task( id + CONNECT_TASK )
+	}
+	
+	g_iLevel[id] = 0
+	g_iXP[id] = 0
+}
 public native_get_user_level(iPlugin,iParams) {
 	new id = get_param(1);
 	
@@ -276,8 +239,10 @@ public native_get_user_rank(iPlugin,iParams) {
 	formatex(str, charsmax(str), "%s", RANKS[g_iLevel[id]])
 	set_string(2, str, get_param(3) )
 }
-	
-	
+
+public show_global_top(id) {
+	show_motd( id, g_szMotd, "Trum server" )
+}
 public zp_round_ended(iTeam)
 {
 	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
@@ -286,333 +251,72 @@ public zp_round_ended(iTeam)
 	{
 		case WIN_ZOMBIES: 
 		{
-			if(get_pcvar_num(g_iEShowScore))
-			{
-				g_iZombieScore ++ 
-			}
+			g_iZombieScore ++ 
 			
-			if(get_pcvar_num(g_iEZombieWinBonus))
+			
+			
+			get_players(iPlayers, iPlayerCount, "ac") 
+			for(i = 0; i < iPlayerCount; i++)
 			{
-				get_players(iPlayers, iPlayerCount, "ac") 
-				for(i = 0; i < iPlayerCount; i++)
+				player = iPlayers[i]
+				if(zp_get_user_zombie(player))
 				{
-					player = iPlayers[i]
-					if(zp_get_user_zombie(player))
-					{
-						g_iXP[player] += get_pcvar_num(g_iZombieWinEXP)
-						//sChatColor(player, "^x04[NTC]^x03 %L", LANG_PLAYER, "CL_ZOMBIE_WIN", get_pcvar_num(g_iZombieWinEXP))
-						
-						ReviewLevel(player)
-					}
+					g_iXP[player] += 1
+					//sChatColor(player, "^x04[NTC]^x03 %L", LANG_PLAYER, "CL_ZOMBIE_WIN", get_pcvar_num(g_iZombieWinEXP))
+					
+					ReviewLevel(player)
 				}
 			}
+			
 		}
 		case WIN_HUMANS: 
 		{
-			if(get_pcvar_num(g_iEShowScore))
-			{
-				g_iHumanScore ++ 
-			}
 			
-			if(get_pcvar_num(g_iEHumanWinBonus))
-			{
-				get_players(iPlayers, iPlayerCount, "ac") 
-				for(i = 0; i < iPlayerCount; i++)
-				{	
-					player = iPlayers[i]
-					if(!zp_get_user_zombie(player))
-					{
-						g_iXP[player] += get_pcvar_num(g_iHumanWinEXP)
-						//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_WIN", get_pcvar_num(g_iHumanWinEXP))
-						
-						ReviewLevel(player)
-					}
+			g_iHumanScore ++ 
+			
+			
+			
+			get_players(iPlayers, iPlayerCount, "ac") 
+			for(i = 0; i < iPlayerCount; i++)
+			{	
+				player = iPlayers[i]
+				if(!zp_get_user_zombie(player))
+				{
+					g_iXP[player] += 2
+					//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_WIN", get_pcvar_num(g_iHumanWinEXP))
+					
+					ReviewLevel(player)
 				}
 			}
+			
 		}
 		case WIN_NO_ONE: 
 		{
-			if(get_pcvar_num(g_iEHumanWin))
+			
+			g_iHumanScore ++
+			
+			get_players(iPlayers, iPlayerCount, "ac") 
+			for(i = 0; i < iPlayerCount; i++)
 			{
-				g_iHumanScore ++
-				
-				if(get_pcvar_num(g_iEHumanWinBonus))
+				player = iPlayers[i]
+				if(!zp_get_user_zombie(player))
 				{
-					get_players(iPlayers, iPlayerCount, "ac") 
-					for(i = 0; i < iPlayerCount; i++)
-					{
-						player = iPlayers[i]
-						if(!zp_get_user_zombie(player))
-						{
-							g_iXP[player] += get_pcvar_num(g_iHumanWinEXP)
-							//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_SURVIVE", get_pcvar_num(g_iHumanWinEXP))
-							
-							ReviewLevel(player)
-						}
-					}
+					g_iXP[player] += 2
+					//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_SURVIVE", get_pcvar_num(g_iHumanWinEXP))
+					
+					ReviewLevel(player)
 				}
 			}
+			
+			
 		}
 	}
 }
-
-public client_authorized(id)
-{
-	switch(get_pcvar_num(g_iSaveType))
-	{
-		case 1:
-		{
-			get_user_authid(id, g_iSteamID[id], charsmax(g_iSteamID))
-		}
-		case 2:
-		{
-			get_user_name(id, g_sName[id], charsmax(g_sName))
-		}
-	}
-}
-
-public client_putinserver(id)
-{
-	if(is_user_connected(id))
-	{
-		LoadData(id)
-		
-		/*if(get_pcvar_num(g_iConnectMessage))
-		{
-			new szName[32]
-			get_user_name(id, szName, charsmax(szName))
-			sChatColor(0, "^x04[CL]^x01 %L", LANG_PLAYER, "CL_CONNECT_MESSAGE", szName, RANKS[g_iLevel[id]], g_iXP[id])
-		}*/
-		
-		if(get_pcvar_num(g_iEInformHud))
-		{
-			set_task(1.0, "InfoHud", id+TASK_INFO, _, _, "b")
-		}
-	}
-}
-
-public client_disconnect(id)
-{
-	SaveData(id)
-	
-	remove_task(id+TASK_INFO)
-	
-	g_iLevel[id] = 0
-	g_iXP[id] = 0
-}
-
-public InfoHud(id)
-{
-	id -= TASK_INFO
-	
-	new PlayerInfoHud = CreateHudSyncObj()
-	new iHudLocation = get_pcvar_num(g_iHudLocation)
-	
-	new szColors[16]
-	new szRed[4], szGreen[4], szBlue[4]
-	new iRed, iGreen, iBlue
-	
-	get_pcvar_string(g_iHudColors, szColors, charsmax(szColors))
-	parse(szColors, szRed, charsmax(szRed), szGreen, charsmax(szGreen), szBlue, charsmax(szBlue))
-	iRed = str_to_num(szRed); iGreen = str_to_num(szGreen); iBlue = str_to_num(szBlue); 
-	
-	if(!is_user_alive(id))
-	{
-		static iSpec; iSpec = entity_get_int(id, EV_INT_iuser2)
-		
-		if(!is_user_alive(iSpec)) 
-			return
-		
-		new iSpecName[32]
-		get_user_name(iSpec, iSpecName, charsmax(iSpecName))
-		
-		switch(iHudLocation)
-		{
-			case 1:
-			{
-				if(g_iLevel[iSpec] == 18)
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.01, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[%s] ^n[Level: Trùm Server] ^n[EXP: -/-]", iSpecName) 
-				}
-				else
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.01, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[%s] ^n[Level: %s] ^n[EXP: %d/ %d]", iSpecName, RANKS[g_iLevel[iSpec]], g_iXP[iSpec], EXP[g_iLevel[iSpec] + 1]) 
-				}
-			}
-			case 2:
-			{
-				if(g_iLevel[iSpec] == 18)
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.75, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[%s] ^n[Level: Trùm Server] ^n[EXP: -/-]", iSpecName) 
-				}
-				else
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.75, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[ %s] ^n[Level: %s] ^n[EXP: %d/ %d]", iSpecName, RANKS[g_iLevel[iSpec]], g_iXP[iSpec], EXP[g_iLevel[iSpec] + 1]) 
-				}
-			}
-		}
-	}
-	else
-	{
-		switch(iHudLocation)
-		{
-			case 1:
-			{
-				if(g_iLevel[id] == 18)
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.01, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[Level: Trùm Server] ^n[EXP: -/-]") 
-				}
-				else
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.01, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[Level: %s] ^n[EXP: %d/ %d]",RANKS[g_iLevel[id]], g_iXP[id], EXP[g_iLevel[id] + 1]) 
-				}
-			}
-			case 2:
-			{
-				if(g_iLevel[id] == 18)
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.75, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[Level: Trùm Server] ^n[EXP: -/-]") 
-				}
-				else
-				{
-					set_hudmessage(iRed, iGreen, iBlue, 0.75, 0.28, 0, 6.0, 12.0, 0.0, 0.0, -1) 
-					ShowSyncHudMsg(id, PlayerInfoHud,"[Level: %s] ^n[EXP: %d/ %d]",RANKS[g_iLevel[id]], g_iXP[id], EXP[g_iLevel[id] + 1]) 
-				}
-			}
-		}
-	}
-} 
-
 public ShowScore()
 {
-	new ScoreHud = CreateHudSyncObj()
-	
-	new szColors[16]
-	new szRed[4], szGreen[4], szBlue[4]
-	new iRed, iGreen, iBlue
-	
-	get_pcvar_string(g_iScoreColors, szColors, charsmax(szColors))
-	parse(szColors, szRed, charsmax(szRed), szGreen, charsmax(szGreen), szBlue, charsmax(szBlue))
-	iRed = str_to_num(szRed); iGreen = str_to_num(szGreen); iBlue = str_to_num(szBlue);  
-	
-	set_hudmessage(iRed, iGreen, iBlue, -1.0, 0.02, 0, 12.0, 12.0, 0.0, 0.0, -1)
+	set_hudmessage(0, 255, 0, -1.0, 0.02, 0, 12.0, 12.0, 0.0, 0.0, -1)
 	ShowSyncHudMsg(0, ScoreHud, "[Zombie] - [Human]^n[%s%d] ----- [%s%d]",g_iZombieScore >= 10 ? "" : "0", g_iZombieScore, g_iHumanScore >= 10 ? "" : "0", g_iHumanScore)
 }
-
-public custom_menu(id)
-{
-	new sMenu = menu_create("\y[NTC] Rank\r3.1", "custom_handler")
-	
-	menu_additem(sMenu, "\wTop rank toàn server!", "1", 0)
-	menu_additem(sMenu, "\wTop rank toàn map!", "2", 0)
-	menu_additem(sMenu, "\wExp để lên rank", "3", 0)
-	menu_additem(sMenu, "\wSave your EXP!", "4", 0)
-	
-	menu_display(id, sMenu, 0)
-}
-
-public custom_handler(id, menu, item)
-{
-	if(item == MENU_EXIT) 
-	{
-		menu_destroy(menu)
-		return PLUGIN_HANDLED
-	}
-	
-	switch(item)
-	{
-		case 0: show_global_top(id)
-		case 1: show_online_top(id)
-		case 2: show_stats(id)
-		case 3: save_data(id)
-	}
-	
-	menu_destroy(menu)
-	return PLUGIN_HANDLED
-}
-
-#if defined CUSTOM_CHAT
-public custom_say(id)
-{
-	new szMessage[192], szName[32]
-	
-	read_args(szMessage, charsmax(szMessage))
-	remove_quotes(szMessage)
-	get_user_name(id, szName, charsmax(szName))
-	
-	if(equali(szMessage[0], " ") || equali(szMessage[0], "") || !is_valid_msg(szMessage))
-		return PLUGIN_HANDLED_MAIN
-	
-	if(is_user_alive(id))
-	{
-		format(szMessage, charsmax(szMessage), "^4[%s] ^3%s : ^1%s", RANKS[g_iLevel[id]], szName, szMessage)
-	}
-	else
-	{
-		format(szMessage, charsmax(szMessage), "^1*DEAD* ^4[%s] ^3%s : ^1%s", RANKS[g_iLevel[id]], szName, szMessage)
-	}
-	
-	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
-	get_players(iPlayers, iPlayerCount, "ch") 
-	for(i = 0; i < iPlayerCount; i++)
-	{
-		player = iPlayers[i]
-		if(is_user_alive(id) && is_user_alive(player) || !is_user_alive(id) && !is_user_alive(player))
-		{
-			message_begin(MSG_ONE, g_msgSayText, {0, 0, 0}, player)
-			write_byte(id)
-			write_string(szMessage)
-			message_end()
-		}
-	}
-	
-	return PLUGIN_CONTINUE
-}
-
-public custom_say_team(id)
-{
-	new szMessage[192], szName[32]
-	
-	read_args(szMessage, charsmax(szMessage))
-	remove_quotes(szMessage)
-	get_user_name(id, szName, charsmax(szName))
-	
-	if(equali(szMessage[0], " ") || equali(szMessage[0], "") || !is_valid_msg(szMessage))
-		return PLUGIN_HANDLED_MAIN
-	
-	if(is_user_alive(id))
-	{
-		format(szMessage, charsmax(szMessage), "^4[%s] ^3%s : ^1%s", RANKS[g_iLevel[id]], szName, szMessage)
-	}
-	else
-	{
-		format(szMessage, charsmax(szMessage), "^1*DEAD* ^4[%s] ^3%s : ^1%s", RANKS[g_iLevel[id]], szName, szMessage)
-	}
-	
-	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
-	get_players(iPlayers, iPlayerCount, "ch") 
-	for(i = 0; i < iPlayerCount; i++)
-	{
-		player = iPlayers[i]
-		if(is_user_alive(id) && is_user_alive(player) && get_user_team(id) == get_user_team(player) || !is_user_alive(id) && !is_user_alive(player) && get_user_team(id) == get_user_team(player))
-		{
-			message_begin(MSG_ONE, g_msgSayText, {0, 0, 0}, player)
-			write_byte(id)
-			write_string(szMessage)
-			message_end()
-		}
-	}
-	
-	return PLUGIN_CONTINUE
-}
-#endif
 
 public cl_give(id, level, cid)
 {
@@ -662,167 +366,6 @@ public cl_give(id, level, cid)
 	return PLUGIN_HANDLED;
 }
 
-public show_stats(id)
-{
-	if(is_user_connected(id))
-	{
-		sChatColor(id, "^x04[NTC]^x03 Exp hiện tại %d, cần %d để lên rank", RANKS[g_iLevel[id]], (EXP[g_iLevel[id] + 1] - g_iXP[id]))
-	}
-}
-
-public show_online_top(id)
-{
-	static Sort[33][2]
-	new szName[MAXPLAYERS+1][32]
-	new players[32], num, count, index
-	
-	get_players(players, num)
-	for(new i = 0; i < num; i++)
-	{
-		index = players[i]
-		get_user_name(index, szName[index], charsmax(szName))
-		
-		Sort[count][0] = index
-		Sort[count][1] = g_iXP[index]
-		count++
-	}
-	
-	SortCustom2D(Sort, count, "CompareEXP")
-	
-	new y = clamp(count, 0, 10)
-	new kindex, szMotd2[1536], len;
-	szMotd2[0] = 0
-	
-	add(szMotd2, charsmax(szMotd2), \
-	"<html><style>\
-	body{background:#040404;font-family:Verdana, Arial, Sans-Serif;font-size:19pt;}\
-	.t{color:#808080;text-align:left; }\
-	#p{color:#D41313;}\
-	#n{color:#fff;}\
-	</style><body>\
-	<table cellspacing=0 width=100% class=t>")
-	
-	add(szMotd2, charsmax(szMotd2),
-	"<tr><td id=h width=7%>#</td>\
-	<td id=h>NAME</td>\
-	<td id=h>LEVEL</td>\
-	<td id=h>EXP</td></tr>")
-	
-	len = strlen(szMotd2)
-	for(new x = 0; x < y; x++)
-	{
-		kindex = Sort[x][0]
-		
-		replace_all(szName[kindex], charsmax(szName), "<", "&lt")
-		replace_all(szName[kindex], charsmax(szName), ">", "&gt")
-		
-		len += formatex(szMotd2[len], charsmax(szMotd2)-len,
-		"<tr><td id=p>%d</td>\
-		<td id=n>%s</td>\
-		<td>%d</td>\
-		<td>%d</td>", (x+1), szName[kindex], g_iLevel[kindex], g_iXP[kindex])
-	}
-	
-	add(szMotd2, charsmax(szMotd2), "</table></body></html>")
-	show_motd(id, szMotd2, "TOP RANK MAP")
-}
-
-public CompareEXP(elem1[], elem2[])
-{
-	if(elem1[1] > elem2[1]) return -1;
-	else if(elem1[1] < elem2[1]) return 1;
-	
-	return 0;
-}
-
-public show_global_top(id)
-{
-	show_motd(id, g_szMotd, "TOP RANK TOÀN SERVER")
-}
-
-FormatTop(iNum)
-{
-    enum _:sVaultData
-	{
-		VD_Key[64],
-		VD_Value
-	}
-	
-    new sVault = nvault_util_open(VAULTNAME)
-    new Array:entries = ArrayCreate(sVaultData)
-	
-    new sizeEntries;
-    new numEntries = nvault_util_count(sVault)
-    new data[sVaultData], value[128], data2[sVaultData]
-    
-    for(new i = 0, pos, timestamp; i < numEntries; i++) 
-	{
-        pos = nvault_util_read(sVault, pos, data[VD_Key], charsmax(data[VD_Key]), value, charsmax(value), timestamp);
-        data[VD_Value] = str_to_num(value)
-        
-        if(sizeEntries == 0) 
-		{
-            ArrayPushArray(entries, data)
-            sizeEntries++
-        } 
-		else 
-		{
-            for(timestamp = 0; timestamp <= sizeEntries; timestamp++) 
-			{
-                if(timestamp == sizeEntries) 
-				{
-                    if(sizeEntries < iNum) 
-					{
-                        ArrayPushArray(entries, data)
-                        sizeEntries++
-                    }
-					
-                    break
-                }
-                
-                ArrayGetArray(entries, timestamp, data2)
-                if(data[VD_Value] >= data2[VD_Value]) 
-				{
-                    ArrayInsertArrayBefore(entries, timestamp, data)
-                    if(sizeEntries < iNum) 
-					{
-                        sizeEntries++
-                    } 
-					else 
-					{
-                        ArrayDeleteItem(entries, sizeEntries);
-                    }
-                    
-                    break
-                }
-            }
-        }
-    }
-	
-    nvault_util_close(sVault)
-	
-    new iLen
-    new len = charsmax(g_szMotd)
-	
-    iLen = formatex(g_szMotd, len, "<STYLE>body{background:#212121;color:#d1d1d1;font-family:Arial}table{width:100%%;font-size:19px}</STYLE><table cellpadding=1 cellspacing=1 border=0>")
-    iLen += formatex(g_szMotd[iLen], len - iLen, "<tr bgcolor=#333333><th width=1%%><align=left font color=white> %s <th width=5%%> %-22.22s <th width=5%%> %s", "#", "NAME", "LEVEL")
-
-    new i
-    for(i = 0; i < sizeEntries; i++)
-    {
-        ArrayGetArray(entries, i, data); 
-        data[VD_Key][20] = 0;
-		
-        replace_all(data[VD_Key], charsmax(data[VD_Key]), "<", "&lt;")
-        replace_all(data[VD_Key], charsmax(data[VD_Key]), ">", "&gt;")
-        
-        iLen += formatex(g_szMotd[iLen], len - iLen, "<tr align=left%s><td align=left><font color=white> %d. <td> %-22.22s <td> %d", " bgcolor=#2b5b95",(i+1), data[VD_Key], data[VD_Value])
-    }
-    
-    ArrayDestroy(entries);
-    iLen += formatex(g_szMotd[iLen], len - iLen, "</table></body>")
-}
-
 public save_data(id)
 {
 	if(is_user_alive(id))
@@ -841,15 +384,14 @@ public event_new_round()
 		player = iPlayers[i]
 		g_iDamage[player][player] = 0
 	}
+	MakeTop15( )
 }
 
 public event_Restart()
 {
-	if(get_pcvar_num(g_iEShowScore))
-	{
-		g_iZombieScore = 0
-		g_iHumanScore = 0
-	}
+	g_iZombieScore = 0
+	g_iHumanScore = 0
+	
 }
 
 public event_Damage(iVictim)
@@ -862,36 +404,31 @@ public event_Damage(iVictim)
 	
 	if(iAttacker == iVictim || !is_user_alive(iAttacker) || !is_user_alive(iVictim))
 		return
-		
-	if(get_pcvar_num(g_iEHitRecieved))
-	{
-		set_hudmessage(255, 0, 0, 0.45, 0.50, 2, 0.1, 4.0, 0.1, 0.1, -1)
-		ShowSyncHudMsg(iVictim, VictimHud, "%i^n", iHit)	
-	}
 	
-	if(get_pcvar_num(g_iEHitDealt))
-	{
-		set_hudmessage(0, 100, 200, -1.0, 0.55, 2, 0.1, 4.0, 0.02, 0.02, -1)
-		ShowSyncHudMsg(iAttacker, AttackerHud, "%i^n", iHit)
-	}
+	set_hudmessage(255, 0, 0, 0.45, 0.50, 2, 0.1, 4.0, 0.1, 0.1, -1)
+	ShowSyncHudMsg(iVictim, VictimHud, "%i^n", iHit)	
+	
+	
+	set_hudmessage(0, 100, 200, -1.0, 0.55, 2, 0.1, 4.0, 0.02, 0.02, -1)
+	ShowSyncHudMsg(iAttacker, AttackerHud, "%i^n", iHit)
+	
 	
 	Show_spectate(iVictim, iAttacker, iHit)
 	
 	if(zp_get_user_zombie(iVictim) && !zp_get_user_survivor(iAttacker))
 	{
 		g_iDamage[iAttacker][iVictim] += read_data(2)
-		if (get_pcvar_num(g_iEDamageEXP))
-		{
-			if(g_iDamage[iAttacker][iVictim] >= get_pcvar_num(g_iDamageAmount))
-			{	
-				g_iXP[iAttacker] += get_pcvar_num(g_iDamageEXP)
-				
-				//sChatColor(iAttacker, "^x04[CL]^x01 %L", LANG_PLAYER, "CL_DEALT_DAMAGE", get_pcvar_num(g_iDamageEXP), get_pcvar_num(g_iDamageAmount))
-				g_iDamage[iAttacker][iVictim] = 0
-				
-				ReviewLevel(iAttacker)
-			}
+		
+		if(g_iDamage[iAttacker][iVictim] >= 1300)
+		{	
+			g_iXP[iAttacker] += 2
+			
+			//sChatColor(iAttacker, "^x04[CL]^x01 %L", LANG_PLAYER, "CL_DEALT_DAMAGE", get_pcvar_num(g_iDamageEXP), get_pcvar_num(g_iDamageAmount))
+			g_iDamage[iAttacker][iVictim] = 0
+			
+			ReviewLevel(iAttacker)
 		}
+		
 	}
 }
 
@@ -932,13 +469,11 @@ public event_DeathMsg()
 	{
 		if(zp_get_user_nemesis(iVictim))
 		{
-			if (get_pcvar_num(g_iESurvKillBonus))
-			{
-				g_iXP[iKiller] += get_pcvar_num(g_iNemKillEXP)
-				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_NEMESIS", get_pcvar_num(g_iNemKillEXP))
-				
-				ReviewLevel(iKiller)
-			}
+			g_iXP[iKiller] += 1
+			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_NEMESIS", get_pcvar_num(g_iNemKillEXP))
+			
+			ReviewLevel(iKiller)
+			
 		}
 		else
 		{
@@ -946,67 +481,62 @@ public event_DeathMsg()
 			{
 				g_bKilledZombie[iKiller][iVictim] = true
 				
-				g_iXP[iKiller] += get_pcvar_num(g_iHeadShotEXP)
+				g_iXP[iKiller] += 2
 				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HEADSHOT_KILL", get_pcvar_num(g_iHeadShotEXP))
 			}
 			else
 			{
 				g_bKilledZombie[iKiller][iVictim] = true
 				
-				g_iXP[iKiller] += get_pcvar_num(g_iHumanEXP)
+				g_iXP[iKiller] += 1
 				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL", get_pcvar_num(g_iHumanEXP))
 			}
 			
 			ReviewLevel(iKiller)
 			
-			#if defined IM_USING_ZP50
-			if(get_pcvar_num(g_iEAssistEXP))
+			new iPlayers[MAXPLAYERS], iPlayerCount, i, id
+			get_players(iPlayers, iPlayerCount, "ah") 
+			for(i = 0; i < iPlayerCount; i++)
 			{
-				new iPlayers[MAXPLAYERS], iPlayerCount, i, id
-				get_players(iPlayers, iPlayerCount, "ah") 
-				for(i = 0; i < iPlayerCount; i++)
-				{
-					id = iPlayers[i]
-					
-					if(g_iDamage[id][iVictim] >= g_iMaxHealth[iVictim]/ get_pcvar_num(g_iAssistDivide))
-					{	
-						if(!g_bKilledZombie[id][iVictim] && !zp_core_is_zombie(id))
-						{
-							g_iXP[id] += get_pcvar_num(g_iAssistEXP)
-							
-							new szName[32]
-							get_user_name(iKiller, szName, charsmax(szName))
-							//sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_ASSIST", get_pcvar_num(g_iAssistEXP), RANKS[g_iLevel[iKiller]], szName)
-							
-							ReviewLevel(id)
-							
-							g_iDamage[id][iVictim] = 0
-						}
-						else
-						{
-							g_bKilledZombie[id][iVictim] = false
-						}
+				id = iPlayers[i]
+				
+				if(g_iDamage[id][iVictim] >= g_iMaxHealth[iVictim]/ 5)
+				{	
+					if(!g_bKilledZombie[id][iVictim] && !zp_core_is_zombie(id))
+					{
+						g_iXP[id] += 1
+						
+						new szName[32]
+						get_user_name(iKiller, szName, charsmax(szName))
+						//sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_ASSIST", get_pcvar_num(g_iAssistEXP), RANKS[g_iLevel[iKiller]], szName)
+						
+						ReviewLevel(id)
+						
+						g_iDamage[id][iVictim] = 0
+					}
+					else
+					{
+						g_bKilledZombie[id][iVictim] = false
 					}
 				}
 			}
-			#endif
+			
 		}
 	}
 	else if(zp_get_user_zombie(iKiller) || zp_get_user_nemesis(iKiller))
 	{
 		if(zp_get_user_survivor(iVictim))
 		{
-			if(get_pcvar_num(g_iENemKillBonus))
-			{
-				g_iXP[iKiller] += get_pcvar_num(g_iSurKillEXP)
-				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_SURVIVOR", get_pcvar_num(g_iSurKillEXP))
-				
-				ReviewLevel(iKiller)
-			}
+			
+			g_iXP[iKiller] += 3
+			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_SURVIVOR", get_pcvar_num(g_iSurKillEXP))
+			
+			ReviewLevel(iKiller)
+			
 		}
 		else
 		{
-			g_iXP[iKiller] += get_pcvar_num(g_iZombieEXP)
+			g_iXP[iKiller] += 2
 			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_HUMAN", get_pcvar_num(g_iZombieEXP))
 			
 			ReviewLevel(iKiller)
@@ -1023,103 +553,23 @@ public ReviewLevel(id)
 		get_user_name(id, name, charsmax(name));
 		
 		sChatColor(id, "^x04[NTC]^x03 %s ^x01đã lên rank ^x04%s", name, RANKS[g_iLevel[id]])
-		
-		if(get_pcvar_num(g_iELevelBonus))
-		{
-			g_iXP[id] += get_pcvar_num(g_iLevelEXPBonus)
-			sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_BONUS_EXP", get_pcvar_num(g_iLevelEXPBonus))
-		
-			iBonus(id)
-		}
-		
-		if(get_pcvar_num(g_iEAPRewards))
-		{
-			zp_set_user_ammo_packs(id, zp_get_user_ammo_packs(id) + get_pcvar_num(g_iLevelAPBonus))
-			sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_BONUS_AP", get_pcvar_num(g_iLevelAPBonus))
-		}
 	}
 }
 
 public event_StatusValue(id)
-{
-	if(!get_pcvar_num(g_iELevelIcon))
-		return
-	
+{	
 	new pid = read_data(2)
 	new pidlevel = g_iLevel[pid]
 	
 	if(!pev_valid(pid) || !is_user_alive(pid) || zp_get_user_zombie(pid))
 		return
 	
-	new flTime = floatround(get_pcvar_float(g_iLevelIconTime) * 10)
-	if (flTime > 0)
-	{
-		Create_TE_PLAYERATTACHMENT(id, pid, 55, g_iSprite[pidlevel], flTime)
-	}
+	
+	Create_TE_PLAYERATTACHMENT(id, pid, 55, g_iSprite[pidlevel], 2)
+	
 }
 
-public fw_PlayerRespawn(id)
-{
-	if(is_user_alive(id))
-	{
-		if(get_pcvar_num(g_iELevelBonus))
-		{
-			set_task(5.0, "iBonus", id)
-		}
-		
-		set_task(50.0, "iInform", id)
-		set_task(120.0, "iSave", id)
-	}
-}
 
-public iBonus(id)
-{
-	if(is_user_alive(id) && !zp_get_user_zombie(id))
-	{
-		new iHealth = g_iLevel[id]* get_pcvar_num(g_iLevelHPBonus)
-		new iArmor = g_iLevel[id]* get_pcvar_num(g_iLevelArBonus)
-		
-		if(get_pcvar_num(g_iEHPBonus))
-		{
-			set_user_health(id, get_user_health(id) + iHealth)
-		}
-		
-		if(get_pcvar_num(g_iEArmorBonus))
-		{
-			set_user_armor(id, get_user_armor(id) + iArmor)
-		}
-		
-		if(get_pcvar_num(g_iEHPBonus) && get_pcvar_num(g_iEArmorBonus))
-		{
-			sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFORM", RANKS[g_iLevel[id]], iHealth, iArmor)
-		}
-	}
-}
-
-public iInform(id)
-{
-	if(is_user_alive(id))
-	{
-		//sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFORM_2")
-	}
-}
-
-public iSave(id)
-{
-	if(is_user_alive(id))
-	{
-		//sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFORM_3")
-	}
-}
-
-#if defined CUSTOM_CHAT
-public message_SayText(id)
-{
-	return PLUGIN_HANDLED
-}
-#endif
-
-#if defined IM_USING_ZP50
 public zp_fw_core_infect_post(id, attacker)
 {
 	if(zp_class_zombie_get_current(id) == ZP_INVALID_ZOMBIE_CLASS)
@@ -1127,119 +577,197 @@ public zp_fw_core_infect_post(id, attacker)
 	
 	g_iMaxHealth[id] = zp_class_zombie_get_max_health(id, zp_class_zombie_get_current(id))
 	
-	if(get_pcvar_num(g_iEZombieInfectBonus))
+	if (is_user_alive(attacker) && attacker != id)
 	{
-		if (is_user_alive(attacker) && attacker != id)
-		{
-			g_iXP[attacker] += get_pcvar_num(g_iInfectEXP)
-			//sChatColor(attacker, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFECT", get_pcvar_num(g_iInfectEXP))
-			
-			ReviewLevel(id)
-		}
-	}
-}
-#else
-public zp_user_infected_post(id, infector)
-{
-	if(get_pcvar_num(g_iEZombieInfectBonus))
-	{
-		if(is_user_alive(infector) && infector != id)
-		{
-			g_iXP[infector] += get_pcvar_num(g_iInfectEXP)
-			sChatColor(infector, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFECT", get_pcvar_num(g_iInfectEXP))
-			
-			ReviewLevel(id)
-		}
-	}
-}
-#endif
-
-#if defined CHANGE_NAME
-public FwdClientUserInfoChanged( id, szBuffer )
-{
-	if ( !is_user_connected( id ) )
-		return FMRES_IGNORED;
+		g_iXP[attacker] += 2
+		//sChatColor(attacker, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFECT", get_pcvar_num(g_iInfectEXP))
 		
-	static szNewName[32];
- 
-	engfunc( EngFunc_InfoKeyValue, szBuffer, "name", szNewName, charsmax(szNewName));
-	
-	if(equal(szNewName, g_sName[id]))
-		return FMRES_IGNORED;
-	
-	SaveData(id)
-	
-	sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_CHANGE_NAME2", g_sName[id], szNewName)
-	sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_CHANGE_NAME3", szNewName)
-	
-	copy(g_sName[id], charsmax(g_sName[]), szNewName)
-	LoadData(id)
-	
-	sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_CHANGE_NAME4")
-	
-	return FMRES_IGNORED;
-} 
-#endif
-
-SaveData(id)
-{
-	new szData[32], szKey[40]
-	switch(get_pcvar_num(g_iSaveType))
-	{
-		case 1:
-		{
-			formatex(szKey, charsmax(szKey), "%s", g_iSteamID[id])
-		}
-		case 2:
-		{
-			formatex(szKey, charsmax(szKey), "%s", g_sName[id])
-		}
+		ReviewLevel(id)
 	}
 	
-	formatex(szData, charsmax(szData), "%d %d", g_iLevel[id], g_iXP[id])
-	nvault_set(g_iVault, szKey, szData)
 }
 
-LoadData(id)
-{
-	new szData[32], szKey[40]
-	switch(get_pcvar_num(g_iSaveType))
-	{
-		case 1:
-		{
-			formatex(szKey, charsmax(szKey), "%s" , g_iSteamID[id])
-		}
-		case 2:
-		{
-			formatex(szKey, charsmax(szKey), "%s", g_sName[id])
-		}
-	}
+SaveData(id) {
 	
-	if(nvault_get(g_iVault, szKey, szData, charsmax(szData)))
-	{
-		new iSpacePos = contain(szData, " ")
-		if(iSpacePos > -1)
-		{
-			new szLevel[8], szXP[32]
-			
-			parse(szData, szLevel, charsmax(szLevel), szXP, charsmax(szXP))
-			
-			g_iLevel[id] = str_to_num(szLevel)
-			g_iXP[id] = str_to_num(szXP)
-		}
-	}
+	new szTemp[ 512 ]
+	formatex( szTemp, charsmax( szTemp ),"DELETE FROM level_zp WHERE name = '%s'", g_sName[id])
+	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
+	
+	formatex( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level) VALUES( '%s', '%d', '%d')", g_sName[id], g_iXP[id], g_iLevel[id])
+	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 }
 
-#if defined CUSTOM_CHAT
-bool:is_valid_msg(const szMessage[])
+LoadData(id) {
+	new Data[ 1 ]
+	Data[ 0 ] = id
+	
+	new szTemp[ 512 ]
+	format( szTemp, charsmax( szTemp ),"SELECT exp, level FROM level_zp WHERE name = '%s'", g_sName[ id ] )
+	
+	SQL_ThreadQuery( g_SqlTuple, "LoadPoints_QueryHandler", szTemp, Data, 1 )
+}
+public LoadPoints_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
 {
-	if(szMessage[0] == '@' || szMessage[0] == '/' || szMessage[0] == '!' || !strlen(szMessage))
-		return false
+	new id
+	id = Data[ 0 ]
+	
+	if( !SQL_IsFail( FailState, Errcode, Error ) )
+	{
+		if( SQL_NumResults( Query ) < 1 )
+		{
+			new szTemp[ 512 ]
+			format( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level) VALUES( '%s', '%d', '%d')", g_sName[id], g_iXP[id], g_iLevel[id] )
+			
+			SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
+		} 
 		
-	return true
+		else
+		{
+			g_iXP[ id ] = SQL_ReadResult( Query, 0 )
+			g_iLevel[ id ] = SQL_ReadResult( Query, 1 )
+		}
+	}
 }
-#endif
 
+public IgnoreHandle( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
+{
+	SQL_FreeHandle( Query )
+	if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+		log_amx("%s", Error)
+		return
+	}
+	
+	
+}
+
+public show_stats(id)
+{		
+	new Data[ 1 ]
+	Data[ 0 ] = id
+	
+	new szTemp[ 512 ]
+	format( szTemp, charsmax( szTemp ), "SELECT COUNT(*) FROM level_zp WHERE exp >= %d", g_iXP[ id ] )
+	
+	SQL_ThreadQuery( g_SqlTuple, "SkillRank_QueryHandler", szTemp, Data, 1 )
+	
+}
+public SkillRank_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
+{
+	if( !SQL_IsFail( FailState, Errcode, Error ) )
+	{
+		new id
+		id = Data[ 0 ]
+		
+		g_iRank[ id ] = SQL_ReadResult( Query, 0 )
+		
+		if( g_iRank[ id ] == 0 )
+		{
+			g_iRank[ id ] = 1
+		}
+		
+		TotalRows( id )
+	}
+}
+
+public TotalRows( id )
+{
+	new Data[ 1 ]
+	Data[ 0 ] = id
+	
+	new szTemp[ 128 ]
+	format( szTemp, charsmax( szTemp ), "SELECT COUNT(*) FROM level_zp")
+	
+	SQL_ThreadQuery( g_SqlTuple, "TotalRows_QueryHandler", szTemp, Data, 1 )
+}
+
+public TotalRows_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
+{
+	if( !SQL_IsFail( FailState, Errcode, Error ) )
+	{
+		new id
+		id = Data[ 0 ]
+		
+		g_iCount = SQL_ReadResult( Query, 0 )
+		
+		sChatColor( id, "!g[NTC]!n Dang o rank %d/%d", g_iRank[ id ], g_iCount )
+		sChatColor(id, "^x04[NTC]^x03 Exp hiện tại %d, cần %d để lên cap", RANKS[g_iLevel[id]], (EXP[g_iLevel[id] + 1] - g_iXP[id]))
+		
+	}
+}
+
+public MakeTop15( )
+{	
+	new szQuery[ 512 ]
+	formatex( szQuery, charsmax( szQuery ),"SELECT name, level FROM level_zp ORDER BY exp DESC LIMIT 10")
+	
+	SQL_ThreadQuery( g_SqlTuple, "MakeTop15_QueryHandler", szQuery )
+}
+
+public MakeTop15_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
+{
+	if( !SQL_IsFail( FailState, Errcode, Error ) )
+	{
+		new szName[ 33 ]
+		
+		new iLevel
+		
+		new iLen
+		iLen = formatex( g_szMotd, charsmax( g_szMotd ),
+		"<html><head><meta charset=^"UTF-8^"></head><body bgcolor=#A4BED6>\
+		<table width=100%% cellpadding=2 cellspacing=0 border=0>\
+		<tr align=center bgcolor=#52697B>\
+		<th width=4%%>#\
+		<th width=30%% align=left>Ten\
+		<th width=20%%>Level\
+		<th width=46%%>Cap bac" )
+		
+		new i = 1
+		while( SQL_MoreResults( Query ) )
+		{
+			SQL_ReadResult( Query, 0, szName, charsmax( szName ) )
+			
+			iLevel = SQL_ReadResult( Query, 1 )
+			
+			replace_all( szName, charsmax( szName ), "<", "[" )
+			replace_all( szName, charsmax( szName ), ">", "]" )
+			
+			iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "<tr align=center>" )
+			iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "<td>%i", i )
+			iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "<td align=left>%s", szName )
+			iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "<td>%d", iLevel)
+			iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "<td>%s", RANKS[iLevel] )
+			
+			i++
+			
+			SQL_NextRow( Query )
+		}
+		
+		iLen += formatex( g_szMotd[ iLen ], charsmax( g_szMotd ) - iLen, "</table></body></html>" )
+	}
+}
+
+SQL_IsFail( FailState, Errcode, Error[ ] ) {
+	if( FailState == TQUERY_CONNECT_FAILED )
+	{
+		log_amx( "[Error] Could not connect to SQL database: %s", Error )
+		return true
+	}
+	
+	if( FailState == TQUERY_QUERY_FAILED )
+	{
+		log_amx( "[Error] Query failed: %s", Error )
+		return true
+	}
+	
+	if( Errcode )
+	{
+		log_amx( "[Error] Error on query: %s", Error )
+		return true
+	}
+	
+	return false
+}
 stock Create_TE_PLAYERATTACHMENT(id, entity, vOffset, iSprite, life)
 {
 	message_begin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, _, id)
@@ -1253,26 +781,26 @@ stock Create_TE_PLAYERATTACHMENT(id, entity, vOffset, iSprite, life)
 
 stock sChatColor(const id, const input[], any:...)
 {
-    new count = 1, players[32], i, player
-    static msg[191]
-
-    if(numargs() == 2)
-        copy(msg, 190, input)
-    else
-        vformat(msg, 190, input, 3)
-
-    replace_all(msg, 190, "!g", "^4")
-    replace_all(msg, 190, "!y", "^1")
-    replace_all(msg, 190, "!t", "^3")
-    
-    if(id) {
-        if(!is_user_connected(id)) return
-        players[0] = id
-    }
-    else get_players(players, count, "ch")
-
-    for(i = 0; i < count; i++)
-    {
+	new count = 1, players[32], i, player
+	static msg[191]
+	
+	if(numargs() == 2)
+		copy(msg, 190, input)
+	else
+		vformat(msg, 190, input, 3)
+	
+	replace_all(msg, 190, "!g", "^4")
+	replace_all(msg, 190, "!y", "^1")
+	replace_all(msg, 190, "!t", "^3")
+	
+	if(id) {
+		if(!is_user_connected(id)) return
+		players[0] = id
+	}
+	else get_players(players, count, "ch")
+	
+	for(i = 0; i < count; i++)
+	{
 		player = players[i]
 		
 		message_begin(MSG_ONE_UNRELIABLE, g_msgSayText, _, player)
