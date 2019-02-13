@@ -114,6 +114,9 @@ new Handle:g_SqlTuple, g_iCount
 
 new ScoreHud
 
+new AttackerHud, VictimHud;
+	
+new AttackerSpecHud, VictimSpecHud;
 public plugin_init()
 {
 	// Original plugin is by Excalibur007. ;)
@@ -129,7 +132,8 @@ public plugin_init()
 	register_clcmd("free_give","cl_give", ADMIN_FLAG, "Enable to give free EXP")
 	
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0")
-	register_event("Damage", "event_Damage", "be", "2!0", "3=0", "4!0")
+	//register_event("Damage", "event_Damage", "be", "2!0", "3=0", "4!0")
+	RegisterHam(Ham_TakeDamage, "player", "event_Damage") 
 	register_event("DeathMsg", "event_DeathMsg", "a", "1>0")
 	register_event("StatusValue", "event_StatusValue", "be", "1=2", "2!0")
 	register_event("TextMsg", "event_Restart", "a", "2&#Game_C", "2&#Game_w")
@@ -139,6 +143,12 @@ public plugin_init()
 	
 	// Score Inform. ;)
 	set_task(1.0, "ShowScore", 0, _, _, "b")
+	
+	
+	AttackerSpecHud = CreateHudSyncObj()
+	VictimSpecHud = CreateHudSyncObj()
+	AttackerHud = CreateHudSyncObj()
+	VictimHud = CreateHudSyncObj()
 	
 	ScoreHud = CreateHudSyncObj()
 	
@@ -394,13 +404,10 @@ public event_Restart()
 	
 }
 
-public event_Damage(iVictim)
+public event_Damage(iVictim, inflictor, iAttacker, Float:damage, bits)
 {
-	static iAttacker; iAttacker = get_user_attacker(iVictim)
-	static iHit; iHit = read_data(2)
+	static iHit; iHit = floatround(damage)
 	
-	new AttackerHud = CreateHudSyncObj()
-	new VictimHud = CreateHudSyncObj()
 	
 	if(iAttacker == iVictim || !is_user_alive(iAttacker) || !is_user_alive(iVictim))
 		return
@@ -417,7 +424,7 @@ public event_Damage(iVictim)
 	
 	if(zp_get_user_zombie(iVictim) && !zp_get_user_survivor(iAttacker))
 	{
-		g_iDamage[iAttacker][iVictim] += read_data(2)
+		g_iDamage[iAttacker][iVictim] += iHit
 		
 		if(g_iDamage[iAttacker][iVictim] >= 1300)
 		{	
@@ -434,8 +441,6 @@ public event_Damage(iVictim)
 
 public Show_spectate(iVictim, iAttacker, iHit)
 {
-	new AttackerSpecHud = CreateHudSyncObj()
-	new VictimSpecHud = CreateHudSyncObj()
 	
 	new Players[MAXPLAYERS], iPlayerCount, i, id
 	get_players(Players, iPlayerCount, "bc") 
