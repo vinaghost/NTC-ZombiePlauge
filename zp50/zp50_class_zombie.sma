@@ -247,12 +247,12 @@ public client_disconnect(id)
 }
 
 public client_PreThink(id) {
-	
+	if( !is_user_alive(id) ) return;
 	if(zp_core_is_zombie(id) )
 	{
 		if( !Get_BitVar(g_skill2_active, id) )
 		{
-			if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id)) return PLUGIN_CONTINUE;
+			if (LibraryExists(LIBRARY_NEMESIS, LibType_Library) && zp_class_nemesis_get(id)) return;
 			
 			new button = pev(id, pev_button), old_button = pev(id, pev_oldbuttons)
 			
@@ -262,7 +262,7 @@ public client_PreThink(id) {
 			}
 		}
 	}
-	return PLUGIN_CONTINUE;
+	return;
 }
 
 public active_skill1(id) {

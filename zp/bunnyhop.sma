@@ -26,8 +26,8 @@ public plugin_init() {
 }
 
 public client_PreThink(id) {
-	if ( !is_user_alive(id) && zp_core_is_zombie(id) )
-		return PLUGIN_CONTINUE
+	if ( !is_user_alive(id) ) return PLUGIN_CONTINUE
+	if ( zp_core_is_zombie(id) ) return PLUGIN_CONTINUE
 
 	entity_set_float(id, EV_FL_fuser2, 0.0)		// Disable slow down after jumping
 	return PLUGIN_HANDLED
