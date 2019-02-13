@@ -208,7 +208,7 @@ public plugin_init()
 	cvar_damage_shake = register_cvar("zp_nrl_damage_screenshake", "1")
 	
 	// CVARS - Rocket
-	cvar_rocket_vel = register_cvar("zp_nrl_rocket_speed", "1200")
+	cvar_rocket_vel = register_cvar("zp_nrl_rocket_speed", "600")
 	cvar_rocket_trail = register_cvar("zp_nrl_rocket_trail", "1")
 	cvar_rocket_glow = register_cvar("zp_nrl_rocket_glow", "1")
 	cvar_rocket_dlight = register_cvar("zp_nrl_rocket_dlight", "0")
