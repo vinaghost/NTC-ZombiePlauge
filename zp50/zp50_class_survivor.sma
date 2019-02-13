@@ -217,11 +217,11 @@ public zp_fw_core_spawn_post(id)
 			remove_task(id+TASK_AURA)
 		
 		// Remove survivor weapon model
-		new weapon_name[32]
+		/*new weapon_name[32]
 		get_pcvar_string(cvar_survivor_weapon, weapon_name, charsmax(weapon_name))
 		new weapon_id = get_weaponid(weapon_name)
 		cs_reset_player_view_model(id, weapon_id)
-		
+		*/
 		// Remove survivor flag
 		flag_unset(g_IsSurvivor, id)
 	}
@@ -239,11 +239,11 @@ public zp_fw_core_infect(id, attacker)
 		if (get_pcvar_num(cvar_survivor_aura))
 			remove_task(id+TASK_AURA)
 		
-		// Remove survivor weapon model
+		/*// Remove survivor weapon model
 		new weapon_name[32]
 		get_pcvar_string(cvar_survivor_weapon, weapon_name, charsmax(weapon_name))
 		new weapon_id = get_weaponid(weapon_name)
-		cs_reset_player_view_model(id, weapon_id)
+		cs_reset_player_view_model(id, weapon_id)*/
 		
 		// Remove survivor flag
 		flag_unset(g_IsSurvivor, id)
@@ -274,11 +274,11 @@ public zp_fw_core_cure_post(id, attacker)
 	cs_set_player_model(id, player_model)
 	
 	// Apply survivor weapon model
-	new weapon_name[32]
+	/*new weapon_name[32]
 	get_pcvar_string(cvar_survivor_weapon, weapon_name, charsmax(weapon_name))
 	new weapon_id = get_weaponid(weapon_name)
 	cs_set_player_view_model(id, weapon_id, g_models_survivor_weapon)
-	
+	*/
 	// Survivor glow
 	if (get_pcvar_num(cvar_survivor_glow))
 		set_user_rendering(id, kRenderFxGlowShell, 0, 0, 255, kRenderNormal, 25)
@@ -291,8 +291,8 @@ public zp_fw_core_cure_post(id, attacker)
 	strip_weapons(id, PRIMARY_ONLY)
 	strip_weapons(id, SECONDARY_ONLY)
 	strip_weapons(id, GRENADES_ONLY)
-	give_item(id, weapon_name)
-	ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+	//give_item(id, weapon_name)
+	//ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
 }
 
 public native_class_survivor_get(plugin_id, num_params)

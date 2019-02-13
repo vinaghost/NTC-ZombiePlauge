@@ -77,6 +77,12 @@ public zp_fw_zombie_skill1_activing(id, classid) {
 	Remove_Invisible(id)
 }
 
+public zp_fw_core_cure_pre(id, attacker) {
+	
+	
+	set_user_rendering(id)
+	set_fov(id)
+}
 
 public Do_Invisible(id)
 {	
