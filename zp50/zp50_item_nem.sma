@@ -24,10 +24,15 @@ public plugin_init() {
 
 public event_new_round() {
 	if( h_Nem ) {
-		zp_class_nemesis_set(index)
-		h_Nem = false;
-		index = -1;
+		set_task(2.0, "SetNem");
+		
 	}
+}
+public SetNem()
+{
+	zp_class_nemesis_set(index)
+	h_Nem = false;
+	index = -1;
 }
 public zp_fw_money_items_select_pre(id, itemid) {
 	if( itemid != g_Nem ) return ZP_ITEM_AVAILABLE;
@@ -54,4 +59,4 @@ public client_disconnect(id) {
 		index = -1;
 	}
 }
-	
+
