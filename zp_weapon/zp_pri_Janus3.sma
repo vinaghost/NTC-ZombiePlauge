@@ -164,13 +164,15 @@ public Do_Register_HamBot(id)
 }
 
 public zp_fw_wpn_select_post(id, itemid) {
-	if( itemid != g_Janus3 )
-		Get_Janus3(id)
+	if( itemid != g_Janus3 ) return;
+
+	Get_Janus3(id)
 }
 
 public zp_fw_wpn_remove(id, itemid) {
-	if( itemid != g_Janus3 )
-		Remove_Janus3(id)
+	if( itemid != g_Janus3 ) return
+	
+	Remove_Janus3(id)
 }
 public Get_Janus3(id)
 {
