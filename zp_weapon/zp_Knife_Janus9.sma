@@ -154,6 +154,12 @@ public zp_fw_wpn_remove(id, itemid) {
 	UnSet_BitVar(g_Had_Janus9, id)
 	
 }
+public zp_fw_core_infect(id) {
+	UnSet_BitVar(g_Had_Janus9, id)
+}
+public zp_fw_core_cure(id) {
+	UnSet_BitVar(g_Had_Janus9, id)
+}
 public Get_Janus9(id)
 {
 	Set_BitVar(g_Had_Janus9, id)
