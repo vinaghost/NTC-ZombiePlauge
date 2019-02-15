@@ -76,11 +76,11 @@ enum _:ModelData
 
 // Golden weapons attributes
 new WPNDATA[][WeaponData] = {
-	{ "Golden Deagle", 12000, "weapon_deagle", 4.0, CSW_DEAGLE, 879238 },
-	{ "Golden Ak-47", 25000, "weapon_ak47", 3.5, CSW_AK47, 879234 },
-	{ "Golden M4A1", 20000, "weapon_m4a1", 3.9, CSW_M4A1, 879235 },
-	{ "Golden XM1014", 25000, "weapon_xm1014", 4.0, CSW_XM1014, 879236 },
-	{ "Golden M249", 30000, "weapon_m249", 3.0, CSW_M249, 879237 }
+	{ "Golden Deagle", 5000, "weapon_deagle", 4.0, CSW_DEAGLE, 879238 },
+	{ "Golden Ak-47", 8000, "weapon_ak47", 3.5, CSW_AK47, 879234 },
+	{ "Golden M4A1", 8000, "weapon_m4a1", 3.9, CSW_M4A1, 879235 },
+	{ "Golden XM1014", 10000, "weapon_xm1014", 4.0, CSW_XM1014, 879236 },
+	{ "Golden M249", 13000, "weapon_m249", 3.0, CSW_M249, 879237 }
 };
 
 // Golden weapons models
@@ -194,7 +194,7 @@ public had_item(id, itemid)  {
 	}
 	return 0;
 }
-public zp_fw_money_items_select_pre(id, itemid) {
+public zp_fw_wpn_money_select_pre(id, itemid) {
 	
 	if( !is_item(itemid) ) return ZP_WEAPON_AVAILABLE;
 	
@@ -205,7 +205,7 @@ public zp_fw_money_items_select_pre(id, itemid) {
 	return ZP_WEAPON_AVAILABLE;
 }
  
-public zp_fw_money_items_select_post(id, itemid) {
+public zp_fw_wpn_money_select_post(id, itemid) {
 	
 	if( itemid == g_wpn_gold[0] ) weapon_deagle(id)
 	else if( itemid == g_wpn_gold[1]) weapon_ak47(id)
@@ -282,8 +282,8 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage)
 
 		if (!g_has_item[attacker][i])
 			return HAM_IGNORED;
-
-		SetHamParamFloat(4, damage * WPNDATA[i][WeaponDamage]);
+		
+		SetHamParamFloat(4, damage * 7.0);
 		return HAM_IGNORED;
 	}
 
