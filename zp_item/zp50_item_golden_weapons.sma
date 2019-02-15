@@ -40,7 +40,7 @@
 #include <cstrike>
 #include <hamsandwich>
 #include <cs_ham_bots_api>
-#include <zp50_items>
+#include <zp50_weapon_money>
 
 // Plugin version
 new const PLUGIN_VERSION[] = "v1.0";
@@ -76,11 +76,11 @@ enum _:ModelData
 
 // Golden weapons attributes
 new WPNDATA[][WeaponData] = {
-	{ "Golden Deagle", 12000, "weapon_deagle", 2.5, CSW_DEAGLE, 879238 },
-	{ "Golden Ak-47", 25000, "weapon_ak47", 2.0, CSW_AK47, 879234 },
-	{ "Golden M4A1", 20000, "weapon_m4a1", 1.7, CSW_M4A1, 879235 },
-	{ "Golden XM1014", 25000, "weapon_xm1014", 2.5, CSW_XM1014, 879236 },
-	{ "Golden M249", 30000, "weapon_m249", 2.5, CSW_M249, 879237 }
+	{ "Golden Deagle", 12000, "weapon_deagle", 4.0, CSW_DEAGLE, 879238 },
+	{ "Golden Ak-47", 25000, "weapon_ak47", 3.5, CSW_AK47, 879234 },
+	{ "Golden M4A1", 20000, "weapon_m4a1", 3.9, CSW_M4A1, 879235 },
+	{ "Golden XM1014", 25000, "weapon_xm1014", 4.0, CSW_XM1014, 879236 },
+	{ "Golden M249", 30000, "weapon_m249", 3.0, CSW_M249, 879237 }
 };
 
 // Golden weapons models
@@ -112,14 +112,20 @@ public plugin_init()
 
 	for (new i = 0; i < sizeof WPNDATA; i++)
 	{
-		g_wpn_gold[i] = zp_money_items_register(WPNDATA[i][WeaponName], WPNDATA[i][WeaponCost])
+		
 		//zpcn_register_extra_item(WPNDATA[i][WeaponName], WPNDATA[i][WeaponCost], WPNDATA[i][WeaponEnt], ZPCN_TEAM_HUMAN, 2);
 		RegisterHam(Ham_Item_Deploy, WPNDATA[i][WeaponEnt], "fw_Item_Deploy_Post", 1);
 		RegisterHam(Ham_Item_AddToPlayer, WPNDATA[i][WeaponEnt], "fw_Item_AddToPlayer_Post", 1);
 		RegisterHam(Ham_Weapon_PrimaryAttack, WPNDATA[i][WeaponEnt], "fw_PrimaryAttack");
 		RegisterHam(Ham_Weapon_PrimaryAttack, WPNDATA[i][WeaponEnt], "fw_PrimaryAttack_Post", 1);
 	}
-
+	g_wpn_gold[0] = zp_weapons_m_register(WPNDATA[0][WeaponName], WPNDATA[0][WeaponCost], ZP_SECONDAYRY)
+	g_wpn_gold[1] = zp_weapons_m_register(WPNDATA[1][WeaponName], WPNDATA[1][WeaponCost], ZP_PRIMARY)
+	g_wpn_gold[2] = zp_weapons_m_register(WPNDATA[2][WeaponName], WPNDATA[2][WeaponCost], ZP_PRIMARY)
+	g_wpn_gold[3] = zp_weapons_m_register(WPNDATA[3][WeaponName], WPNDATA[3][WeaponCost], ZP_PRIMARY)
+	g_wpn_gold[4] = zp_weapons_m_register(WPNDATA[4][WeaponName], WPNDATA[4][WeaponCost], ZP_PRIMARY)
+	
+	
 	RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage");
 	RegisterHamBots(Ham_TakeDamage, "fw_TakeDamage");
 
@@ -181,13 +187,22 @@ public is_item(itemid) {
 	}
 	return 0;
 }
+public had_item(id, itemid)  {
+	for( new i = 0; i < 5; i++ ) {
+		if( itemid == g_wpn_gold[i] && g_has_item[id][i])
+			return 1;
+	}
+	return 0;
+}
 public zp_fw_money_items_select_pre(id, itemid) {
 	
-	if( !is_item(itemid) ) return ZP_ITEM_AVAILABLE;
+	if( !is_item(itemid) ) return ZP_WEAPON_AVAILABLE;
 	
-	if( zp_core_is_zombie(id) ) return ZP_ITEM_DONT_SHOW;
+	if( zp_core_is_zombie(id) ) return ZP_WEAPON_DONT_SHOW;
 	
-	return ZP_ITEM_AVAILABLE;
+	if( had_item(id, itemid) ) return ZP_WEAPON_DONT_SHOW;
+	
+	return ZP_WEAPON_AVAILABLE;
 }
  
 public zp_fw_money_items_select_post(id, itemid) {
