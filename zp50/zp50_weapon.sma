@@ -63,10 +63,11 @@ public plugin_init() {
 	
 	g_MaxPlayer = get_maxplayers()
 	
-	register_clcmd("say /buy", "show_buy_menu")
-	register_clcmd("say buy", "show_buy_menu")
-	register_clcmd("say /guns", "show_buy_menu")
-	register_clcmd("say guns", "show_buy_menu")
+	register_clcmd("say /pri", "show_buy_pri_menu")
+	register_clcmd("say /sec", "show_buy_sec_menu")
+	register_clcmd("say /knife", "show_buy_knife_menu")
+	
+	
 	
 	g_DoubleFrost = zp_ap_items_register("x2 Frost Nade", 15)
 }
@@ -81,7 +82,7 @@ public plugin_natives()
 	register_native("zp_weapons_get_cost", "native_weapons_get_cost")
 	register_native("zp_weapons_get_type", "native_weapons_get_type")
 	register_native("zp_weapons_force_buy", "native_weapons_force_buy")
-	
+	register_native("zp_weapons_ap_remove", "native_weapons_ap_remove")
 	
 	register_native("zp_weapons_main_menu", "native_weapons_main_menu")
 	register_native("zp_weapons_buy_menu", "native_weapons_buy_menu")
@@ -607,7 +608,7 @@ public knife_menu(id, menuid, item)
 	return PLUGIN_HANDLED;
 }	
 
-public show_buy_menu(id) {
+public show_buy_pri_menu(id) {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
 	
 	
@@ -615,10 +616,10 @@ public show_buy_menu(id) {
 		return;
 		
 	new title[64];
-	formatex(title, charsmax(title), "Mua vu khi AP^nDang co %d AP", zp_ammopacks_get(id)) 
-	new menuid = menu_create(title, "buy_menu");
+	formatex(title, charsmax(title), "Mua sung chinh^nDang co %d AP", zp_ammopacks_get(id)) 
+	new menuid = menu_create(title, "buy_pri_menu");
 	
-	static menu[128], name[32], cost, free
+	static menu[128], name[32], cost, free, type;
 	new index, itemdata[2]
 	
 	for (index = 0; index < g_WeaponCount; index++)
@@ -631,9 +632,15 @@ public show_buy_menu(id) {
 		free = ArrayGetCell(g_WeaponFree, index)	
 		if(Get_BitVar(free, id) )
 			continue;
+			
+		type = ArrayGetCell(g_WeaponType, index)
+		if( type != ZP_PRIMARY) 
+			continue;
 		
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
-			
+		cost = ArrayGetCell(g_WeaponCost, index)
+		
+		
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
@@ -647,7 +654,7 @@ public show_buy_menu(id) {
 	menu_display(id, menuid, 0)
 }
 
-public buy_menu(id, menuid, item){
+public buy_pri_menu(id, menuid, item){
 	if (item == MENU_EXIT)
 	{
 		menu_destroy(menuid)
@@ -661,8 +668,11 @@ public buy_menu(id, menuid, item){
 	}
 	
 	
-	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id)) {
+		menu_destroy(menuid)
 		return PLUGIN_CONTINUE
+	}
+	
 	
 	
 	new itemdata[2], dummy, itemid;
@@ -673,17 +683,17 @@ public buy_menu(id, menuid, item){
 	
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 	{
-		show_buy_menu(id)
+		show_buy_pri_menu(id)
 	}
 	else 
 	{
-		new type = ArrayGetCell(g_WeaponType, itemid)
+		strip_weapons(id, ZP_PRIMARY)
 		
-		if( type != ZP_KNIFE ) {
-			strip_weapons(id, type)
-		}
+		if( p_Weapon[ZP_PRIMARY][id] != ZP_INVALID_WEAPON)
+			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
 		
-		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, itemid)
+		
+		p_Weapon[ZP_PRIMARY][id] = itemid
 		
 		
 		buy_weapon(id, itemid)
@@ -691,7 +701,186 @@ public buy_menu(id, menuid, item){
 	
 	return PLUGIN_HANDLED;
 }
+
+public show_buy_sec_menu(id) {
+	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
 	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+		
+	new title[64];
+	formatex(title, charsmax(title), "Mua sung phu^nDang co %d AP", zp_ammopacks_get(id)) 
+	new menuid = menu_create(title, "buy_sec_menu");
+	
+	static menu[128], name[32], cost, free, type;
+	new index, itemdata[2]
+	
+	for (index = 0; index < g_WeaponCount; index++)
+	{
+		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
+		
+		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
+			continue;
+					
+		free = ArrayGetCell(g_WeaponFree, index)	
+		if(Get_BitVar(free, id) )
+			continue;
+			
+		type = ArrayGetCell(g_WeaponType, index)
+		if( type != ZP_SECONDAYRY) 
+			continue;
+		
+		ArrayGetString(g_WeaponName, index, name, charsmax(name))
+		cost = ArrayGetCell(g_WeaponCost, index)
+		
+		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		else
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+			
+		itemdata[0] = index
+		itemdata[1] = g_ForwardResult
+		menu_additem(menuid, menu, itemdata)
+	}
+	
+	menu_display(id, menuid, 0)
+}
+
+public buy_sec_menu(id, menuid, item){
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE;
+	}
+		
+	if (!is_user_alive(id) || zp_core_is_zombie(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE;
+	}
+	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id)) {
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE
+	}
+	
+	new itemdata[2], dummy, itemid;
+	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
+	itemid = itemdata[0]
+	
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, 0)
+	
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
+	{
+		show_buy_sec_menu(id)
+	}
+	else 
+	{
+		strip_weapons(id, ZP_SECONDAYRY)
+		
+		if( p_Weapon[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON)
+			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDAYRY][id])
+		
+		
+		p_Weapon[ZP_SECONDAYRY][id] = itemid
+		
+		
+		buy_weapon(id, itemid)
+	}
+	
+	return PLUGIN_HANDLED;
+}
+public show_buy_knife_menu(id) {
+	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
+	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
+		return;
+		
+	new title[64];
+	formatex(title, charsmax(title), "Mua dao va cac vu khi khong phong ra dan^nDang co %d AP", zp_ammopacks_get(id)) 
+	new menuid = menu_create(title, "buy_knife_menu");
+	
+	static menu[128], name[32], cost, free, type;
+	new index, itemdata[2]
+	
+	for (index = 0; index < g_WeaponCount; index++)
+	{
+		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
+		
+		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
+			continue;
+					
+		free = ArrayGetCell(g_WeaponFree, index)	
+		if(Get_BitVar(free, id) )
+			continue;
+			
+		type = ArrayGetCell(g_WeaponType, index)
+		if( type != ZP_KNIFE) 
+			continue;
+		
+		ArrayGetString(g_WeaponName, index, name, charsmax(name))
+		cost = ArrayGetCell(g_WeaponCost, index)
+		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
+			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		else
+			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+			
+		itemdata[0] = index
+		itemdata[1] = g_ForwardResult
+		menu_additem(menuid, menu, itemdata)
+	}
+	
+	menu_display(id, menuid, 0)
+}
+
+public buy_knife_menu(id, menuid, item){
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE;
+	}
+		
+	if (!is_user_alive(id) || zp_core_is_zombie(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE;
+	}
+	
+	
+	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id)) {
+		menu_destroy(menuid)
+		return PLUGIN_CONTINUE
+	}
+	
+	
+	
+	new itemdata[2], dummy, itemid;
+	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
+	itemid = itemdata[0]
+	
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, 0)
+	
+	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
+	{
+		show_buy_pri_menu(id)
+	}
+	else 
+	{
+		//strip_weapons(id, ZP_PRIMARY)
+		
+		if( p_Weapon[ZP_KNIFE][id] != ZP_INVALID_WEAPON)
+			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_KNIFE][id])
+		
+		
+		p_Weapon[ZP_KNIFE][id] = itemid
+		buy_weapon(id, itemid)
+	}
+	
+	return PLUGIN_HANDLED;
+}
 	
 	
 public native_weapons_register(plugin_id, num_params)
@@ -878,11 +1067,32 @@ public native_weapons_buy_menu(plugin_id, num_params)
 		return false;
 	}
 	
-	show_buy_menu(id)
+	show_buy_pri_menu(id)
 	
 	return true;
 }
 
+public native_weapons_ap_remove(plugin_id, num_parmas)
+{
+	new id = get_param(1)
+	if (!is_user_connected(id))
+	{
+		log_error(AMX_ERR_NATIVE, "[ZP] Invalid Player (%d)", id)
+		return false;
+	}
+	
+	new type = get_param(2);
+	
+	if( type != ZP_KNIFE)
+		strip_weapons(id, type)
+		
+		
+	new itemid = p_Weapon[type][id];
+	
+	ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, itemid)
+	return true;
+}
+	
 buy_weapon(id, itemid, ignorecost = 0)
 {
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, ignorecost)

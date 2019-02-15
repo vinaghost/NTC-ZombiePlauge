@@ -83,7 +83,7 @@ public task_welcome_msg()
 public clcmd_chooseteam(id)
 {
 	
-	client_cmd(id, "say menu");
+	client_cmd(id, "say /menu"); //chong spam khung chat voi lenh menu ._.
 	return PLUGIN_HANDLED_MAIN;
 
 }
@@ -99,23 +99,23 @@ show_menu_main(id)
 	// Title
 	new menu = menu_create( "Main menu:", "menu_handler" );
 	
-	menu_additem(menu, "Chon Zombie");
+	menu_additem(menu, "Chon Zombie"); //0
 	
-	menu_additem(menu, "Nang cap vat pham");
+	menu_additem(menu, "Nang cap vat pham"); //1
 	
-	menu_additem(menu, "Nang cap sung va vu khi khong ban ra dan");
+	//menu_additem(menu, "Nang cap sung va vu khi khong ban ra dan");
 	
-	menu_additem(menu, "Mua do bang $ ( 1 round )");
+	menu_additem(menu, "Mua do bang $ ( 1 round )"); //2
 	
-	menu_additem(menu, "Doi mat khau");
+	menu_additem(menu, "Doi mat khau"); //3
 	
-	menu_additem(menu, "Bang xep hang");
+	menu_additem(menu, "Bang xep hang"); // 4
 	
-	menu_additem(menu, "Update rank");
+	menu_additem(menu, "Update rank"); // 5
 	
-	menu_additem(menu, "Giao luu voi Mod (* chua lam luon .-. *)");
+	menu_additem(menu, "Giao luu voi Mod (* chua lam luon .-. *)"); //6
 	
-	menu_additem(menu, "Chon nhan vat cho VIP (* tat nhien la chua roi *)");
+	menu_additem(menu, "Chon nhan vat cho VIP (* tat nhien la chua roi *)"); //7
 
 	
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -139,38 +139,13 @@ show_menu_main(id)
 		}
 		case 1:
 		{
-			if (LibraryExists(LIBRARY_ITEMS, LibType_Library))
-			{
-				if (is_user_alive(id))
-					zp_ap_items_show_menu(id)
-				else
-					zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
-			}
-			else
-				zp_colored_print(id, "%L", id, "CMD_NOT_EXTRAS")
+			show_Upgrade_menu(id)
 		}
 		case 2:
 		{
-			if(is_user_alive(id) ) {
-				client_cmd(id, "say /guns");
-			}
-			else
-				zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
+			show_Item_menu(id)
 		}
-		case 3: // Human Classes
-		{
-			if (LibraryExists(LIBRARY_ITEMS, LibType_Library))
-			{
-				if (is_user_alive(id))
-					zp_money_items_show_menu(id)
-				else
-					
-					zp_colored_print(id, "Chet roi mua bang niem tin a` .-.")
-			}
-			else
-				zp_colored_print(id, "%L", id, "CMD_NOT_EXTRAS")
-		}
-		case 4: 
+		case 3: 
 		{
 			if(LibraryExists(LIBRARY_REGISTER_SYSTEM, LibType_Library) && get_cant_change_pass_time(id) > 0 )
 			{
@@ -180,22 +155,22 @@ show_menu_main(id)
 				client_cmd(id, "messagemode CHANGE_PASS_NEW")
 		}
 		
-		case 5:
+		case 4:
 		{
 			client_cmd(id, "say /top");
 		}
-		case 6: 
+		case 5: 
 		{
 			client_cmd(id, "say /save");
 			
 			client_cmd(id, "say /ranks");
 			
 		}
-		case 7:
+		case 6:
 		{
 			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
 		}
-		case 8: // Admin Menu
+		case 7: // Admin Menu
 		{
 			zp_colored_print(id, "[Thong bao] Da bao la chua lam xong ma =='")
 		}
@@ -203,3 +178,86 @@ show_menu_main(id)
 	
 	return PLUGIN_HANDLED;
 }
+
+public show_Upgrade_menu(id) {
+	if( !is_user_alive(id) ) return;
+	
+	new menuid = menu_create("[NTC] Nang cap vat pham", "Upgrade_menu");
+	
+	menu_additem(menuid, "Sung chinh");
+	menu_additem(menuid, "Sung phu");
+	menu_additem(menuid, "Dao va cac loai vu khi khong ban ra dan");
+	menu_additem(menuid, "Vat pham ho tro"); //Extra items
+	
+	menu_display(id, menuid, 0)
+}
+public Upgrade_menu(id, menuid, item)
+{
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	if (!is_user_alive(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+	
+	switch (item) {
+		case 0: 
+			client_cmd(id, "say /pri");
+		case 1: 
+			client_cmd(id, "say /sec");
+		case 2:
+			client_cmd(id, "say /knife")
+		case 3:
+			zp_ap_items_show_menu(id)
+	}
+	
+	menu_destroy(menuid);
+	return PLUGIN_HANDLED;
+}
+public show_Item_menu(id) {
+	if( !is_user_alive(id) ) return;
+	
+	new menuid = menu_create("[NTC] Vat pham dung 1 round", "Item_menu");
+	
+	menu_additem(menuid, "Sung chinh");
+	menu_additem(menuid, "Sung phu");
+	menu_additem(menuid, "Dao va cac loai vu khi khong ban ra dan");
+	menu_additem(menuid, "Vat pham ho tro"); //Extra items
+	
+	menu_display(id, menuid, 0)
+}
+public Item_menu(id, menuid, item)
+{
+	if (item == MENU_EXIT)
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+		
+	if (!is_user_alive(id))
+	{
+		menu_destroy(menuid)
+		return PLUGIN_HANDLED;
+	}
+	
+	switch (item) {
+		case 0: 
+			client_cmd(id, "say /pri_m");
+		case 1: 
+			client_cmd(id, "say /sec_m");
+		case 2:
+			client_cmd(id, "say /knife_m")
+		case 3:
+			zp_money_items_show_menu(id)
+	}
+	
+	menu_destroy(menuid);
+	return PLUGIN_HANDLED;
+}
+	
+	

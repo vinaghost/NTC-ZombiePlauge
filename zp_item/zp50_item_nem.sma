@@ -6,14 +6,15 @@
 #include <zp50_gamemodes>
 #include <zp50_colorchat>
 
-#define LIBRARY_NEMESIS "zp50_class_nemesis"
-#include <zp50_class_nemesis>
+//#define LIBRARY_NEMESIS "zp50_class_nemesis"
+//#include <zp50_class_nemesis>
 
 #define PLUGIN "[ZP] Item: Buy Nemesis"
 #define VERSION "1.0"
 #define AUTHOR "VINAGHOST"
 
 new g_Nem, index, bool:h_Nem;
+new g_Nem_Mode
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
@@ -21,16 +22,19 @@ public plugin_init() {
 	
 	g_Nem = zp_money_items_register("Mua Nemesis" , 80000);
 }
-
+public plugin_cfg() {
+	g_Nem_Mode = zp_gamemodes_get_id("Nemesis Mode");
+}
 public event_new_round() {
 	if( h_Nem ) {
-		set_task(2.0, "SetNem");
+		set_task(0.5, "SetNem");
 		
 	}
 }
 public SetNem()
 {
-	zp_class_nemesis_set(index)
+	zp_gamemodes_start(g_Nem_Mode, index)
+	//zp_class_nemesis_set(index)
 	h_Nem = false;
 	index = -1;
 }
