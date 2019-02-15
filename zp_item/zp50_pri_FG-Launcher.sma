@@ -48,8 +48,8 @@ enum
 	ANIM_DRAW
 }
 
-#define DAMAGE 600 // 350 for Zombies
-#define RADIUS 200
+#define DAMAGE 3000 // 350 for Zombies
+#define RADIUS 300
 
 #define CLIP 10
 #define BPAMMO 50

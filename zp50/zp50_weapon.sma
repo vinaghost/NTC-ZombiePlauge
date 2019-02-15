@@ -10,6 +10,7 @@
 #include <zp50_colorchat>
 #include <zp50_weapon_const>
 
+#include <zp50_weapon_money>
 #include <zp50_items>
 
 #define LIBRARY_SURVIVOR "zp50_class_survivor"
@@ -692,7 +693,7 @@ public buy_pri_menu(id, menuid, item){
 		if( p_Weapon[ZP_PRIMARY][id] != ZP_INVALID_WEAPON)
 			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
 		
-		
+		zp_weapons_m_remove(id, ZP_PRIMARY)
 		p_Weapon[ZP_PRIMARY][id] = itemid
 		
 		
@@ -783,7 +784,7 @@ public buy_sec_menu(id, menuid, item){
 		if( p_Weapon[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON)
 			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDAYRY][id])
 		
-		
+		zp_weapons_m_remove(id, ZP_SECONDAYRY)
 		p_Weapon[ZP_SECONDAYRY][id] = itemid
 		
 		
@@ -873,7 +874,7 @@ public buy_knife_menu(id, menuid, item){
 		
 		if( p_Weapon[ZP_KNIFE][id] != ZP_INVALID_WEAPON)
 			ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_KNIFE][id])
-		
+		zp_weapons_m_remove(id, ZP_KNIFE)
 		
 		p_Weapon[ZP_KNIFE][id] = itemid
 		buy_weapon(id, itemid)
