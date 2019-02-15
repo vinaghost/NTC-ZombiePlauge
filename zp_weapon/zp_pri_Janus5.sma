@@ -10,8 +10,8 @@
 #define VERSION "1.0"
 #define AUTHOR "Dias Pendragon"
 
-#define DAMAGE_A 45 // Damage in Non-Charged Mode
-#define DAMAGE_B 90 // Damage in Charged Mode
+#define DAMAGE_A 120 // Damage in Non-Charged Mode
+#define DAMAGE_B 180 // Damage in Charged Mode
 #define CHARGE_AMMO 57 // After shoot X bullets, you can active Janus Transform System
 #define CHARGE_LIMITTIME 7 // After X Second(s), Janus Transform System will be turned off if not using
 #define CHARGE_TIME 10 // Time Use for Janus Transform System

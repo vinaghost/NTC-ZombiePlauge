@@ -26,7 +26,7 @@
 #define RELOAD_TIME 3.4
 #define PLAYER_SPEED 200.0
 
-#define DAMAGE 63
+#define DAMAGE 160
 #define CLIP 48
 #define BPAMMO 200
 

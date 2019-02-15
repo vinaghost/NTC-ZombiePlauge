@@ -12,7 +12,7 @@
 #define VERSION "1.0"
 #define AUTHOR "Dias"
 
-#define DAMAGE 50
+#define DAMAGE 90
 #define BURST_NUM 5
 #define BURST_DELAY 0.025
 #define RECOIL 0.25

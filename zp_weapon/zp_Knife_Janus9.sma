@@ -14,11 +14,11 @@
 /* ===============================
 ------------ Configs -------------
 =================================*/
-#define DAMAGE_A 200 // 200 for Zombie
-#define DAMAGE_B 400 // 400 for Zombie
+#define DAMAGE_A 700 // 200 for Zombie
+#define DAMAGE_B 1500 // 400 for Zombie
 
-#define RADIUS_A 86
-#define RADIUS_B 100
+#define RADIUS_A 100
+#define RADIUS_B 150
 
 #define DELAY_TIME 0.75
 #define RESET_TIME 5.0
@@ -154,10 +154,10 @@ public zp_fw_wpn_remove(id, itemid) {
 	UnSet_BitVar(g_Had_Janus9, id)
 	
 }
-public zp_fw_core_infect(id) {
+public zp_fw_core_infect_pre(id) {
 	UnSet_BitVar(g_Had_Janus9, id)
 }
-public zp_fw_core_cure(id) {
+public zp_fw_core_cure_pre(id) {
 	UnSet_BitVar(g_Had_Janus9, id)
 }
 public Get_Janus9(id)
@@ -402,7 +402,9 @@ public Janus9_Damage(id, Special)
 			continue
 		if(entity_range(id, i) > Max_Distance)
 			continue
-
+		
+		if( !zp_core_is_zombie(i) ) continue;
+		
 		pev(i, pev_origin, VicOrigin)
 		if(is_wall_between_points(MyOrigin, VicOrigin, id))
 			continue

@@ -10,8 +10,8 @@
 #define VERSION "1.0"
 #define AUTHOR "Dias Pendragon"
 
-#define DAMAGE_A 140 // 140 for zombie, 70 for human
-#define DAMAGE_B 560 // 560 for zombie, 280 for human
+#define DAMAGE_A 230 // 140 for zombie, 70 for human
+#define DAMAGE_B 690 // 560 for zombie, 280 for human
 
 #define CLIP 15
 #define BPAMMO 64
