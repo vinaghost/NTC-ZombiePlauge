@@ -73,7 +73,7 @@ new g_IsConnected, g_IsAlive, g_PlayerWeapon[33]
 new g_AK47
 
 #define SATTHUONG 500.0
-new g_DanSet[33], Float:g_SatThuong[33];
+//new g_DanSet[33], Float:g_SatThuong[33];
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -105,7 +105,7 @@ public plugin_init()
 	RegisterHam(Ham_TraceAttack, "worldspawn", "fw_TraceAttack_World")
 	RegisterHam(Ham_TraceAttack, "player", "fw_TraceAttack_Player")	
 	
-	RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage_Player")
+	///RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage_Player")
 	
 	
 	// Cache
@@ -114,7 +114,7 @@ public plugin_init()
 	
 	// Get
 	
-	g_AK47 = zp_weapons_register("AK47 Paladin", 30, ZP_PRIMARY)
+	g_AK47 = zp_weapons_register("AK47 Paladin", 100, ZP_PRIMARY)
 }
 
 public plugin_precache()
@@ -197,8 +197,8 @@ public zp_fw_wpn_select_post(id, itemid)
 	Set_BitVar(g_Had_Base, id)
 	give_item(id, weapon_base)
 	
-	g_DanSet[id ]= 0;
-	g_SatThuong[id] = 0.0
+	//g_DanSet[id ]= 0;
+	//g_SatThuong[id] = 0.0
 	
 	// Clip & Ammo
 	static Ent; Ent = fm_get_user_weapon_entity(id, CSW_BASE)
@@ -224,8 +224,8 @@ public zp_fw_wpn_remove(id, itemid)
 }
 public Remove_Base(id)
 {
-	g_DanSet[id] = 0;
-	g_SatThuong[id] = 0.0
+	//g_DanSet[id] = 0;
+	//g_SatThuong[id] = 0.0
 	UnSet_BitVar(g_Had_Base, id)
 }
 
@@ -589,7 +589,7 @@ public fw_TraceAttack_Player(Victim, Attacker, Float:Damage, Float:Direction[3],
 	
 	
 	return HAM_HANDLED
-}
+}/*
 public fw_TakeDamage_Player(victim, inflictor, attacker, Float:damage, bits) {
 	if(!is_connected(attacker))
 		return HAM_IGNORED	
@@ -599,8 +599,8 @@ public fw_TakeDamage_Player(victim, inflictor, attacker, Float:damage, bits) {
 	
 	if(cs_get_user_zoom(attacker) != CS_SET_AUGSG552_ZOOM)
 	{
-		g_SatThuong[attacker] += damage
-		CheckSatThuong(attacker)
+		//g_SatThuong[attacker] += damage
+		//CheckSatThuong(attacker)
 	}
 	else {
 		if( g_DanSet[attacker] ) {
@@ -614,8 +614,8 @@ public fw_TakeDamage_Player(victim, inflictor, attacker, Float:damage, bits) {
 		
 	}
 	return HAM_HANDLED
-}
-public CheckSatThuong(id) {
+}*/
+/*public CheckSatThuong(id) {
 	
 	if( g_SatThuong[id] >= SATTHUONG )
 	{
@@ -623,7 +623,7 @@ public CheckSatThuong(id) {
 		client_print(id, print_center, "Đạn sét: %d", g_DanSet[id])
 		g_SatThuong[id] -= SATTHUONG;
 	}
-}
+}*/
 
 public fw_Weapon_PrimaryAttack(Ent)
 {
