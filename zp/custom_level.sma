@@ -595,13 +595,10 @@ public zp_fw_core_infect_post(id, attacker)
 SaveData(id) {
 	
 	new szTemp[ 512 ]
-	formatex( szTemp, charsmax( szTemp ),"DELETE FROM level_zp WHERE name = '%s'", g_sName[id])
-	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 	
-	formatex( szTemp, charsmax( szTemp ),"INSERT INTO level_zp ( name, exp, level, rank) VALUES( '%s', '%d', '%d', '%s')", g_sName[id], g_iXP[id], g_iLevel[id], RANKS[g_iLevel[id]])
-	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
+	formatex( szTemp, charsmax( szTemp ),"UPDATE `level_zp` SET `exp` = '%d', `level` = %d', `rank` = '%s' WHERE `level_zp`.`name` = '%s'", g_iXP[id], g_iLevel[id], RANKS[g_iLevel[id]], g_sName[id]);
+
 	
-	formatex( szTemp, charsmax( szTemp ),"DELETE FROM level_zp WHERE name = ''", g_sName[id])
 	SQL_ThreadQuery( g_SqlTuple, "IgnoreHandle", szTemp )
 }
 
