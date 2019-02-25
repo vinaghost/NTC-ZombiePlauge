@@ -64,6 +64,8 @@ native zp_weapons_get_realname(itemid, real_name[], len)
  * @return			Weapon's cost.
  */
 native zp_weapons_get_cost(itemid)
+native zp_weapons_get_cost_type(itemid)
+native zp_weapons_get_type(itemid)
 
 /**
  * Forces a player to buy an extra weapon
@@ -75,10 +77,6 @@ native zp_weapons_get_cost(itemid)
  */
 native zp_weapons_force_buy(id, itemid, ignorecost = false)
 
-
-
-
-native zp_weapons_ap_remove(id, type)
 
 
 
