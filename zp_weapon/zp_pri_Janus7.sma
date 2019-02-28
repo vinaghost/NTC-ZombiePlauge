@@ -117,7 +117,7 @@ public plugin_init()
 	 
 	//register_clcmd("admin_get_janus7", "Get_Janus7")
 	
-	g_Janus7 = zp_weapons_register("Janus 7", 45, ZP_PRIMARY);
+	g_Janus7 = zp_weapons_register("Janus 7", 45, ZP_PRIMARY, ZP_WEAPON_AP);
 	register_clcmd("weapon_janus7", "Hook_Weapon")
 }
 

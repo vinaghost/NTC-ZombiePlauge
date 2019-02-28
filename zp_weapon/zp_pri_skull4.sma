@@ -75,7 +75,7 @@ public plugin_precache()
 	g_smokepuff_id = engfunc(EngFunc_PrecacheModel, "sprites/wall_puff1.spr")
 	
 	register_forward(FM_PrecacheEvent, "fw_PrecacheEvent_Post", 1)
-	g_DualInfinity = zp_weapons_register("Skull-4", 30, ZP_PRIMARY)
+	g_DualInfinity = zp_weapons_register("Skull-4", 30, ZP_PRIMARY, ZP_WEAPON_AP)
 }
 
 public fw_PrecacheEvent_Post(type, const name[])

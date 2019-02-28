@@ -129,7 +129,7 @@ public plugin_precache()
 	for(new i = 0; i < sizeof(LightSaber_Sounds); i++)
 		engfunc(EngFunc_PrecacheSound, LightSaber_Sounds[i])
 		
-	g_LightSaber = zp_weapons_register("LightSaber", 15, ZP_KNIFE)
+	g_LightSaber = zp_weapons_register("LightSaber", 15, ZP_KNIFE, ZP_WEAPON_AP)
 }
 
 public client_putinserver(id)

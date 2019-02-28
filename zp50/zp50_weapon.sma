@@ -9,8 +9,6 @@
 #include <zp50_ammopacks>
 #include <zp50_colorchat>
 #include <zp50_weapon_const>
-
-#include <zp50_weapon_money>
 #include <zp50_items>
 
 #define LIBRARY_SURVIVOR "zp50_class_survivor"
@@ -516,7 +514,7 @@ public show_knife_menu(id) {
 			continue;
 		
 		free = ArrayGetCell(g_WeaponFree, index)	
-		if(Get_BitVar(free, id) )
+		if(!Get_BitVar(free, id) )
 			continue;
 		
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
@@ -910,7 +908,6 @@ public show_buy_m_pri_menu(id) {
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 		
-		
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 			formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
 		else
@@ -959,7 +956,7 @@ public buy_m_pri_menu(id, menuid, item){
 	{	
 		buy_weapon(id, itemid)
 	}
-	
+	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
 }
 
@@ -1041,7 +1038,7 @@ public buy_m_sec_menu(id, menuid, item){
 	{	
 		buy_weapon(id, itemid)
 	}
-	
+	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
 }
 public show_buy_m_knife_menu(id) {
@@ -1123,12 +1120,12 @@ public buy_m_knife_menu(id, menuid, item){
 	{
 		buy_weapon(id, itemid)
 	}
-	
+	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
 }	
 public native_weapons_register(plugin_id, num_params)
 {
-	new name[32], cost = get_param(2), type = get_param(3);
+	new name[32], cost = get_param(2), type = get_param(3) ,type_cost = get_param(4);
 	get_string(1, name, charsmax(name))
 	
 	if (strlen(name) < 1)
@@ -1164,11 +1161,8 @@ public native_weapons_register(plugin_id, num_params)
 	
 	ArrayPushCell(g_WeaponCost, cost)
 	
-	new cost_type
-	if( cost > 1000) cost_type = ZP_WEAPON_MONEY
-	else	cost_type = ZP_WEAPON_AP;
 	
-	ArrayPushCell(g_WeaponCostType, cost_type)
+	ArrayPushCell(g_WeaponCostType, type_cost)
 	
 	if (!amx_load_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "TYPE", type))
 		amx_save_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "TYPE", type)
@@ -1323,6 +1317,7 @@ buy_weapon(id, itemid, ignorecost = 0) {
 	
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, ignorecost)
 	
+	
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
 		return;
 	
@@ -1336,6 +1331,8 @@ buy_weapon(id, itemid, ignorecost = 0) {
 		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[type][id])
 		
 	p_Weapon[type][id] = itemid
+	client_print(id, print_chat, "%d", itemid)
+	ExecuteForward(g_Forwards[FW_WPN_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
 	
 	if( ArrayGetCell(g_WeaponCostType ,itemid) == ZP_WEAPON_AP ) {  
 		

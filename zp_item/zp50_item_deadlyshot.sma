@@ -31,14 +31,14 @@ public plugin_init()
 	//register_clcmd("drop", "active")
 	
 	sync_hud1 = CreateHudSyncObj(random_num(1, 10))
-	g_deadlyshot = zp_money_items_register("Deadly Shot", 10000)
+	g_deadlyshot = zp_ap_items_register("Deadly Shot", 15)
 }
 
 public event_newround(id)
 {
 	remove_ds(id)
 }
-public zp_fw_money_items_select_pre(id, itemid) {
+public zp_fw_ap_items_select_pre(id, itemid) {
 	if(itemid != g_deadlyshot)
 		return ZP_ITEM_AVAILABLE;
 	
@@ -49,7 +49,7 @@ public zp_fw_money_items_select_pre(id, itemid) {
 	
 	return ZP_ITEM_NOT_AVAILABLE;
 }
-public zp_fw_money_items_select_post(id, itemid)
+public zp_fw_ap_items_select_post(id, itemid)
 {
 	if(itemid != g_deadlyshot)
 		return PLUGIN_HANDLED

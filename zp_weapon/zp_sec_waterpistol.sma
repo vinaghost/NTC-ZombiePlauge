@@ -83,7 +83,7 @@ public plugin_precache()
 	m_iBlood[1] = precache_model("sprites/bloodspray.spr")	
 	g_smokepuff_id = engfunc(EngFunc_PrecacheModel, "sprites/wall_puff1.spr")
 	
-	g_wp = zp_weapons_register("Lightning BIG-EYE", COST, ZP_SECONDAYRY)
+	g_wp = zp_weapons_register("Lightning BIG-EYE", COST, ZP_SECONDAYRY, ZP_WEAPON_AP)
 }
 
 public zp_fw_wpn_select_post(id, itemid)

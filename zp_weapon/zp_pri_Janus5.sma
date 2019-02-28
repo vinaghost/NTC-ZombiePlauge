@@ -117,7 +117,7 @@ public plugin_init()
 	
 	g_Msg_WeaponList = get_user_msgid("WeaponList")
 	
-	g_Janus5 = zp_weapons_register("Janus 5", 63, ZP_PRIMARY);
+	g_Janus5 = zp_weapons_register("Janus 5", 63, ZP_PRIMARY, ZP_WEAPON_AP);
 	
 	
 	//register_clcmd("admin_get_janus5", "Get_Janus5")

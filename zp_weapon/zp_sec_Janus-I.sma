@@ -105,7 +105,7 @@ public plugin_init()
 	g_Msg_WeaponList = get_user_msgid("WeaponList")
 	g_MaxPlayers = get_maxplayers()
 	
-	g_Janus1 = zp_weapons_register("Janus I", 40, ZP_SECONDAYRY);
+	g_Janus1 = zp_weapons_register("Janus I", 40, ZP_SECONDAYRY, ZP_WEAPON_AP);
 	//register_clcmd("admin_get_janus1", "Get_Janus1")
 	register_clcmd("weapon_janus1", "Hook_Weapon")
 }

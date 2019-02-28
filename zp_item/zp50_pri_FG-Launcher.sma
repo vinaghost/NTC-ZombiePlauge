@@ -6,7 +6,7 @@
 #include <cstrike>
 #include <fun>
 
-#include <zp50_weapon_money>
+#include <zp50_weapon>
 
 #define PLUGIN "[CSO] FG-Launcher"
 #define VERSION "1.0"
@@ -48,7 +48,7 @@ enum
 	ANIM_DRAW
 }
 
-#define DAMAGE 3000 // 350 for Zombies
+#define DAMAGE 2500 // 350 for Zombies
 #define RADIUS 300
 
 #define CLIP 10
@@ -110,7 +110,7 @@ public plugin_init()
 	g_MsgCurWeapon = get_user_msgid("CurWeapon")
 	g_MaxPlayers = get_maxplayers()
 	
-	g_launcher = zp_weapons_m_register("FG Launcher", 40000, ZP_PRIMARY);
+	g_launcher = zp_weapons_register("FG Launcher", 40000, ZP_PRIMARY, ZP_WEAPON_MONEY);
 	register_clcmd("weapon_fglauncher", "Hook_Weapon")
 	//register_clcmd("say /get", "Get_FGLauncher")
 }
@@ -157,20 +157,20 @@ public client_disconnect(id)
 {
 	Safety_Disconnected(id)
 }
-public zp_fw_wpn_money_select_pre(id, itemid) {
+public zp_fw_wpn_select_pre(id, itemid) {
 	if( itemid != g_launcher) return ZP_WEAPON_AVAILABLE;
 	
 	if( Get_BitVar(g_Had_FGL, id) ) return ZP_WEAPON_DONT_SHOW;
 	
 	return ZP_WEAPON_AVAILABLE;
 }
-public zp_fw_wpn_money_select_post(id, itemid) {
+public zp_fw_wpn_select_post(id, itemid) {
 	if(itemid != g_launcher) return;
 	
 	Get_FGLauncher(id) 
 }
 
-public zp_fw_wpn_money_remove(id, itemid) {
+public zp_fw_wpn_remove(id, itemid) {
 	if( itemid != g_launcher ) return;
 	
 	Remove_FGLauncher(id) 

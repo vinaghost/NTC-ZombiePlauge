@@ -113,7 +113,7 @@ public plugin_init()
 	RegisterHam(Ham_Item_Deploy, weapon_janus9, "fw_Item_Deploy_Post", 1)	
 	RegisterHam(Ham_Weapon_WeaponIdle, weapon_janus9, "fw_Weapon_WeaponIdle_Post", 1)
 	
-	g_Janus9 = zp_weapons_register("Janus 9", 35, ZP_KNIFE);
+	g_Janus9 = zp_weapons_register("Janus 9", 35, ZP_KNIFE, ZP_WEAPON_AP);
 	//register_clcmd("admin_get_janus9", "Get_Janus9", ADMIN_KICK)
 }
 

@@ -27,9 +27,10 @@ public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
 	RegisterHam(Ham_TakeDamage, "player", "fw_ham_TakeDamage")
-	CrowBar = zp_weapons_register("Crowbar", 0, ZP_KNIFE)
-	Machete = zp_weapons_register("Machete", 0, ZP_KNIFE)
-	Axe = zp_weapons_register("Axe", 0, ZP_KNIFE)
+	CrowBar = 
+	zp_weapons_register("Crowbar", 0, ZP_KNIFE, ZP_WEAPON_AP)
+	Machete = zp_weapons_register("Machete", 0, ZP_KNIFE, ZP_WEAPON_AP)
+	Axe = zp_weapons_register("Axe", 0, ZP_KNIFE, ZP_WEAPON_AP)
 }
 
 public plugin_precache() {

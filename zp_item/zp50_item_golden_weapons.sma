@@ -40,7 +40,7 @@
 #include <cstrike>
 #include <hamsandwich>
 #include <cs_ham_bots_api>
-#include <zp50_weapon_money>
+#include <zp50_weapon>
 
 // Plugin version
 new const PLUGIN_VERSION[] = "v1.0";
@@ -119,11 +119,11 @@ public plugin_init()
 		RegisterHam(Ham_Weapon_PrimaryAttack, WPNDATA[i][WeaponEnt], "fw_PrimaryAttack");
 		RegisterHam(Ham_Weapon_PrimaryAttack, WPNDATA[i][WeaponEnt], "fw_PrimaryAttack_Post", 1);
 	}
-	g_wpn_gold[0] = zp_weapons_m_register(WPNDATA[0][WeaponName], WPNDATA[0][WeaponCost], ZP_SECONDAYRY)
-	g_wpn_gold[1] = zp_weapons_m_register(WPNDATA[1][WeaponName], WPNDATA[1][WeaponCost], ZP_PRIMARY)
-	g_wpn_gold[2] = zp_weapons_m_register(WPNDATA[2][WeaponName], WPNDATA[2][WeaponCost], ZP_PRIMARY)
-	g_wpn_gold[3] = zp_weapons_m_register(WPNDATA[3][WeaponName], WPNDATA[3][WeaponCost], ZP_PRIMARY)
-	g_wpn_gold[4] = zp_weapons_m_register(WPNDATA[4][WeaponName], WPNDATA[4][WeaponCost], ZP_PRIMARY)
+	g_wpn_gold[0] = zp_weapons_register(WPNDATA[0][WeaponName], WPNDATA[0][WeaponCost], ZP_SECONDAYRY, ZP_WEAPON_MONEY)
+	g_wpn_gold[1] = zp_weapons_register(WPNDATA[1][WeaponName], WPNDATA[1][WeaponCost], ZP_PRIMARY, ZP_WEAPON_MONEY)
+	g_wpn_gold[2] = zp_weapons_register(WPNDATA[2][WeaponName], WPNDATA[2][WeaponCost], ZP_PRIMARY, ZP_WEAPON_MONEY)
+	g_wpn_gold[3] = zp_weapons_register(WPNDATA[3][WeaponName], WPNDATA[3][WeaponCost], ZP_PRIMARY, ZP_WEAPON_MONEY)
+	g_wpn_gold[4] = zp_weapons_register(WPNDATA[4][WeaponName], WPNDATA[4][WeaponCost], ZP_PRIMARY, ZP_WEAPON_MONEY)
 	
 	
 	RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage");
@@ -194,7 +194,7 @@ public had_item(id, itemid)  {
 	}
 	return 0;
 }
-public zp_fw_wpn_money_select_pre(id, itemid) {
+public zp_fw_wpn_select_pre(id, itemid) {
 	
 	if( !is_item(itemid) ) return ZP_WEAPON_AVAILABLE;
 	
@@ -205,7 +205,7 @@ public zp_fw_wpn_money_select_pre(id, itemid) {
 	return ZP_WEAPON_AVAILABLE;
 }
  
-public zp_fw_wpn_money_select_post(id, itemid) {
+public zp_fw_wpn_select_post(id, itemid) {
 	
 	if( itemid == g_wpn_gold[0] ) weapon_deagle(id)
 	else if( itemid == g_wpn_gold[1]) weapon_ak47(id)

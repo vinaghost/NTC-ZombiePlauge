@@ -192,9 +192,12 @@
 #include <amxmodx>
 #include <celltrie>
 #include <cstrike>
+#include <fun>
 #include <fakemeta>
 #include <hamsandwich>
+
 #include <sqlx>
+#include <zp_dsohud>
 
 #include <zp50_core>
 
@@ -308,6 +311,8 @@ new Trie:g_pass_change_times;
 new Trie:g_cant_change_pass_time;
 new Trie:g_full_nmaes;
 //End of Trie handles
+
+new const sprite_login[] = "sprites/ntc/login.spr"
 
 //Start of Constants
 new const separator_1[] = "==============================================================================="
@@ -586,6 +591,9 @@ public _get_cant_change_pass_time(plugin, parameters)
 /*==============================================================================
 	Start of Executing plugin's config and choose the save mode
 ================================================================================*/
+public plugin_precache() {
+	precache_model(sprite_login)
+}
 public plugin_cfg()
 {
 	if(!get_pcvar_num(g_on))
@@ -682,199 +690,6 @@ public plugin_cfg()
 	
 	return PLUGIN_CONTINUE
 }
-
-public LoadData()
-{
-	/*if(get_pcvar_num(g_save))
-	{
-		Init_MYSQL()
-		return
-	}
-	else
-	{
-		if(!file_exists(reg_file))
-		{
-			write_file(reg_file,";Register System file^n;Modifying may cause the clients to can not Login!^n^n")
-			server_print("%s Could not find Register System file -  %s   Creating new...", prefix, reg_file)
-		}
-	}*/
-	
-	if(get_pcvar_num(g_comm) == 1)
-	{
-		line = 0, length = 0, count = 0, error = false;
-		get_time("%H:%M:%S", sz_time, charsmax(sz_time))
-
-		server_print(" ")
-		server_print(separator_1)
-		server_print(prefix)
-		server_print(separator_2)
-
-		if(!file_exists(commands_file))
-		{
-			server_print("[%s] [ERROR] > File registersystem_commands.ini not found!", sz_time)
-			error = true
-		}
-		else
-		{
-			server_print("[%s] > Loading settings from registersystem_commands.ini", sz_time)
-
-			line = 0, length = 0, count = 0;
-
-			while(read_file(commands_file, line++ , text, charsmax(text), length))
-			{
-				if(!text[0] || text[0] == '^n' || text[0] == ';' || (text[0] == '/' && text[1] == '/'))
-					continue
-
-				trim(text)
-				parse(text, text, charsmax(text))
-
-				TrieSetCell(g_commands, text, 1)
-				count++
-			}
-
-			if(count)
-			{
-				server_print("[%s] [OK] > %d command%s loaded!", sz_time, count, count > 1 ? "s" : "")
-			}
-			else
-			{
-				server_print("[%s] [ERROR] > There were no commands in registersystem_commands.ini", sz_time)
-				error = true
-			}
-		}
-
-		server_print(separator_2)
-
-		if(error)
-		{
-			server_print("[%s] [WARNING] > Reading some data from commands file failed!", sz_time)
-			server_print("> Please check [ERROR] messages above for solving this problem!")
-		}
-		else
-		{
-			server_print("[%s] [OK] > Commands file loaded successfully!", sz_time)
-		}
-
-		server_print(separator_1)
-		server_print(" ")
-	}
-	
-	if(get_pcvar_num(g_whitelist))
-	{
-		line = 0, length = 0, count = 0, error = false;
-		get_time("%H:%M:%S", sz_time, charsmax(sz_time))
-
-		server_print(" ")
-		server_print(separator_1)
-		server_print(prefix)
-		server_print(separator_2)
-		
-		if(!file_exists(whitelist_file))
-		{
-			server_print("[%s] [ERROR] > File registersystem_whitelist.ini not found!", sz_time)
-			error = true
-		}
-		else
-		{
-			server_print("[%s] > Loading settings from registersystem_whitelist.ini", sz_time)
-	
-			line = 0, length = 0, count = 0, error = false;
-			new t_text[32];
-			new count1  = 0, count2 = 0, count3 = 0, count4 = 0
-
-			while(read_file(whitelist_file, line++ , t_text, charsmax(t_text), length))
-			{
-				if(!t_text[0] || t_text[0] == '^n' || t_text[0] == ';' || (t_text[0] == '/' && t_text[1] == '/'))
-					continue
-	
-				trim(t_text)
-				parse(t_text, t_text, charsmax(t_text))
-				
-				if(t_text[0] == '%')
-				{
-					if(t_text[strlen(t_text) - 1] == '%') //Part name
-					{
-						if(count1 >= MAX_NAMES)
-							continue
-
-						replace_all(t_text, charsmax(t_text), "%", "")
-						part_names[count1++] = t_text
-					}
-					else //Ending name
-					{
-						if(count2 >= MAX_NAMES)
-							continue
-
-						replace_all(t_text, charsmax(t_text), "%", "")
-						ending_names[count2++] = t_text
-					}				
-				}
-				else // Starting name
-				{
-					if(t_text[strlen(t_text) - 1] == '%') 
-					{
-						if(count3 >= MAX_NAMES)
-							continue
-
-						replace_all(t_text, charsmax(t_text), "%", "")
-						starting_names[count3++] = t_text
-					}
-					else //Full name
-					{
-						if(++count4 >= MAX_NAMES)
-							continue
-
-						replace_all(t_text, charsmax(t_text), "%", "")
-						TrieSetCell(g_full_nmaes, t_text, 1)
-					}
-				}
-		
-				count++
-			}
-	
-			if(count)
-			{
-				server_print("[%s] [OK] > %d name%s loaded!", sz_time, count, count > 1 ? "s" : "")
-			}
-			else
-			{
-				server_print("[%s] [ERROR] > There were no names in registersystem_whitelist.ini", sz_time)
-				error = true
-			}
-		}
-	
-		if(error)
-		{
-			server_print("[%s] [WARNING] > Reading some data from whitelist file failed!", sz_time)
-			server_print("> Please check [ERROR] messages above for solving this problem!")
-		}
-		else
-		{
-			server_print("[%s] [OK] > Whitelist file loaded successfully!", sz_time)
-		}
-
-		server_print(separator_1)
-		server_print(" ")
-	}
-
-	data_ready = true
-
-	for(new i = 1 ; i <= g_maxplayers ; i++)
-	{
-		if(!is_user_connecting(i) && !is_user_connected(i))
-			continue
-
-		if(get_pcvar_num(g_whitelist))
-		{
-			CheckName(i)
-		}
-		else
-		{
-			CheckClient(i)
-		}
-	}
-}
-
 public Init_MYSQL()
 {
 	new host[64], user[64], pass[64], db[64]
@@ -907,183 +722,19 @@ public QueryCreateTable(failstate, Handle:query1, error[], errcode, data[], data
 	{
 		server_print("[REGISTER SYSTEM] MYSQL connection succesful in %.0fs", queuetime)
 
-		new data[1];
+		data_ready = true;
 
-		if(get_pcvar_num(g_comm) == 1)
+		for(new i = 1 ; i <= g_maxplayers ; i++)
 		{
-			data[0] = 0
-			formatex(query, charsmax(query), "SELECT * FROM `rs_commands`;")
-			SQL_ThreadQuery(g_sqltuple, "QueryCollectData", query, data, 1)
-		}
-
-		if(get_pcvar_num(g_whitelist))
-		{
-			data[0] = 1
-			formatex(query, charsmax(query), "SELECT * FROM `rs_names`;")
-			SQL_ThreadQuery(g_sqltuple, "QueryCollectData", query, data, 1)
-		}
-		else
-		{
-			data_ready = true
-
-			for(new i = 1 ; i <= g_maxplayers ; i++)
-			{
-				if(!is_user_connecting(i) && !is_user_connected(i))
-					continue
-
-				if(get_pcvar_num(g_whitelist))
-				{
-					CheckName(i)
-				}
-				else
-				{
-					CheckClient(i)
-				}
-			}
+			if(!is_user_connecting(i) && !is_user_connected(i))
+				continue
+				
+			CheckClient(i)
+				
 		}
 	}	
 }
 
-public QueryCollectData(failstate, Handle:query, error[], errcode, data[], datasize, Float:queuetime)
-{
-	if(failstate == TQUERY_CONNECT_FAILED || failstate == TQUERY_QUERY_FAILED)
-	{
-		log_amx("%s", error)
-		return
-	}
-	else
-	{
-		type = data[0]
-		get_time("%H:%M:%S", sz_time, charsmax(sz_time))
-
-		if(!type)
-		{
-			count = 0
-			col_command = SQL_FieldNameToNum(query, "Command")
-
-			server_print(" ")
-			server_print(separator_1)
-			server_print(prefix)
-			server_print(separator_2)
-			server_print("[%s] > Loading SQL table ^"rs_commands^"", sz_time)
-
-			while(SQL_MoreResults(query)) 
-			{
-				SQL_ReadResult(query, col_command, input, charsmax(input))
-				TrieSetCell(g_commands, input, 1)
-				count++
-				SQL_NextRow(query)
-			}
-			
-			if(count)
-			{
-				server_print("[%s] [OK] > %d command%s loaded!", sz_time, count, count > 1 ? "s" : "")
-				server_print("[%s] [OK] > SQL table ^"rs_commands^" loaded successfully!", sz_time)
-			}
-			else
-			{
-				server_print("[%s] [ERROR] > There were no commands in SQL table ^"rs_commands^"", sz_time)
-				server_print("[%s] [WARNING] > Reading some data from the table failed!", sz_time)
-				server_print("> Please check [ERROR] messages above for solving this problem!")
-			}
-
-			server_print(separator_1)
-			server_print(" ")
-		}
-		else
-		{
-			new count1  = 0, count2 = 0, count3 = 0, count4 = 0
-			count = 0
-			col_name = SQL_FieldNameToNum(query, "Names")
-
-			server_print(" ")
-			server_print(separator_1)
-			server_print(prefix)
-			server_print(separator_2)
-			server_print("[%s] > Loading SQL table ^"rs_names^"", sz_time)
-
-			while(SQL_MoreResults(query))
-			{
-				SQL_ReadResult(query, col_name, input, charsmax(input))
-
-				if(input[0] == '%')
-				{
-					if(input[strlen(input) - 1] == '%') //Part name
-					{
-						if(count1 >= MAX_NAMES)
-							continue
-
-						replace_all(input, charsmax(input), "%", "")
-						part_names[count1++] = input
-					}
-					else // Starting name
-					{
-						if(count2 >= MAX_NAMES)
-							continue
-
-						replace_all(input, charsmax(input), "%", "")
-						ending_names[count2++] = input
-					}				
-				}
-				else
-				{
-					if(input[strlen(input) - 1] == '%') //Ending name
-					{
-						if(count3 >= MAX_NAMES)
-							continue
-
-						replace_all(input, charsmax(input), "%", "")
-						starting_names[count3++] = input
-					}
-					else //Full name
-					{
-						if(++count4 >= MAX_NAMES)
-							continue
-
-						replace_all(input, charsmax(input), "%", "")
-						TrieSetCell(g_full_nmaes, input, 1)
-					}
-				}
-
-				count++
-				SQL_NextRow(query)
-			}
-			
-			
-			if(count)
-			{
-				server_print("[%s] [OK] > %d name%s loaded!", sz_time, count, count > 1 ? "s" : "")
-				server_print("[%s] [OK] > SQL table ^"rs_names^" loaded successfully!", sz_time)
-			}
-			else
-			{
-				server_print("[%s] [ERROR] > There were no names in SQL table ^"rs_names^"", sz_time)
-				server_print("[%s] [WARNING] > Reading some data from the table failed!", sz_time)
-				server_print("> Please check [ERROR] messages above for solving this problem!")
-			}
-
-			server_print(separator_1)
-			server_print(" ")
-
-			data_ready = true
-
-			for(new i = 1 ; i <= g_maxplayers ; i++)
-			{
-				if(!is_user_connecting(i) && !is_user_connected(i))
-					continue
-
-				if(get_pcvar_num(g_whitelist))
-				{
-					CheckName(i)
-				}
-				else
-				{
-					CheckClient(i)
-				}
-			}
-		}
-	}
-}
 /*==============================================================================
 	End of Executing plugin's config and choose the save mode
 ================================================================================*/
@@ -1155,31 +806,10 @@ public client_authorized(id)
 	
 	if(data_ready)
 	{
-		if(get_pcvar_num(g_whitelist))
-		{
-			CheckName(id)
-		}
-		else
-		{
-			CheckClient(id)
-		}
+		CheckClient(id)
+		
 	}
-}
-
-public client_putinserver(id)
-{
-	if(data_ready && name_checked[id])
-	{
-		ShowMsg(id)
-	
-		if(get_pcvar_num(g_advert) && get_pcvar_num(g_advert_int))
-		{
-			set_task(get_pcvar_float(g_advert_int), "ShowAdvert", id+TASK_ADVERT)
-		}
-	}
-}
-
-public client_disconnect(id)
+}public client_disconnect(id)
 {
 	clear_user(id)
 	remove_tasks(id)
@@ -1191,92 +821,6 @@ public client_disconnect(id)
 /*==============================================================================
 	Start of Check Client functions
 ================================================================================*/
-public CheckName(id)
-{
-	if(!get_pcvar_num(g_on) || is_user_bot(id) || is_user_hltv(id) || !data_ready)
-		return PLUGIN_HANDLED
-
-	get_user_name(id, check_name, charsmax(check_name))
-	
-	if(TrieGetCell(g_full_nmaes, check_name, value))
-	{
-		name_checked[id] = false
-		return PLUGIN_CONTINUE
-	}
-
-	for(new i = 0 ; i <= charsmax(part_names) ;i++)
-	{
-		if(containi(check_name, part_names[i]) != -1)
-		{
-			name_checked[id] = false
-			return PLUGIN_CONTINUE
-		}			
-	}
-
-	for(new i = 0 ; i <= charsmax(starting_names) ; i++)
-	{
-		is_true = false
-
-		for(new j = 0 ; j <= strlen(starting_names[i]) - 1 ; j++)
-		{
-			formatex(temp1, charsmax(temp1), "%c", starting_names[i][j])
-			formatex(temp2, charsmax(temp2), "%c", check_name[j])
-			
-			if(equali(temp1, temp2))
-			{
-				is_true = true
-			}
-			else
-			{
-				is_true = false
-				break
-			}
-		}
-		
-		if(is_true)
-		{
-			name_checked[id] = false
-			return PLUGIN_CONTINUE
-		}
-	}
-
-	for(new i = 0 ; i <= charsmax(ending_names) ; i++)
-	{
-		is_true = false
-		
-		if(!(strlen(check_name) >= strlen(ending_names[i])))
-			continue
-		
-		temp_count = strlen(check_name) - strlen(ending_names[i])
-
-		for(new j = strlen(ending_names[i]) - 1 ; j >= 0 ; j--)
-		{	
-			formatex(temp1, charsmax(temp1), "%c", ending_names[i][j])
-			formatex(temp2, charsmax(temp2), "%c", check_name[j + temp_count])
-			
-			if(equali(temp1, temp2))
-			{
-				is_true = true
-			}
-			else
-			{
-				is_true = false
-				break
-			}
-		}
-		
-		if(is_true)
-		{
-			name_checked[id] = false
-			return PLUGIN_CONTINUE
-		}		
-	}
-
-	name_checked[id] = true
-	CheckClient(id)
-	return PLUGIN_CONTINUE
-}
-
 public CheckClient(id)
 {
 	if(!get_pcvar_num(g_on) || is_user_bot(id) || is_user_hltv(id) || !data_ready || !name_checked[id])
@@ -1287,73 +831,16 @@ public CheckClient(id)
 	is_logged[id] = false
 	is_autolog[id] = false
 	
-	switch(get_pcvar_num(g_member))
-	{
-		case 0:
-		{
-			get_user_name(id, g_client_data[id], charsmax(g_client_data))
-		}
-		case 1:
-		{
-			get_user_ip(id, g_client_data[id], charsmax(g_client_data), 1)
-		}
-		case 2:
-		{
-			get_user_authid(id, g_client_data[id], charsmax(g_client_data))
-		}		
-		default:
-		{
-			get_user_name(id, g_client_data[id], charsmax(g_client_data))
-		}
-	}
+	get_user_name(id, g_client_data[id], charsmax(g_client_data))
 
-	if(get_pcvar_num(g_save))
-	{
-		new data[1]
-		data[0] = id
+	new data[1]
+	data[0] = id
 
-		formatex(query, charsmax(query), "SELECT `Password`, `Status` FROM `registersystem` WHERE Name = ^"%s^";", g_client_data[id])
+	formatex(query, charsmax(query), "SELECT `Password`, `Status` FROM `registersystem` WHERE Name = ^"%s^";", g_client_data[id])
 
-		SQL_ThreadQuery(g_sqltuple, "QuerySelectData", query, data, 1)
-	}
-	else
-	{
-		line = 0, length = 0;
+	SQL_ThreadQuery(g_sqltuple, "QuerySelectData", query, data, 1)
+	
 
-		while(read_file(reg_file, line++ , text, charsmax(text), length))
-		{
-			if(!text[0] || text[0] == '^n' || text[0] == ';' || (text[0] == '/' && text[1] == '/'))
-				continue
-
-			parse(text, check_client_data, charsmax(check_client_data), check_pass, charsmax(check_pass), check_status, charsmax(check_status))
-
-			if(!(equal(check_client_data, g_client_data[id])))
-				continue
-
-			is_registered[id] = true
-			password[id] = check_pass
-
-			if(equal(check_status, "LOGGED_IN"))
-			{
-				is_autolog[id] = true
-				CheckAutoLogin(id)
-			}
-
-			if(is_user_connected(id))
-			{
-				user_silentkill(id)
-				cs_set_user_team(id, CS_TEAM_UNASSIGNED)
-				ShowMsg(id)
-				
-				if(get_pcvar_num(g_advert) && get_pcvar_num(g_advert_int))
-				{
-					set_task(get_pcvar_float(g_advert_int), "ShowAdvert", id+TASK_ADVERT)
-				}
-			}
-
-			break
-		}
-	}
 	return PLUGIN_CONTINUE
 }
 
@@ -1387,19 +874,49 @@ public QuerySelectData(FailState, Handle:Query, error[], errorcode, data[], data
 			{
 				user_silentkill(id)
 				cs_set_user_team(id, CS_TEAM_UNASSIGNED)
-				ShowMsg(id)
 				
-				if(get_pcvar_num(g_advert) && get_pcvar_num(g_advert_int))
-				{
-					set_task(get_pcvar_float(g_advert_int), "ShowAdvert", id+TASK_ADVERT)
-				}
+				ShowMsg(id);
+						
 			}
 
 			SQL_NextRow(Query)
 		}
 	}
 }
+public ShowRuleMenu(id) {
+	
+	
+	ExecuteHamB(Ham_CS_RoundRespawn, id)
+	set_pev(id, pev_flags, pev(id, pev_flags) | FL_FROZEN)
+	
+	zp_display_hud_sprite(id, sprite_login, 0.5)
+	//Tao 1 sprite truoc mat player sau do tao menu xac nhan
+	
+	new menuid = menu_create("Dong y ?", "menu_ShowRuleMenu");
+	
+	menu_additem(menuid, "Ok");
+	menu_additem(menuid, "Khong");
+	
+	menu_setprop(menuid, MPROP_EXIT, MEXIT_NEVER);
+	
+	menu_display(id, menuid)
+}
 
+public menu_ShowRuleMenu(id, menuid, item) {
+	
+	if( !is_user_connected(id) ) return;
+	
+	switch (item) {
+		case 0: {
+			ShowMsg(id);
+			zp_remove_hud_sprite(id);
+		}
+		case 1: server_cmd("kick #%i ^"Vay thi khong the choi server duoc roi^"", id);
+	}
+
+	menu_destroy(menuid)
+ 		
+}
 public CheckAutoLogin(id)
 {
 	new client_password[32];

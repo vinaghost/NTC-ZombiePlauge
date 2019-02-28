@@ -27,7 +27,7 @@
  * @param type			Type of weapon
  * @return				An internal weapon ID, or ZP_INVALID_WEAPON on failure.
  */
-native zp_weapons_register(const name[], cost, type)
+native zp_weapons_register(const name[], cost, type, type_cost)
 
 /**
  * Returns a weapon's ID.

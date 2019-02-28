@@ -17,10 +17,11 @@ public zp_fw_wpn_select_pre( id, itemid, ignorecost)
 	// Ignore item costs?
 	if (ignorecost)
 		return ZP_WEAPON_AVAILABLE;
-	new current;
-	new required = zp_weapons_get_cost(itemid);
+	new current,  required = zp_weapons_get_cost(itemid);
 	
-	if( required > 1000 ) 
+	new type_cost = zp_weapons_get_cost_type(itemid)
+	
+	if( type_cost == ZP_WEAPON_AP ) 
 		current = zp_ammopacks_get(id)
 	else
 		current = cs_get_user_money_ul(id)
@@ -39,8 +40,8 @@ public zp_fw_wpn_select_post(id, itemid, ignorecost)
 	
 	new current;
 	new required = zp_weapons_get_cost(itemid);
-	
-	if( required > 1000 ) {
+	new type_cost = zp_weapons_get_cost_type(itemid)
+	if( type_cost == ZP_WEAPON_AP) {
 		current = zp_ammopacks_get(id)
 		zp_ammopacks_set(id, current - required)
 	}

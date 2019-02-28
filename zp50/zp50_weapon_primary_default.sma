@@ -37,7 +37,7 @@ public plugin_init() {
 	for(new i =0 ; i < 6; i++ )
 	{
 		new weaponid = get_weaponid(primary_items[i]) 
-		primary[i] = zp_weapons_register(WEAPONNAMES[weaponid], 0, ZP_PRIMARY)
+		primary[i] = zp_weapons_register(WEAPONNAMES[weaponid], 0, ZP_PRIMARY, ZP_WEAPON_AP)
 	}
 }
 public zp_fw_wpn_select_post(id, itemid) {
