@@ -1,12 +1,12 @@
 /*================================================================================
-	
+
 	-----------------------
 	-*- [ZP] Flashlight -*-
 	-----------------------
-	
+
 	This plugin is part of Zombie Plague Mod and is distributed under the
 	terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
-	
+
 ================================================================================*/
 
 #include <amxmodx>
@@ -51,15 +51,15 @@ new cvar_flashlight_color_R, cvar_flashlight_color_G, cvar_flashlight_color_B
 public plugin_init()
 {
 	register_plugin("[ZP] Flashlight", ZP_VERSION_STRING, "ZP Dev Team")
-	
+
 	register_forward(FM_CmdStart, "fw_CmdStart")
 	RegisterHam(Ham_Killed, "player", "fw_PlayerKilled")
 	RegisterHamBots(Ham_Killed, "fw_PlayerKilled")
-	
+
 	g_MsgFlashlight = get_user_msgid("Flashlight")
 	g_MsgFlashBat = get_user_msgid("FlashBat")
 	register_message(g_MsgFlashBat, "message_flashbat")
-	
+
 	cvar_flashlight_starting_charge = register_cvar("zp_flashlight_starting_charge", "100")
 	cvar_flashlight_custom = register_cvar("zp_flashlight_custom", "0")
 	cvar_flashlight_radius = register_cvar("zp_flashlight_radius", "10")
@@ -83,17 +83,17 @@ public plugin_natives()
 public native_flashlight_get_charge(plugin_id, num_params)
 {
 	new id = get_param(1)
-	
+
 	if (!is_user_connected(id))
 	{
 		log_error(AMX_ERR_NATIVE, "[ZP] Invalid Player (%d)", id)
 		return -1;
 	}
-	
+
 	// Custom flashlight not enabled
 	if (!get_pcvar_num(cvar_flashlight_custom))
 		return -1;
-	
+
 	return g_FlashlightCharge[id];
 }
 
@@ -101,23 +101,23 @@ public native_flashlight_set_charge(plugin_id, num_params)
 {
 	new id = get_param(1)
 	new charge = get_param(2)
-	
+
 	if (!is_user_connected(id))
 	{
 		log_error(AMX_ERR_NATIVE, "[ZP] Invalid Player (%d)", id)
 		return false;
 	}
-	
+
 	// Custom flashlight not enabled
 	if (!get_pcvar_num(cvar_flashlight_custom))
 		return false;
-	
+
 	g_FlashlightCharge[id] = clamp(charge, 0, 100)
-	
+
 	// Set the flashlight charge task to update batteries
 	remove_task(id+TASK_CHARGE)
 	set_task(1.0, "flashlight_charge_task", id+TASK_CHARGE, _, _, "b")
-	
+
 	return true;
 }
 
@@ -138,15 +138,15 @@ public fw_CmdStart(id, handle)
 	// Not alive
 	if (!is_user_alive(id))
 		return;
-	
+
 	// Check if it's a flashlight impulse
 	if (get_uc(handle, UC_Impulse) != IMPULSE_FLASHLIGHT)
 		return;
-	
+
 	// Flashlight is being turned off
 	if (pev(id, pev_effects) & EF_DIMLIGHT)
 		return;
-	
+
 	if (zp_core_is_zombie(id))
 	{
 		// Block it!
@@ -156,36 +156,36 @@ public fw_CmdStart(id, handle)
 	{
 		// Block it!
 		set_uc(handle, UC_Impulse, 0)
-		
+
 		// Should human's custom flashlight be turned on?
 		if (g_FlashlightCharge[id] > 2 && get_gametime() - g_FlashlightLastTime[id] > 1.2)
 		{
 			// Prevent calling flashlight too quickly (bugfix)
 			g_FlashlightLastTime[id] = get_gametime()
-			
+
 			// Toggle custom flashlight
 			if (flag_get(g_FlashlightActive, id))
 			{
 				// Remove flashlight task
 				remove_task(id+TASK_FLASHLIGHT)
-				
+
 				flag_unset(g_FlashlightActive, id)
 			}
 			else
 			{
 				// Set the custom flashlight task
 				set_task(0.1, "custom_flashlight_task", id+TASK_FLASHLIGHT, _, _, "b")
-				
+
 				flag_set(g_FlashlightActive, id)
 			}
-			
+
 			// Set the flashlight charge task
 			remove_task(id+TASK_CHARGE)
 			set_task(1.0, "flashlight_charge_task", id+TASK_CHARGE, _, _, "b")
-			
+
 			// Play flashlight toggle sound
 			emit_sound(id, CHAN_ITEM, g_sound_flashlight, 1.0, ATTN_NORM, 0, PITCH_NORM)
-			
+
 			// Update flashlight status on HUD
 			message_begin(MSG_ONE, g_MsgFlashlight, _, id)
 			write_byte(flag_get_boolean(g_FlashlightActive, id)) // toggle
@@ -218,11 +218,11 @@ public message_flashbat(msg_id, msg_dest, msg_entity)
 	// Block if custom flashlight is enabled instead
 	if (get_pcvar_num(cvar_flashlight_custom))
 		return PLUGIN_HANDLED;
-	
+
 	// Block if zombie
 	if (is_user_connected(msg_entity) && zp_core_is_zombie(msg_entity))
 		return PLUGIN_HANDLED;
-	
+
 	return PLUGIN_CONTINUE;
 }
 
@@ -246,7 +246,7 @@ turn_off_flashlight(id)
 		g_FlashlightCharge[id] = get_pcvar_num(cvar_flashlight_starting_charge)
 	else
 		fm_cs_set_flash_batteries(id, get_pcvar_num(cvar_flashlight_starting_charge))
-	
+
 	// Check if flashlight is on
 	if (pev(id, pev_effects) & EF_DIMLIGHT)
 	{
@@ -257,19 +257,19 @@ turn_off_flashlight(id)
 	{
 		// Clear any stored flashlight impulse (bugfix)
 		set_pev(id, pev_impulse, 0)
-		
+
 		// Update flashlight HUD
 		message_begin(MSG_ONE, g_MsgFlashlight, _, id)
 		write_byte(0) // toggle
 		write_byte(get_pcvar_num(cvar_flashlight_starting_charge)) // batteries
 		message_end()
 	}
-	
+
 	if (get_pcvar_num(cvar_flashlight_custom))
 	{
 		// Turn it off
 		flag_unset(g_FlashlightActive, id)
-		
+
 		// Remove previous tasks
 		remove_task(id+TASK_CHARGE)
 		remove_task(id+TASK_FLASHLIGHT)
@@ -283,17 +283,17 @@ public custom_flashlight_task(taskid)
 	static Float:origin[3], Float:destorigin[3]
 	pev(ID_FLASHLIGHT, pev_origin, origin)
 	fm_get_aim_origin(ID_FLASHLIGHT, destorigin)
-	
+
 	// Max distance check
 	if (get_distance_f(origin, destorigin) > get_pcvar_float(cvar_flashlight_distance))
 		return;
-	
+
 	// Send to all players?
 	if (get_pcvar_num(cvar_flashlight_show_all))
 		engfunc(EngFunc_MessageBegin, MSG_PVS, SVC_TEMPENTITY, destorigin, 0)
 	else
 		message_begin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, _, ID_FLASHLIGHT)
-	
+
 	// Flashlight
 	write_byte(TE_DLIGHT) // TE id
 	engfunc(EngFunc_WriteCoord, destorigin[0]) // x
@@ -316,7 +316,7 @@ public flashlight_charge_task(taskid)
 		g_FlashlightCharge[ID_CHARGE] = max(g_FlashlightCharge[ID_CHARGE] - get_pcvar_num(cvar_flashlight_drain_rate), 0)
 	else
 		g_FlashlightCharge[ID_CHARGE] = min(g_FlashlightCharge[ID_CHARGE] + get_pcvar_num(cvar_flashlight_charge_rate), 100)
-	
+
 	// Batteries fully charged
 	if (g_FlashlightCharge[ID_CHARGE] == 100)
 	{
@@ -324,33 +324,33 @@ public flashlight_charge_task(taskid)
 		message_begin(MSG_ONE, g_MsgFlashBat, _, ID_CHARGE)
 		write_byte(100) // batteries
 		message_end()
-		
+
 		// Task not needed anymore
 		remove_task(taskid)
 		return;
 	}
-	
+
 	// Batteries depleted
 	if (g_FlashlightCharge[ID_CHARGE] == 0)
 	{
 		// Turn it off
 		flag_unset(g_FlashlightActive, ID_CHARGE)
-		
+
 		// Remove flashlight task for this player
 		remove_task(ID_CHARGE+TASK_FLASHLIGHT)
-		
+
 		// Play flashlight toggle sound
 		emit_sound(ID_CHARGE, CHAN_ITEM, g_sound_flashlight, 1.0, ATTN_NORM, 0, PITCH_NORM)
-		
+
 		// Update flashlight status on HUD
 		message_begin(MSG_ONE, g_MsgFlashlight, _, ID_CHARGE)
 		write_byte(0) // toggle
 		write_byte(0) // batteries
 		message_end()
-		
+
 		return;
 	}
-	
+
 	// Update flashlight batteries on HUD
 	message_begin(MSG_ONE_UNRELIABLE, g_MsgFlashBat, _, ID_CHARGE)
 	write_byte(g_FlashlightCharge[ID_CHARGE]) // batteries
@@ -363,7 +363,7 @@ stock fm_cs_set_flash_batteries(id, value)
 	// Prevent server crash if entity's private data not initalized
 	if (pev_valid(id) != PDATA_SAFE)
 		return;
-	
+
 	set_pdata_int(id, OFFSET_FLASHLIGHT_BATTERIES, value)
 }
 
