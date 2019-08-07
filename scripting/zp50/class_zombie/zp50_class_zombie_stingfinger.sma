@@ -25,11 +25,11 @@ new zclass_desc2[32] = "Heal"
 new const zclass_model[] = "StingFinger"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_stingFinger.mdl"
 
-new const zclass_health = 1500;
+new const zclass_health = 2800//1500;
 new const Float:zclass_gravity = 0.84;
-new const Float:zclass_speed = 1.1;
-new const Float:zclass_knockback = 1.3;
-
+new const Float:zclass_speed = 1.5//1.1;
+new const Float:zclass_knockback = 1.0//1.3;
+new const zclass_health_skill2 = 1000 //500;
 #define PENETRATE_SOUND "zombie_plague/zombie/skill/StingFinger_skill1.wav"
 #define HEAL_SOUND "zombie_plague/zombie/StingFinger_heal.wav"
 
@@ -193,7 +193,7 @@ public Do_Heal(id)
 	EmitSound(id, CHAN_ITEM, HEAL_SOUND)
 
 	ScreenFade(id, 1.5, 0, 255, 0, 40)
-	new Health = get_user_health(id) + 500;
+	new Health = get_user_health(id) + zclass_health_skill2;
 
 	new MaxHealth = zp_get_zombie_maxhealth(id)
 
