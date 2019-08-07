@@ -74,7 +74,7 @@ public plugin_precache()
 	// Initialize arrays
 	g_sound_zombie_pain = ArrayCreate(SOUND_MAX_LENGTH, 1)
 	g_sound_nemesis_pain = ArrayCreate(SOUND_MAX_LENGTH, 1)
-	g_sound_assassin_pain = ArrayCreate(SOUND_MAX_LENGTH, 1)
+	//g_sound_assassin_pain = ArrayCreate(SOUND_MAX_LENGTH, 1)
 	g_sound_zombie_die = ArrayCreate(SOUND_MAX_LENGTH, 1)
 	g_sound_zombie_fall = ArrayCreate(SOUND_MAX_LENGTH, 1)
 	g_sound_zombie_miss_slash = ArrayCreate(SOUND_MAX_LENGTH, 1)
@@ -87,7 +87,7 @@ public plugin_precache()
 	// Load from external file
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ZOMBIE PAIN", g_sound_zombie_pain)
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "NEMESIS PAIN", g_sound_nemesis_pain)
-	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ASSASSIN PAIN", g_sound_assassin_pain)
+	//amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ASSASSIN PAIN", g_sound_assassin_pain)
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ZOMBIE DIE", g_sound_zombie_die)
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ZOMBIE FALL", g_sound_zombie_fall)
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ZOMBIE MISS SLASH", g_sound_zombie_miss_slash)
@@ -114,14 +114,6 @@ public plugin_precache()
 
 		// Save to external file
 		amx_save_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "NEMESIS PAIN", g_sound_nemesis_pain)
-	}
-	if (ArraySize(g_sound_assassin_pain) == 0)
-	{
-		for (index = 0; index < sizeof sound_assassin_pain; index++)
-			ArrayPushString(g_sound_assassin_pain, sound_assassin_pain[index])
-
-		// Save to external file
-		amx_save_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ASSASSIN PAIN", g_sound_assassin_pain)
 	}
 	if (ArraySize(g_sound_zombie_die) == 0)
 	{
@@ -295,13 +287,6 @@ public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags
 				emit_sound(id, channel, sound, volume, attn, flags, pitch)
 				return FMRES_SUPERCEDE;
 			}
-			// Assassin Class loaded?
-			/*else if (LibraryExists(LIBRARY_ASSASSIN, LibType_Library) && zp_class_assassin_get(id))
-			{
-				ArrayGetString(g_sound_assassin_pain, random_num(0, ArraySize(g_sound_assassin_pain) - 1), sound, charsmax(sound))
-				emit_sound(id, channel, sound, volume, attn, flags, pitch)
-				return FMRES_SUPERCEDE;
-			}*/
 			ArrayGetString(g_sound_zombie_pain, random_num(0, ArraySize(g_sound_zombie_pain) - 1), sound, charsmax(sound))
 			emit_sound(id, channel, sound, volume, attn, flags, pitch)
 			return FMRES_SUPERCEDE;
@@ -369,7 +354,7 @@ public fw_PlayerKilled(victim, attacker, shouldgib)
 	remove_task(victim+TASK_IDLE_SOUNDS)
 }
 
-public client_disconnected(id)
+public client_disconnect(id)
 {
 	// Remove idle sounds task
 	remove_task(id+TASK_IDLE_SOUNDS)

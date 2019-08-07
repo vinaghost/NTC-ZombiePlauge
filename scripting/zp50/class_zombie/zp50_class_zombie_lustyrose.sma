@@ -87,7 +87,7 @@ public zp_fw_core_cure_pre(id, attacker) {
 public Do_Invisible(id)
 {
 	// Set Render Red
-	set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 20)
+	set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 40)
 
 	// Set Fov
 	set_fov(id, INVISIBLE_FOV)

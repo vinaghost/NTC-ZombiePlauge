@@ -99,8 +99,8 @@ public plugin_cfg()
 public plugin_precache()
 {
 	// Load from external file, save if not found
-	if (!amx_load_setting_string(ZP_SETTINGS_FILE, "Weapon Models", "V_KNIFE HUMAN", g_model_vknife_human, charsmax(g_model_vknife_human)))
-		amx_save_setting_string(ZP_SETTINGS_FILE, "Weapon Models", "V_KNIFE HUMAN", g_model_vknife_human)
+	/*if (!amx_load_setting_string(ZP_SETTINGS_FILE, "Weapon Models", "V_KNIFE HUMAN", g_model_vknife_human, charsmax(g_model_vknife_human)))
+		amx_save_setting_string(ZP_SETTINGS_FILE, "Weapon Models", "V_KNIFE HUMAN", g_model_vknife_human)*/
 
 	// Precache models
 	precache_model(g_model_vknife_human)
@@ -140,7 +140,7 @@ public client_putinserver(id)
 	g_HumanClassNext[id] = ZP_INVALID_HUMAN_CLASS
 }
 
-public client_disconnected(id)
+public client_disconnect(id)
 {
 	// Reset remembered menu pages
 	MENU_PAGE_CLASS = 0
