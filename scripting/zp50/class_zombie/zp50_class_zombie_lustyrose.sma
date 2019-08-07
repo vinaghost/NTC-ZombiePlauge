@@ -27,9 +27,9 @@ new const zclass_model[] = "LustyRose"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_LustyRose.mdl"
 new const zclass_clawsmodel_inv[] = "models/zombie_plague/v_knife_LustyRose_inv.mdl"
 new const Float:zclass_gravity = 0.7
-new const zclass_health = 1300;
+new const zclass_health = 2700//1300;
 new const Float:zclass_speed = 295.0
-new const Float:zclass_knockback = 2.0
+new const Float:zclass_knockback = 1.5//2.0
 
 
 // Skill
