@@ -198,8 +198,8 @@ public plugin_init()
 	cvar_launchpush = register_cvar("zp_nrl_launch_push_force", "60")
 
 	// CVARS - Explosion
-	cvar_explo_radius = register_cvar("zp_nrl_explo_radius", "500")
-	cvar_explo_damage = register_cvar("zp_nrl_explo_maxdamage", "300")
+	cvar_explo_radius = register_cvar("zp_nrl_explo_radius", "300")
+	cvar_explo_damage = register_cvar("zp_nrl_explo_maxdamage", "100")
 	cvar_explo_rings = register_cvar("zp_nrl_explo_rings", "1")
 	cvar_explo_dlight = register_cvar("zp_nrl_explo_dlight", "1")
 

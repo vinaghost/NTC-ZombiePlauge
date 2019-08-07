@@ -9,7 +9,7 @@
 #define VERSION "1.0"
 #define AUTHOR  "Celena Luna"
 
-#define NAME "Khinh công"
+#define NAME "Bay"
 #define COST 5
 
 new cvar_parachute_speed
@@ -21,7 +21,7 @@ public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_forward(FM_CmdStart, "fw_CmdStart")
 
-	cvar_parachute_speed = register_cvar("para_speed", "100")
+	cvar_parachute_speed = register_cvar("para_speed", "70")
 
 	g_parachute = zp_ap_items_register(NAME, COST)
 }
@@ -37,7 +37,7 @@ public zp_fw_ap_items_select_post(id, itemid) {
 	if( itemid != g_parachute ) return;
 
 	Set_BitVar(h_parachute, id) ;
-	zp_colored_print(id, "Kich hoat ^x04BAY ^x01thanh cong khi la ^x04ZOMBE");
+	zp_colored_print(id, "Kích hoạt ^x04BAY ^x01thành công cho ^x04ZOMBE");
 }
 public client_disconnected(id) {
 	UnSet_BitVar(h_parachute, id);

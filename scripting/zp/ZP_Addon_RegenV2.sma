@@ -37,7 +37,7 @@ public plugin_init()
 	cvar_regen_max = register_cvar("zp_regen_max", "1.0")
 	cvar_regen_add = register_cvar("zp_regen_add", "200")
 	cvar_regen_interval = register_cvar("zp_regen_interval", "5.0")
-	cvar_regen_dmgdelay = register_cvar("zp_regen_dmg_delay", "2.5")
+	cvar_regen_dmgdelay = register_cvar("zp_regen_dmg_delay", "1.0")
 
 	cvar_botquota = get_cvar_pointer("bot_quota")
 
