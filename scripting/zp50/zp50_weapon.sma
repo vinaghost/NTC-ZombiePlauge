@@ -32,9 +32,9 @@ const GRENADES_WEAPONS_BIT_SUM = (1<<CSW_HEGRENADE)|(1<<CSW_FLASHBANG)|(1<<CSW_S
 
 enum _:TOTAL_FORWARDS
 {
-FW_WPN_SELECT_PRE = 0,
-FW_WPN_SELECT_POST,
-FW_WPN_REMOVE
+	FW_WPN_SELECT_PRE = 0,
+	FW_WPN_SELECT_POST,
+	FW_WPN_REMOVE
 }
 
 new g_Forwards[TOTAL_FORWARDS]
@@ -101,14 +101,14 @@ public plugin_natives()
 public module_filter(const module[])
 {
 	if (equal(module, LIBRARY_SURVIVOR) || equal(module, LIBRARY_SNIPER))
-		return PLUGIN_HANDLED;
+	return PLUGIN_HANDLED;
 
 	return PLUGIN_CONTINUE;
 }
 public native_filter(const name[], index, trap)
 {
 	if (!trap)
-		return PLUGIN_HANDLED;
+	return PLUGIN_HANDLED;
 
 	return PLUGIN_CONTINUE;
 }
@@ -143,7 +143,7 @@ public user_remove_weapon(id) {
 public zp_fw_core_cure_pre(id, attacker)
 {
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	strip_weapons(id, ZP_PRIMARY)
 	strip_weapons(id, ZP_SECONDAYRY)
@@ -186,10 +186,10 @@ public client_disconnected(id) {
 }
 public show_menu_main(id) {
 	if (!is_user_alive(id) || zp_core_is_zombie(id))
-		return;
+	return;
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi^nĐang có %d AP", zp_ammopacks_get(id))
@@ -208,7 +208,7 @@ public show_menu_main(id) {
 		formatex(item, charsmax(item), "CHON LAI VU KHI^n- %s^n- %s^n- %s",  primary, secondary, knife);
 	}
 	else
-		formatex(item, charsmax(item), "\dCHON LAI VU KHI^n- [NONE]  ^n- [NONE]  ^n- [NONE] ");
+	formatex(item, charsmax(item), "\dCHON LAI VU KHI^n- [NONE]  ^n- [NONE]  ^n- [NONE] ");
 
 	menu_additem(menu, item);
 
@@ -222,7 +222,7 @@ public menu_main( id, menu, item )
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return PLUGIN_CONTINUE;
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return PLUGIN_CONTINUE;
+	return PLUGIN_CONTINUE;
 
 
 	switch (item) {
@@ -232,9 +232,9 @@ public menu_main( id, menu, item )
 
 		case 1:  {
 			if( p_Weapon_Auto[ZP_PRIMARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON &&p_Weapon_Auto[ZP_KNIFE][id] != ZP_INVALID_WEAPON )
-				auto_take_weapons(id)
+			auto_take_weapons(id)
 			else
-				show_menu_main(id)
+			show_menu_main(id)
 		}
 	}
 
@@ -244,25 +244,25 @@ public auto_take_weapons(id) {
 	if( !is_user_alive(id) ) return
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	buy_weapon(id, p_Weapon_Auto[ZP_PRIMARY][id], 1)
 	buy_weapon(id, p_Weapon_Auto[ZP_SECONDAYRY][id], 1)
 	buy_weapon(id, p_Weapon_Auto[ZP_KNIFE][id], 1)
 
 	give_item(id, "weapon_hegrenade")
-	give_item(id, "weapon_flashbang")
+	//give_item(id, "weapon_flashbang")
 	give_item(id, "weapon_smokegrenade")
 
 	if(Get_BitVar(h_DoubleFrost, id) )
-		give_item(id, "weapon_flashbang")
+	give_item(id, "weapon_smokegrenade")
 }
 
 public show_primary_menu(id) {
 	if( !is_user_alive(id) || zp_core_is_zombie(id) ) return;
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi chinh^nĐang có %d AP", zp_ammopacks_get(id))
@@ -275,19 +275,19 @@ public show_primary_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_PRIMARY)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(!Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 
@@ -304,26 +304,26 @@ public show_primary_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_PRIMARY)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 
 		itemdata[0] = index
@@ -350,7 +350,7 @@ public primary_menu(id, menuid, item)
 	}
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return PLUGIN_HANDLED;
+	return PLUGIN_HANDLED;
 
 
 	new itemdata[3], dummy, itemid, free;
@@ -361,7 +361,7 @@ public primary_menu(id, menuid, item)
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, Get_BitVar(free,id))
 
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-		show_primary_menu(id)
+	show_primary_menu(id)
 	else
 	{
 		buy_weapon(id, itemid, Get_BitVar(free,id) )
@@ -375,7 +375,7 @@ public show_secondary_menu(id) {
 	if( !is_user_alive(id) ) return;
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Chon vu khi phu^nĐang có %d AP", zp_ammopacks_get(id))
@@ -388,19 +388,19 @@ public show_secondary_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_SECONDAYRY)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(!Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 
@@ -417,28 +417,28 @@ public show_secondary_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_SECONDAYRY)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 
 		itemdata[0] = index
@@ -465,7 +465,7 @@ public secondary_menu(id, menuid, item)
 	}
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return PLUGIN_CONTINUE;
+	return PLUGIN_CONTINUE;
 
 	new itemdata[3], dummy, itemid, free;
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
@@ -475,7 +475,7 @@ public secondary_menu(id, menuid, item)
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, Get_BitVar(free,id))
 
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-		show_secondary_menu(id)
+	show_secondary_menu(id)
 	else
 	{
 
@@ -494,7 +494,7 @@ public show_knife_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return
+	return
 
 	new title[64];
 	formatex(title, charsmax(title), "Chon dao^nĐang có %d AP", zp_ammopacks_get(id))
@@ -507,19 +507,19 @@ public show_knife_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_KNIFE)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(!Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 
@@ -536,28 +536,28 @@ public show_knife_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index);
 		if( cost_type != ZP_WEAPON_AP )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_KNIFE)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 
 		itemdata[0] = index
@@ -586,7 +586,7 @@ public knife_menu(id, menuid, item)
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return PLUGIN_CONTINUE
+	return PLUGIN_CONTINUE
 
 
 	new itemdata[3], dummy, itemid, free;
@@ -603,16 +603,16 @@ public knife_menu(id, menuid, item)
 		buy_weapon(id, itemid, Get_BitVar(free,id) )
 
 		give_item(id, "weapon_hegrenade")
+		//give_item(id, "weapon_flashbang")
 		give_item(id, "weapon_smokegrenade")
-		give_item(id, "weapon_flashbang")
 
 		if(Get_BitVar(h_DoubleFrost, id) )
-			give_item(id, "weapon_flashbang")
+			give_item(id, "weapon_smokegrenade")
 
 		menu_destroy(menuid)
 	}
 
-	return PLUGIN_HANDLED;
+return PLUGIN_HANDLED;
 }
 
 public show_buy_pri_menu(id) {
@@ -620,7 +620,7 @@ public show_buy_pri_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Mua súng chính^nĐang có %d AP", zp_ammopacks_get(id))
@@ -633,29 +633,29 @@ public show_buy_pri_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_AP)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_PRIMARY)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -709,7 +709,7 @@ public show_buy_sec_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Mua súng phụ^nĐang có %d AP", zp_ammopacks_get(id))
@@ -722,28 +722,28 @@ public show_buy_sec_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_AP)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_SECONDAYRY)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -794,7 +794,7 @@ public show_buy_knife_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Vũ khí cận chiến^nĐang có %d AP", zp_ammopacks_get(id))
@@ -807,27 +807,27 @@ public show_buy_knife_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_AP)
-			continue;
+		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
 		if(Get_BitVar(free, id) )
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_KNIFE)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R%d AP", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y%d AP", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -882,7 +882,7 @@ public show_buy_m_pri_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Mua súng chính^nĐang có $%d", cs_get_user_money(id) )
@@ -895,24 +895,24 @@ public show_buy_m_pri_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_MONEY)
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_PRIMARY)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -969,7 +969,7 @@ public show_buy_m_sec_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Mua súng phụ^nĐang có $%d", cs_get_user_money(id))
@@ -982,24 +982,24 @@ public show_buy_m_sec_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_MONEY)
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_SECONDAYRY)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -1050,7 +1050,7 @@ public show_buy_m_knife_menu(id) {
 
 
 	if (LibraryExists(LIBRARY_SURVIVOR, LibType_Library) && zp_class_survivor_get(id) || LibraryExists(LIBRARY_SNIPER, LibType_Library) && zp_class_sniper_get(id))
-		return;
+	return;
 
 	new title[64];
 	formatex(title, charsmax(title), "Vũ khí cận chiến^nĐang có $%d", cs_get_user_money(id))
@@ -1063,23 +1063,23 @@ public show_buy_m_knife_menu(id) {
 	{
 		cost_type = ArrayGetCell(g_WeaponCostType, index)
 		if( cost_type != ZP_WEAPON_MONEY)
-			continue;
+		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
 		if( type != ZP_KNIFE)
-			continue;
+		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
 
 		if (g_ForwardResult >= ZP_WEAPON_DONT_SHOW)
-			continue;
+		continue;
 
 		ArrayGetString(g_WeaponName, index, name, charsmax(name))
 		cost = ArrayGetCell(g_WeaponCost, index)
 		if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-			formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
+		formatex(menu, charsmax(menu), "\d%s \R$%d", name, cost)
 		else
-			formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
+		formatex(menu, charsmax(menu), "%s \R\y$%d", name, cost)
 
 		itemdata[0] = index
 		itemdata[1] = g_ForwardResult
@@ -1156,12 +1156,12 @@ public native_weapons_register(plugin_id, num_params)
 
 	// Name
 	if (!amx_load_setting_string(ZP_EXTRAWEAPON_FILE, real_name, "NAME", name, charsmax(name)))
-		amx_save_setting_string(ZP_EXTRAWEAPON_FILE, real_name, "NAME", name)
+	amx_save_setting_string(ZP_EXTRAWEAPON_FILE, real_name, "NAME", name)
 	ArrayPushString(g_WeaponName, name)
 
 	// Cost
 	if (!amx_load_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "COST", cost))
-		amx_save_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "COST", cost)
+	amx_save_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "COST", cost)
 
 	ArrayPushCell(g_WeaponCost, cost)
 
@@ -1169,7 +1169,7 @@ public native_weapons_register(plugin_id, num_params)
 	ArrayPushCell(g_WeaponCostType, type_cost)
 
 	if (!amx_load_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "TYPE", type))
-		amx_save_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "TYPE", type)
+	amx_save_setting_int(ZP_EXTRAWEAPON_FILE, real_name, "TYPE", type)
 
 	ArrayPushCell(g_WeaponType, type)
 
@@ -1199,7 +1199,7 @@ public native_weapons_get_id(plugin_id, num_params)
 	{
 		ArrayGetString(g_WeaponRealName, index, item_name, charsmax(item_name))
 		if (equali(real_name, item_name))
-			return index;
+		return index;
 	}
 
 	return ZP_INVALID_WEAPON;
@@ -1323,16 +1323,16 @@ buy_weapon(id, itemid, ignorecost = 0) {
 
 
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
-		return;
+	return;
 
 	new type = ArrayGetCell(g_WeaponType, itemid)
 
 	if( type != ZP_KNIFE)
-		strip_weapons(id, type)
+	strip_weapons(id, type)
 
 
 	if( p_Weapon[type][id] != ZP_INVALID_WEAPON)
-		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[type][id])
+	ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[type][id])
 
 	p_Weapon[type][id] = itemid
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
@@ -1363,8 +1363,8 @@ stock strip_weapons(id, stripwhat)
 		// Prevent re-indexing the array
 		weaponid = weapons[index]
 		if ((stripwhat == ZP_PRIMARY && ((1<<weaponid) & PRIMARY_WEAPONS_BIT_SUM))
-		|| (stripwhat == ZP_SECONDAYRY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM))
-		|| ((1<<weaponid) & GRENADES_WEAPONS_BIT_SUM))
+		    || (stripwhat == ZP_SECONDAYRY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM))
+		    || ((1<<weaponid) & GRENADES_WEAPONS_BIT_SUM))
 		{
 			// Get weapon name
 			new wname[32]
@@ -1381,22 +1381,22 @@ stock ham_strip_weapon(index, const weapon[]){
 	// Get weapon id
 	new weaponid = get_weaponid(weapon)
 	if (!weaponid)
-		return false;
+	return false;
 
 	// Get weapon entity
 	new weapon_ent = fm_find_ent_by_owner(-1, weapon, index)
 	if (!weapon_ent)
-		return false;
+	return false;
 
 	// If it's the current weapon, retire first
 	new current_weapon_ent = fm_cs_get_current_weapon_ent(index)
 	new current_weapon = pev_valid(current_weapon_ent) ? cs_get_weapon_id(current_weapon_ent) : -1
 	if (current_weapon == weaponid)
-		ExecuteHamB(Ham_Weapon_RetireWeapon, weapon_ent)
+	ExecuteHamB(Ham_Weapon_RetireWeapon, weapon_ent)
 
 	// Remove weapon from player
 	if (!ExecuteHamB(Ham_RemovePlayerItem, index, weapon_ent))
-		return false;
+	return false;
 
 	// Kill weapon entity and fix pev_weapons bitsum
 	ExecuteHamB(Ham_Item_Kill, weapon_ent)
@@ -1407,8 +1407,8 @@ stock ham_strip_weapon(index, const weapon[]){
 // Find entity by its owner (from fakemeta_util)
 stock fm_find_ent_by_owner(entity, const classname[], owner)
 {
-	while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", classname)) && pev(entity, pev_owner) != owner) { /* keep looping */ }
-	return entity;
+while ((entity = engfunc(EngFunc_FindEntityByString, entity, "classname", classname)) && pev(entity, pev_owner) != owner) { /* keep looping */ }
+return entity;
 }
 
 // Get User Current Weapon Entity
@@ -1416,7 +1416,7 @@ stock fm_cs_get_current_weapon_ent(id)
 {
 	// Prevent server crash if entity's private data not initalized
 	if (pev_valid(id) != PDATA_SAFE)
-		return -1;
+	return -1;
 
 	return get_pdata_cbase(id, OFFSET_ACTIVE_ITEM);
 }
