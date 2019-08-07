@@ -30,7 +30,7 @@ new zclass_desc1[24] = "Kéo human"
 new const zclass_model[] = "Banshee"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_Banshee.mdl"
 new const Float:zclass_gravity = 0.80
-new const Float:zclass_speed = 300 //250.0
+new const Float:zclass_speed = 300.0 //250.0
 new const Float:zclass_knockback = 1.2 //1.5
 new const zclass_health = 2500 // 1200
 

@@ -16,11 +16,11 @@ new zclass_desc2[32] = ""
 new const zclass_model[] = "Chinese"
 new const zclass_clawsmodel[] = "models/zombie_plague/v_knife_chinese.mdl"
 
-new const zclass_health = 1500;
+new const zclass_health = 2800 //1500;
 new const Float:zclass_gravity = 0.84;
-new const Float:zclass_speed = 1.1;
-new const Float:zclass_speed_skill = 2.0;
-new const Float:zclass_knockback = 1.3;
+new const Float:zclass_speed = 1.5 //1.1;
+new const Float:zclass_speed_skill = 2.5 //2.0;
+new const Float:zclass_knockback = 1.2 //1.3;
 
 new msg_ScreenFade
 
@@ -52,7 +52,6 @@ public zp_fw_zombie_skill1_active(id, classid) {
 
 	cs_reset_player_maxspeed(id)
 	cs_set_player_maxspeed_auto(id, zclass_speed_skill);
-
 }
 
 public zp_fw_zombie_skill1_activing(id, classid) {
@@ -61,6 +60,7 @@ public zp_fw_zombie_skill1_activing(id, classid) {
 
 	cs_reset_player_maxspeed(id)
 	cs_set_player_maxspeed_auto(id, zclass_speed);
+
 }
 stock ScreenFade(plr, Float:fDuration, red, green, blue, alpha)
 {
