@@ -115,7 +115,7 @@ public plugin_init()
 
 	//register_clcmd("say /get", "Get_Thanatos1", ADMIN_KICK)
 
-    g_Thanatos1 = zp_weapons_register("Janus 9", 17, ZP_SECONDAYRY, ZP_WEAPON_AP);
+    g_Thanatos1 = zp_weapons_register("Thanatos 1", 17, ZP_SECONDAYRY, ZP_WEAPON_AP);
 }
 
 public plugin_precache()

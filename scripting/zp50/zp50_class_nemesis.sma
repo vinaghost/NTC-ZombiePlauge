@@ -188,15 +188,16 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type)
 		// (to prevent this from affecting a sub-plugin's rockets e.g.)
 		if (inflictor == attacker)
 		{
-			if( zp_core_is_last_human(victim) )
+			new Health = get_user_health(victim);
+			SetHamParamFloat(4, float(Health))
+			/*if( zp_core_is_last_human(victim) )
 			{
 				SetHamParamFloat(4, damage * 4)
 			}
 			else {
 			// Set nemesis damage
-				new Health = get_user_health(victim);
-				SetHamParamFloat(4, float(Health))
-			}
+
+			}*/
 			return HAM_HANDLED;
 		}
 	}
