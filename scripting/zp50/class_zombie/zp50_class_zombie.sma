@@ -115,7 +115,8 @@ new g_skill1_active, g_skill2_active;
 new g_skill1_activing, g_skill2_activing;
 
 
-new g_synchud
+new g_synchud1, g_synchud2;
+
 const PEV_SPEC_TARGET = pev_iuser2
 public plugin_init()
 {
@@ -140,7 +141,8 @@ public plugin_init()
 	g_Forwards[FW_CLASS_SKILL1_DEACTIVE] = CreateMultiForward("zp_fw_zombie_skill1_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
 	g_Forwards[FW_CLASS_SKILL2_DEACTIVE] = CreateMultiForward("zp_fw_zombie_skill2_deactive", ET_CONTINUE, FP_CELL, FP_CELL)
 
-	g_synchud = CreateHudSyncObj(2)
+	g_synchud1 = CreateHudSyncObj()
+	g_synchud2 = CreateHudSyncObj()
 
 }
 
@@ -217,7 +219,7 @@ public client_putinserver(id)
 	g_ZombieClassNext[id] = ZP_INVALID_ZOMBIE_CLASS
 }
 
-public client_disconnect(id)
+public client_disconnected(id)
 {
 	if(task_exists(id + ID_DEACTIVE_1))
 	{
@@ -376,35 +378,40 @@ public Show_Skill(taskid)
 
 public Show_Skill_Player(id)
 {
-	new BufferA[64], BufferB[64], BufferC[128]
-	if( ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) )
-	{
-		static info[32]
+	static info[32]
+	if( ArrayGetCell(g_ZombieTimeDeActive_skill1, g_ZombieClass[id]) ) {
+
 		ArrayGetString(g_ZombieClassSkillInfo1, g_ZombieClass[id], info, charsmax(info))
-		if(Get_BitVar(g_skill1_active, id))
-			formatex(BufferA, charsmax(BufferA), "[G] %s", info)
-		else
-			formatex(BufferA, charsmax(BufferA), "")
+
+		if( Get_BitVar(g_skill1_activing, id) ) {
+			set_hudmessage(0, 0, 255, 0.1, 0.15, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+		else if(Get_BitVar(g_skill1_active, id)) {
+			set_hudmessage(255,0, 0, 0.1, 0.15, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+		else {
+			set_hudmessage(0, 255, 0, 0.1, 0.15, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+
+		ShowSyncHudMsg(id, g_synchud1, "[G] %s", info)
 	}
-	else
-		formatex(BufferA, charsmax(BufferA), "")
 
 	if( ArrayGetCell(g_ZombieTimeDeActive_skill2, g_ZombieClass[id]) )
 	{
-		static info2[32]
-		ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info2, charsmax(info2))
-		if(Get_BitVar(g_skill2_activing, id))
-			formatex(BufferB, charsmax(BufferB), "[R] %s", info2)
-		else
-			formatex(BufferB, charsmax(BufferB), "")
+		ArrayGetString(g_ZombieClassSkillInfo2, g_ZombieClass[id], info, charsmax(info))
+
+		if( Get_BitVar(g_skill2_activing, id) ) {
+			set_hudmessage(0, 0, 255, 0.1, 0.19, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+		else if(Get_BitVar(g_skill2_active, id)) {
+			set_hudmessage(255,0, 0, 0.1, 0.19, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+		else {
+			set_hudmessage(0, 255, 0, 0.1, 0.19, 0, 1.5, 1.5, 0.0, 0.0, -1)
+		}
+
+		ShowSyncHudMsg(id, g_synchud2, "[R] %s", info)
 	}
-	else
-		formatex(BufferB, charsmax(BufferB), "")
-
-	formatex(BufferC, charsmax(BufferC), "%s ^n^n%s ", BufferA, BufferB)
-
-	set_hudmessage(0,0, 255, 0.1, 0.15, 0, 1.5, 1.5)
-	ShowSyncHudMsg(id, g_synchud, "%s", BufferC)
 }
 
 public show_class_menu(id)
