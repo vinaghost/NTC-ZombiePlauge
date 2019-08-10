@@ -27,7 +27,7 @@
 
 #define MAXPLAYERS 32
 
-#define ITEM_NAME "x2 AP"
+#define ITEM_NAME "Gấp đôi AP"
 #define ITEM_COST 5
 
 #define Get_BitVar(%1,%2) (%1 & (1 << (%2 & 31)))

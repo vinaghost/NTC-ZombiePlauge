@@ -8,6 +8,7 @@ new const PLUGIN_VERSION[] = "1.0.0"
 
 new g_IsInfectionRound
 
+new g_ItemID, g_Double
 public plugin_init()
 {
 	register_plugin("[ZP 5.0] New Infection Method", PLUGIN_VERSION, "Excalibur.007")
@@ -29,22 +30,4 @@ public OnPlayerTakeDamagePost(victim, attacker)
 	return HAM_IGNORED
 }
 
-public zp_fw_gamemodes_start(game_mode_id)
-{
-	g_IsInfectionRound = false
 
-	if(IsInfectionRound())
-	{
-		zp_gamemodes_set_allow_infect(false)
-
-		g_IsInfectionRound = true
-	}
-}
-
-IsInfectionRound()
-{
-	if(zp_gamemodes_get_allow_infect())
-		return true
-
-	return false
-}

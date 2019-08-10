@@ -21,7 +21,7 @@ public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_forward(FM_CmdStart, "fw_CmdStart")
 
-	cvar_parachute_speed = register_cvar("para_speed", "70")
+	cvar_parachute_speed = register_cvar("para_speed", "60")
 
 	g_parachute = zp_ap_items_register(NAME, COST)
 }
