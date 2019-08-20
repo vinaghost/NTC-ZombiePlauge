@@ -8,6 +8,7 @@
 #include <fun>
 #include <zp50_core>
 #include <zombieplague>
+#include <cs_ham_bots_api>
 #include <zp50_class_zombie>
 
 new const VERSION[] = "3.2"
@@ -95,8 +96,10 @@ new ScoreHud
 
 new AttackerHud, VictimHud;
 
-new AttackerSpecHud, VictimSpecHud;
-
+new Float:xA[33]
+new Float:yA[33]
+new Float:xV[33]
+new Float:yV[33];
 public plugin_init()
 {
 	// Original plugin is by Excalibur007. ;)
@@ -109,7 +112,8 @@ public plugin_init()
 
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0")
 	//register_event("Damage", "event_Damage", "be", "2!0", "3=0", "4!0")
-	RegisterHam(Ham_TakeDamage, "player", "event_Damage")
+	RegisterHamBots(Ham_TakeDamage, "event_Damage", 1);
+	RegisterHam(Ham_TakeDamage, "player", "event_Damage", 1)
 	register_event("DeathMsg", "event_DeathMsg", "a", "1>0")
 	register_event("StatusValue", "event_StatusValue", "be", "1=2", "2!0")
 	register_event("TextMsg", "event_Restart", "a", "2&#Game_C", "2&#Game_w")
@@ -120,9 +124,6 @@ public plugin_init()
 	// Score Inform. ;)
 	set_task(1.0, "ShowScore", 1112, _, _, "b")
 
-
-	AttackerSpecHud = CreateHudSyncObj()
-	VictimSpecHud = CreateHudSyncObj()
 	AttackerHud = CreateHudSyncObj()
 	VictimHud = CreateHudSyncObj()
 
@@ -367,13 +368,15 @@ public event_Damage(iVictim, inflictor, iAttacker, Float:damage, bits)
 
 
 	if(iAttacker == iVictim || !is_user_alive(iAttacker) || !is_user_alive(iVictim))
-	return
+		return
+	CheckPosition( iVictim, 0 )
+	CheckPosition( iAttacker, 1 )
 
-	set_hudmessage(255, 0, 0, 0.45, 0.50, 2, 0.1, 4.0, 0.1, 0.1, -1)
+	set_hudmessage(255, 0, 0, xV[iVictim], yV[iVictim], 2, 0.1, 4.0, 0.1, 0.1, -1)
 	ShowSyncHudMsg(iVictim, VictimHud, "%i^n", iHit)
+	client_print(iAttacker, print_center, "HP: %d", pev(iVictim, pev_health));
 
-
-	set_hudmessage(0, 100, 200, -1.0, 0.55, 2, 0.1, 4.0, 0.02, 0.02, -1)
+	set_hudmessage(0, 100, 200, xA[iAttacker], yA[iAttacker], 2, 0.1, 4.0, 0.02, 0.02, -1)
 	ShowSyncHudMsg(iAttacker, AttackerHud, "%i^n", iHit)
 
 
@@ -405,14 +408,16 @@ public Show_spectate(iVictim, iAttacker, iHit)
 		id = Players[i]
 		if (id != iVictim && entity_get_int(id, EV_INT_iuser2) == iVictim)
 		{
-			set_hudmessage(255, 0, 0, 0.45, 0.50, 2, 0.1, 4.0, 0.1, 0.1, -1)
-			ShowSyncHudMsg(id, VictimSpecHud, "%i^n", iHit)
+			set_hudmessage(255, 0, 0, xV[iVictim], yV[iVictim], 2, 0.1, 4.0, 0.1, 0.1, -1)
+			ShowSyncHudMsg(id, VictimHud, "%i^n", iHit)
 		}
 
 		if (id != iAttacker && entity_get_int(id, EV_INT_iuser2) == iAttacker)
 		{
-			set_hudmessage(0, 100, 200, -1.0, 0.55, 2, 0.1, 4.0, 0.02, 0.02, -1)
-			ShowSyncHudMsg(id, AttackerSpecHud, "%i^n", iHit)
+			set_hudmessage(0, 100, 200, xA[iAttacker], yA[iAttacker], 2, 0.1, 4.0, 0.02, 0.02, -1)
+			ShowSyncHudMsg(id, AttackerHud, "%i^n", iHit)
+			client_print(id, print_center, "HP: %d", pev(iVictim, pev_health));
+
 		}
 	}
 }
@@ -719,4 +724,79 @@ stock bool:SQL_IsFail( const iFailState, const iError, const szError[ ] )
 	}
 
 	return false;
+}
+
+
+iRefreshHudPosition( id )
+{
+	yA[ id ] = -0.50
+	xA[ id ] = -0.70
+
+	yV[ id ] = -0.45
+	xV[ id ] = -0.30
+}
+
+CheckPosition( id, Attacker ) {
+	if( Attacker )
+	{
+		switch( xA[ id ] )
+		{
+			case -0.70: // First attack
+			{
+				xA[ id ] = -0.575
+				yA[ id ] = -0.60
+			}
+			case -0.575: // Second
+			{
+				xA[ id ] = -0.50
+				yA[ id ] = -0.625
+			}
+			case -0.50: // Third
+			{
+				xA[ id ] = -0.425
+				yA[ id ] = -0.60
+			}
+			case -0.425: // Fourth
+			{
+				xA[ id ] = -0.30
+				yA[ id ] = -0.50
+			}
+			case -0.30: // Last
+			{
+				xA[ id ] = -0.70
+			}
+			default: iRefreshHudPosition( id )
+		}
+	}
+	else
+	{
+		switch( xV[ id ] )
+		{
+			case -0.30: // First attack
+			{
+				xV[ id ] = -0.425
+				yV[ id ] = -0.35
+			}
+			case -0.425: // Second
+			{
+				xV[ id ] = -0.50
+				yV[ id ] = -0.30
+			}
+			case -0.50: // Third
+			{
+				xV[ id ] = -0.575
+				yV[ id ] = -0.35
+			}
+			case -0.575: // fourth
+			{
+				xV[ id ] = -0.70
+				yV[ id ] = -0.45
+			}
+			case -0.70: // Last
+			{
+				xV[ id ] = -0.30
+			}
+			default: iRefreshHudPosition( id )
+		}
+	}
 }

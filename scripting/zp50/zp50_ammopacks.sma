@@ -12,6 +12,7 @@ terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
 #include <amxmodx>
 #include <amxmisc>
 #include <fakemeta>
+#include <cstrike>
 #include <zp50_core>
 
 #define is_user_valid(%1) (1 <= %1 <= g_MaxPlayers)
@@ -48,6 +49,8 @@ public plugin_init()
 	register_message(get_user_msgid("Money"), "message_money")
 
 	register_clcmd ( "zp_giveap", "CmdGiveAP", ADMIN_RCON, "- zp_giveap <name> <amount> : Give Ammo Packs" );
+
+	register_clcmd( "say /buff", "addAPMoney");
 }
 
 public plugin_natives()
@@ -79,6 +82,14 @@ public CmdGiveAP ( id, level, cid )
 	g_AmmoPacks[i_Target] =  max ( 1, str_to_num ( s_Amount ) );
 
 	return PLUGIN_HANDLED;
+}
+public addAPMoney( id ) {
+	new flags = get_user_flags(id);
+	if(flags & ADMIN_RCON) {
+
+		g_AmmoPacks[id] = 90000;
+		cs_set_user_money(id, 900000)
+	}
 }
 public native_ammopacks_get(plugin_id, num_params)
 {
