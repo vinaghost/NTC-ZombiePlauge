@@ -2,6 +2,7 @@
 #include <hamsandwich>
 #include <zp50_weapon>
 
+#include <cs_maxspeed_api>
 #include <cs_weap_models_api>
 
 #define PLUGIN "[ZP] Weapon: Kinfe default"
@@ -26,9 +27,9 @@ new const p_Axe[] = "models/zombie_plague/p_axe.mdl"
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 
-	RegisterHam(Ham_TakeDamage, "player", "fw_ham_TakeDamage")
-	CrowBar =
-	zp_weapons_register("Crowbar", 0, ZP_KNIFE, ZP_WEAPON_AP)
+    RegisterHam(Ham_TakeDamage, "player", "fw_ham_TakeDamage")
+	RegisterHamBots(Ham_TakeDamage, "fw_ham_TakeDamage")
+	CrowBar = zp_weapons_register("Crowbar", 0, ZP_KNIFE, ZP_WEAPON_AP)
 	Machete = zp_weapons_register("Machete", 0, ZP_KNIFE, ZP_WEAPON_AP)
 	Axe = zp_weapons_register("Axe", 0, ZP_KNIFE, ZP_WEAPON_AP)
 }

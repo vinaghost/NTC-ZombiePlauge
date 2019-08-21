@@ -1,24 +1,13 @@
-/*================================================================================
-
-	----------------------------------
-	-*- [ZP] Class: Human: Classic -*-
-	----------------------------------
-
-	This plugin is part of Zombie Plague Mod and is distributed under the
-	terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
-
-================================================================================*/
-
 #include <amxmodx>
 #include <zp50_class_human>
 
 // Classic Human Attributes
-new const humanclass1_name[] = "Classic Human"
-new const humanclass1_info[] = "=Balanced="
+new const humanclass1_name[] = "Flora Paladin"
+new const humanclass1_info[] = "[VIP]"
 new const humanclass1_models[][] = { "arctic" , "guerilla" , "leet" , "terror" , "gign" , "gsg9" , "sas" , "urban" }
-const humanclass1_health = 200
+const humanclass1_health = 100
 const Float:humanclass1_speed = 1.0
-const Float:humanclass1_gravity = 0.9
+const Float:humanclass1_gravity = 1.0
 
 new g_HumanClassID
 
