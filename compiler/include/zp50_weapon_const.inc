@@ -12,7 +12,7 @@
 #define ZP_WEAPON_DONT_SHOW 2
 
 #define ZP_PRIMARY 0
-#define ZP_SECONDAYRY 1
+#define ZP_SECONDARY 1
 #define ZP_KNIFE 2
 
 #define ZP_WEAPON_AP 0
