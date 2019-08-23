@@ -437,7 +437,7 @@ LoadSql(bool:threadQueries) {
 			`auth` VARCHAR(32) NOT NULL,\
 			`password` VARCHAR(32) NOT NULL,\
 			`flags` VARCHAR(26) NOT NULL,\
-			`date_remove` DATE NOT NULL DEFAULT '0000-00-00');";
+			`date_remove` DATE NOT NULL);";
 
 	if(threadQueries) {
 		SQL_ThreadQuery(gSqlTuple, "QueryCreateTable", queryString);

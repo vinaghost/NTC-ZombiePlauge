@@ -25,10 +25,6 @@
 #define LIBRARY_RANDOMSPAWN "zp50_random_spawn"
 #include <zp50_random_spawn>
 #include <zp50_colorchat>
-#include <register_system>
-#define LIBRARY_REGISTER_SYSTEM "register_system"
-
-#define TASK_WELCOMEMSG 100
 
 // CS Player PData Offsets (win32)
 const OFFSET_CSMENUCODE = 205
@@ -60,7 +56,7 @@ public plugin_natives()
 }
 public module_filter(const module[])
 {
-	if (equal(module, LIBRARY_BUYMENUS) || equal(module, LIBRARY_ZOMBIECLASSES) || equal(module, LIBRARY_HUMANCLASSES) || equal(module, LIBRARY_ITEMS) || equal(module, LIBRARY_ADMIN_MENU) || equal(module, LIBRARY_RANDOMSPAWN) || equal(module,LIBRARY_REGISTER_SYSTEM ))
+	if (equal(module, LIBRARY_BUYMENUS) || equal(module, LIBRARY_ZOMBIECLASSES) || equal(module, LIBRARY_HUMANCLASSES) || equal(module, LIBRARY_ITEMS) || equal(module, LIBRARY_ADMIN_MENU) || equal(module, LIBRARY_RANDOMSPAWN))
 		return PLUGIN_HANDLED;
 
 	return PLUGIN_CONTINUE;
@@ -107,6 +103,8 @@ show_menu_main(id)
 
 	menu_additem(menu, "Nâng cấp ( 1 round )"); //2
 
+	menu_additem(menu, "Chọn Skin Human");
+
 	//menu_additem(menu, "Đổi mật khẩu"); //3
 
 	//menu_additem(menu, "Update rank"); // 5
@@ -142,6 +140,10 @@ show_menu_main(id)
 		case 2:
 		{
 			show_Item_menu(id)
+		}
+		case 3:
+		{
+			zp_class_human_show_menu(id)
 		}
 		/*case 3:
 		{
