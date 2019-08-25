@@ -192,455 +192,67 @@ public client_disconnected( id )
 	g_iPlayerData[ id ][ DATA_STATUS ] = 0;
 
 }
+public NativeSetPoints( const iPlugin, const iParams ) {
+    if( iParams != 2 )
+    {
+        log_error( AMX_ERR_PARAMS, "Wrong parameters" );
+        return false;
+    }
+
+    new iPlayer = get_param( 1 );
+
+    if( !IsPlayer( iPlayer ) )
+    {
+        log_error( AMX_ERR_PARAMS, "Not a player (%i)", iPlayer );
+        return false;
+    }
+    else if( !IsUserAuthorized( iPlayer ) || !g_iPlayerData[ iPlayer ][ DATA_INDEX ] )
+    {
+        log_error( AMX_ERR_PARAMS, "Player is not authorized (%i)", iPlayer );
+        return false;
+    }
+
+    new iPoints = get_param( 2 );
+
+    if( iPoints <= 0 )
+    {
+        log_error( AMX_ERR_PARAMS, "Tried to force points less than a zero (%i)", iPoints );
+        return false;
+    }
+
+    g_iPlayerData[ iPlayer ][ DATA_POINTS ] = iPoints;
+    cs_set_user_money(iPlayer, iPoints);
 
 
-public native_get_user_level(iPlugin,iParams) {
-	new id = get_param(1);
+    new szQuery[ 128 ];
+    formatex( szQuery, 127, "UPDATE `%s` SET `point` = '%i' WHERE `Id` = '%i'",
+        g_szSqlTable, iPoints, g_iPlayerData[ iPlayer ][ DATA_INDEX ] );
 
-	return g_iPlayerData[ id ][ DATA_LEVEL ];
+    new iData[ 2 ];
+    iData[ 0 ] = iPlayer;
+    iData[ 1 ] = iPoints;
+
+    SQL_ThreadQuery( g_hSqlTuple, "HandleNullRoute", szQuery, iData, 2 );
+
+    return true;
 }
 
-public addXP( iPlayer , xp )
-{
-	g_iPlayerData[ iPlayer ][ DATA_XP ] += xp;
-
-	if( g_iPlayerData[ iPlayer ][ DATA_XP ] < 0 )
-	{
-		g_iPlayerData[ iPlayer ][ DATA_XP ] = 0;
-	}
-	ReviewLevel(iPlayer)
-	new szQuery[ 128 ];
-	formatex( szQuery, 127, "UPDATE `%s` SET `exp` = `exp` + '%i' WHERE `Id` = '%i'",
-	         g_szSqlTable, xp, g_iPlayerData[ iPlayer ][ DATA_INDEX ] );
-
-	new iData[ 2 ];
-	iData[ 0 ] = iPlayer;
-	iData[ 1 ] = xp;
-
-	SQL_ThreadQuery( g_hSqlTuple, "HandleNullRoute", szQuery, iData, 2 );
-
-	return true;
-}
-
-public setPoint( iPlayer, xp )
-{
-	g_iPlayerData[ iPlayer ][ DATA_XP ] = xp;
-
-	new szQuery[ 128 ];
-	formatex( szQuery, 127, "UPDATE `%s` SET `exp` = '%i' WHERE `Id` = '%i'",
-	         g_szSqlTable, xp, g_iPlayerData[ iPlayer ][ DATA_INDEX ] );
-
-	new iData[ 2 ];
-	iData[ 0 ] = iPlayer;
-	iData[ 1 ] = xp;
-
-	SQL_ThreadQuery( g_hSqlTuple, "HandleNullRoute", szQuery, iData, 2 );
-	ReviewLevel(iPlayer)
-	return true;
-}
-
-public zp_round_ended(iTeam)
-{
-	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
-
-	switch(iTeam) {
-		case WIN_ZOMBIES: {
-			g_iZombieScore ++
-
-			get_players(iPlayers, iPlayerCount, "ac")
-			for(i = 0; i < iPlayerCount; i++) {
-				player = iPlayers[i]
-				if(zp_get_user_zombie(player)) {
-					addXP(player, 1);
-					//sChatColor(player, "^x04[NTC]^x03 %L", LANG_PLAYER, "CL_ZOMBIE_WIN", get_pcvar_num(g_iZombieWinEXP))
-
-					ReviewLevel(player)
-				}
-			}
-
-		}
-		case WIN_HUMANS: {
-			g_iHumanScore ++
-
-			get_players(iPlayers, iPlayerCount, "ac")
-			for(i = 0; i < iPlayerCount; i++) {
-				player = iPlayers[i]
-				if(!zp_get_user_zombie(player)) {
-					addXP(player, 2);
-					//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_WIN", get_pcvar_num(g_iHumanWinEXP))
-
-					ReviewLevel(player)
-				}
-			}
-
-		}
-		case WIN_NO_ONE: {
-			g_iHumanScore ++
-
-			get_players(iPlayers, iPlayerCount, "ac")
-			for(i = 0; i < iPlayerCount; i++) {
-				player = iPlayers[i]
-				if(!zp_get_user_zombie(player)) {
-					addXP(player, 2);
-					//sChatColor(player, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HUMAN_WIN", get_pcvar_num(g_iHumanWinEXP))
-
-					ReviewLevel(player)
-				}
-			}
-		}
-	}
-}
-public ShowScore()
-{
-	set_hudmessage(0, 255, 0, -1.0, 0.02, 0, 12.0, 12.0, 0.0, 0.0, -1)
-	ShowSyncHudMsg(0, ScoreHud, "[Zombie] - [Human]^n[%s%d] ----- [%s%d]",g_iZombieScore >= 10 ? "" : "0", g_iZombieScore, g_iHumanScore >= 10 ? "" : "0", g_iHumanScore)
-}
-
-public cl_give(id, level, cid)
-{
-	if (!cmd_access(id, level, cid, 2))
-	{
-		return PLUGIN_HANDLED
-	}
-
-	new iTarget[32], iCount[32]
-	read_argv(1, iTarget, charsmax(iTarget))
-	read_argv(2, iCount, charsmax(iCount))
-
-	new target_id, iName[32], iNameID[32]
-	target_id = find_player("bl", iTarget)
-
-	get_user_name(target_id, iName, charsmax(iName))
-	get_user_name(id, iNameID, charsmax(iNameID))
-
-	if(!target_id)
-	{
-		console_print(id, "Can't find that player")
-		return PLUGIN_HANDLED
-	}
-
-	if(read_argc() != 3)
-	{
-		return PLUGIN_HANDLED
-	}
-
-	if(str_to_num(iCount) < (EXP[g_iPlayerData[ target_id ][ DATA_LEVEL ] + 1] - g_iPlayerData[ target_id ][DATA_XP]))
-	{
-		if(str_to_num(iCount) == 0)
-		{
-			console_print(id, "EXP for %s is %i / %i", iName,  g_iPlayerData[ target_id ][DATA_XP], EXP[g_iPlayerData[ target_id ][ DATA_LEVEL ] + 1])
-		}
-		else
-		{
-			console_print(id, "%s has been given %i EXP", iName, str_to_num(iCount))
-			addXP(target_id, str_to_num(iCount));
-		}
-	}
-	else
-	{
-		console_print(id, "Maximum EXP allowed for %s: %i", iName, (EXP[g_iPlayerData[ target_id ][ DATA_LEVEL ] + 1] - g_iPlayerData[ target_id ][DATA_XP]))
-	}
-
-	return PLUGIN_HANDLED;
-}
-
-public event_new_round()
-{
-	new iPlayers[MAXPLAYERS], iPlayerCount, i, player
-	get_players(iPlayers, iPlayerCount, "a")
-	for(i = 0; i < iPlayerCount; i++)
-	{
-		player = iPlayers[i]
-		g_iPlayerData[player][DATA_DMG][player] = 0
-	}
-}
-
-public event_Restart()
-{
-	g_iZombieScore = 0
-	g_iHumanScore = 0
-
-}
-
-public event_Damage(iVictim, inflictor, iAttacker, Float:damage, bits)
-{
-	static iHit; iHit = floatround(damage)
-
-
-	if(iAttacker == iVictim || !is_user_alive(iAttacker) || !is_user_alive(iVictim))
-		return
-	CheckPosition( iVictim, 0 )
-	CheckPosition( iAttacker, 1 )
-
-	set_hudmessage(255, 0, 0, xV[iVictim], yV[iVictim], 2, 0.1, 4.0, 0.1, 0.1, -1)
-	ShowSyncHudMsg(iVictim, VictimHud, "%i^n", iHit)
-	client_print(iAttacker, print_center, "HP: %d", pev(iVictim, pev_health));
-
-	set_hudmessage(0, 100, 200, xA[iAttacker], yA[iAttacker], 2, 0.1, 4.0, 0.02, 0.02, -1)
-	ShowSyncHudMsg(iAttacker, AttackerHud, "%i^n", iHit)
-
-
-	Show_spectate(iVictim, iAttacker, iHit)
-
-	if(zp_get_user_zombie(iVictim) && !zp_get_user_survivor(iAttacker))
-	{
-		g_iPlayerData[iAttacker][DATA_DMG][iVictim] += iHit
-
-		if(g_iPlayerData[iAttacker][DATA_DMG][iVictim] >= 1300)
-		{
-			addXP(iAttacker, 2)
-
-			//sChatColor(iAttacker, "^x04[CL]^x01 %L", LANG_PLAYER, "CL_DEALT_DAMAGE", get_pcvar_num(g_iDamageEXP), get_pcvar_num(g_iDamageAmount))
-			g_iPlayerData[iAttacker][DATA_DMG][iVictim] = 0
-
-		}
-
-	}
-}
-
-public Show_spectate(iVictim, iAttacker, iHit)
-{
-
-	new Players[MAXPLAYERS], iPlayerCount, i, id
-	get_players(Players, iPlayerCount, "bc")
-	for (i = 0; i < iPlayerCount; i++)
-	{
-		id = Players[i]
-		if (id != iVictim && entity_get_int(id, EV_INT_iuser2) == iVictim)
-		{
-			set_hudmessage(255, 0, 0, xV[iVictim], yV[iVictim], 2, 0.1, 4.0, 0.1, 0.1, -1)
-			ShowSyncHudMsg(id, VictimHud, "%i^n", iHit)
-		}
-
-		if (id != iAttacker && entity_get_int(id, EV_INT_iuser2) == iAttacker)
-		{
-			set_hudmessage(0, 100, 200, xA[iAttacker], yA[iAttacker], 2, 0.1, 4.0, 0.02, 0.02, -1)
-			ShowSyncHudMsg(id, AttackerHud, "%i^n", iHit)
-			client_print(id, print_center, "HP: %d", pev(iVictim, pev_health));
-
-		}
-	}
-}
-
-public event_DeathMsg()
-{
-	new iKiller; iKiller = read_data(1)
-	new iVictim; iVictim = read_data(2)
-	new iIsHeadshot; iIsHeadshot = read_data(3)
-
-	if(iVictim == iKiller || !is_user_alive(iKiller)) {
-		return
-	}
-
-	if(!zp_get_user_zombie(iKiller) || zp_get_user_survivor(iKiller))
-	{
-		if(zp_get_user_nemesis(iVictim))
-		{
-			addXP(iKiller, 1);
-			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_NEMESIS", get_pcvar_num(g_iNemKillEXP))
-
-
-		}
-		else
-		{
-			if(iIsHeadshot)
-			{
-				addXP(iKiller, 5)
-				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_HEADSHOT_KILL", get_pcvar_num(g_iHeadShotEXP))
-			}
-			else
-			{
-				addXP(iKiller, 2)
-				//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL", get_pcvar_num(g_iHumanEXP))
-			}
-			g_iPlayerData[iKiller][DATA_KILLED][iVictim] = true;
-			ReviewLevel(iKiller)
-
-			new iPlayers[MAXPLAYERS], iPlayerCount, i, id
-			get_players(iPlayers, iPlayerCount, "ah")
-			for(i = 0; i < iPlayerCount; i++)
-			{
-				id = iPlayers[i]
-				if( g_iPlayerData[id][DATA_DMG][iVictim] >= g_iPlayerData[iVictim][DATA_MAXHEALTH]/5) {
-					if(!g_iPlayerData[id][DATA_KILLED][iVictim] && !zp_core_is_zombie(id))
-					{
-						addXP(id, 1);
-
-						//sChatColor(id, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_ASSIST", get_pcvar_num(g_iAssistEXP), RANKS[g_iLevel[iKiller]], szName)
-						g_iPlayerData[id][DATA_DMG][iVictim] = 0
-					}
-					else
-					{
-						g_iPlayerData[id][DATA_KILLED][iVictim] = false
-					}
-				}
-			}
-
-		}
-	}
-	else if(zp_get_user_zombie(iKiller) || zp_get_user_nemesis(iKiller))
-	{
-		if(zp_get_user_survivor(iVictim))
-		{
-			addXP(iKiller, 9)
-			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_SURVIVOR", get_pcvar_num(g_iSurKillEXP))
-		}
-		else
-		{
-			addXP(iKiller, 2)
-			//sChatColor(iKiller, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_KILL_HUMAN", get_pcvar_num(g_iZombieEXP))
-		}
-	}
-}
-
-public ReviewLevel(id)
-{
-	while((g_iPlayerData[id][DATA_LEVEL] < 19 && g_iPlayerData[id][DATA_XP] >= EXP[g_iPlayerData[id][DATA_LEVEL] + 1]))
-	{
-		g_iPlayerData[id][DATA_LEVEL] += 1
-		new name[33];
-		get_user_name(id, name, charsmax(name));
-
-		sChatColor(id, "^x04[NTC]^x03 %s ^x01đã lên rank ^x04%s", name, RANKS[g_iPlayerData[id][DATA_LEVEL] + 1])
-
-		new szQuery[ 128 ];
-		formatex( szQuery, 127, "UPDATE `%s` SET `level` = `level` + 1 WHERE `Id` = '%i'",
-		         g_szSqlTable, g_iPlayerData[ id ][ DATA_INDEX ] );
-
-		new iData[ 2 ];
-		iData[ 0 ] = id;
-		iData[ 1 ] = g_iPlayerData[id][DATA_LEVEL];
-
-		SQL_ThreadQuery( g_hSqlTuple, "HandleNullRoute", szQuery, iData, 2 );
-	}
-}
-
-public event_StatusValue(id)
-{
-	new pid = read_data(2)
-	new pidlevel = g_iPlayerData[pid][DATA_LEVEL]
-
-	if(!pev_valid(pid) || !is_user_alive(pid) || zp_get_user_zombie(pid))
-	return
-
-
-	Create_TE_PLAYERATTACHMENT(id, pid, 55, g_iSprite[pidlevel], 2)
-
-}
-
-
-public zp_fw_core_infect_post(id, attacker)
-{
-	if(zp_class_zombie_get_current(id) == ZP_INVALID_ZOMBIE_CLASS)
-	return;
-
-	g_iPlayerData[id][DATA_MAXHEALTH] = zp_class_zombie_get_max_health(id, zp_class_zombie_get_current(id))
-
-	if (is_user_alive(attacker) && attacker != id)
-	{
-		addXP(attacker, 2)
-		//sChatColor(attacker, "^x04[CL]^x03 %L", LANG_PLAYER, "CL_INFECT", get_pcvar_num(g_iInfectEXP))
-	}
-
-}
-
-
-
-public show_stats(id)
-{
-	new Data[ 1 ]
-	Data[ 0 ] = id
-
-	new szTemp[ 512 ]
-	format( szTemp, charsmax( szTemp ), "SELECT COUNT(*) FROM level_zp WHERE exp >= %d", g_iPlayerData[id][DATA_XP] )
-
-	SQL_ThreadQuery( g_hSqlTuple, "SkillRank_QueryHandler", szTemp, Data, 1 )
-
-}
-public SkillRank_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
-{
-	if( !SQL_IsFail( FailState, Errcode, Error ) )
-	{
-		new id
-		id = Data[ 0 ]
-
-		g_iPlayerData[id][DATA_RANK] = SQL_ReadResult( Query, 0 )
-
-		if( g_iPlayerData[id][DATA_RANK]== 0 )
-		{
-			g_iPlayerData[id][DATA_RANK] = 1
-		}
-
-		TotalRows( id )
-	}
-}
-
-public TotalRows( id )
-{
-	new Data[ 1 ]
-	Data[ 0 ] = id
-
-	new szTemp[ 128 ]
-	format( szTemp, charsmax( szTemp ), "SELECT COUNT(*) FROM level_zp")
-
-	SQL_ThreadQuery( g_hSqlTuple, "TotalRows_QueryHandler", szTemp, Data, 1 )
-}
-
-public TotalRows_QueryHandler( FailState, Handle:Query, Error[ ], Errcode, Data[ ], DataSize )
-{
-	if( !SQL_IsFail( FailState, Errcode, Error ) )
-	{
-		new id
-		id = Data[ 0 ]
-
-		g_iCount = SQL_ReadResult( Query, 0 )
-
-		sChatColor( id, "!g[NTC]!n Đang ở vị trí %d/%d", g_iPlayerData[id][DATA_RANK], g_iCount )
-		sChatColor(id, "^x04[NTC]^x03 Rank hiện tại %d, cần %d để lên cấp", RANKS[g_iPlayerData[id][DATA_LEVEL]], (EXP[g_iPlayerData[id][DATA_LEVEL] + 1] -g_iPlayerData[id][DATA_XP]))
-
-	}
-}
-
-stock Create_TE_PLAYERATTACHMENT(id, entity, vOffset, iSprite, life)
-{
-	message_begin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, _, id)
-	write_byte(TE_PLAYERATTACHMENT)
-	write_byte(entity)
-	write_coord(vOffset)
-	write_short(iSprite)
-	write_short(life)
-	message_end()
-}
-
-stock sChatColor(const id, const input[], any:...)
-{
-	new count = 1, players[32], i, player
-	static msg[191]
-
-	if(numargs() == 2)
-	copy(msg, 190, input)
-	else
-	vformat(msg, 190, input, 3)
-
-	replace_all(msg, 190, "!g", "^4")
-	replace_all(msg, 190, "!y", "^1")
-	replace_all(msg, 190, "!t", "^3")
-
-	if(id) {
-		if(!is_user_connected(id)) return
-		players[0] = id
-	}
-	else get_players(players, count, "ch")
-
-	for(i = 0; i < count; i++)
-	{
-		player = players[i]
-
-		message_begin(MSG_ONE_UNRELIABLE, g_msgSayText, _, player)
-		write_byte(player)
-		write_string(msg)
-		message_end()
-	}
+public NativeGetPoints( const iPlugin, const iParams ) {
+    if( iParams != 1 )
+    {
+        log_error( AMX_ERR_PARAMS, "Wrong parameters" );
+        return 0;
+    }
+
+    new iPlayer = get_param( 1 );
+
+    if( !IsPlayer( iPlayer ) )
+    {
+        log_error( AMX_ERR_PARAMS, "Not a player (%i)", iPlayer );
+        return 0;
+    }
+
+    return g_iPlayerData[ iPlayer ][ DATA_POINTS ];
 }
 
 // SQL Related
