@@ -11,7 +11,7 @@
 #define AUTHOR "VINAGHOST"
 
 
-#define ITEM_NAME "Tang hinh trong 30s"
+#define ITEM_NAME "Tàng hình trong 30s"
 #define ITEM_COST 17000
 
 #define flag_get(%1,%2) (%1 & (1 << (%2 & 31)))

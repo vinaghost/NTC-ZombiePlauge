@@ -9,7 +9,7 @@
 
 ================================================================================*/
 
-#define ITEM_NAME "Thuoc giai doc"
+#define ITEM_NAME "Thuốc giải độc"
 #define ITEM_COST 29000
 
 #include <amxmodx>

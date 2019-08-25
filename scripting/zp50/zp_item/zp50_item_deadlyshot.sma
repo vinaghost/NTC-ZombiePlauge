@@ -52,16 +52,11 @@ public zp_fw_ap_items_select_post(id, itemid)
 	if(itemid != g_deadlyshot)
 		return PLUGIN_HANDLED
 
+	Set_BitVar(g_has,id);
+	Set_BitVar(g_active,id);
 
-	if(!Get_BitVar(g_has,id))
-	{
-		zp_colored_print(id, "Đã mua ^x04DEADLY SHOT^x01. Nhấn [T] để kích hoạt");
+	set_task(1.5, "Show_Skill", id+TASK_HUD, _, _, "b")
 
-		Set_BitVar(g_has,id);
-		Set_BitVar(g_active,id);
-
-		set_task(1.5, "Show_Skill", id+TASK_HUD, _, _, "b")
-	}
 
 	return PLUGIN_CONTINUE
 }

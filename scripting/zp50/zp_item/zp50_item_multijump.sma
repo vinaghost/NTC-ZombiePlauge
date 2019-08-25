@@ -11,7 +11,7 @@
 #define AUTHOR "twistedeuphoria"
 
 
-#define ITEM_NAME "Khinh cong"
+#define ITEM_NAME "Khinh công cho Zombie"
 #define ITEM_COST 10
 
 #define flag_get(%1,%2) (%1 & (1 << (%2 & 31)))
@@ -50,8 +50,6 @@ public zp_fw_ap_items_select_post(id, itemid, ignorecost)
 		return;
 
 	flag_set(g_multijump, id);
-
-	zp_colored_print(id, "Đã kích hoạt %s (chỉ có tác dụng khi là Zombie)", ITEM_NAME);
 }
 public client_putinserver(id)
 {

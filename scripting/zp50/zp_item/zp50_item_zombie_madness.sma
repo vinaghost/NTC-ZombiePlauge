@@ -9,7 +9,7 @@
 
 ================================================================================*/
 
-#define ITEM_NAME "No khi"
+#define ITEM_NAME "Thuốc kích thích"
 #define ITEM_COST 20000
 
 #include <amxmodx>

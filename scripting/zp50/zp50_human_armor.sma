@@ -97,33 +97,30 @@ public client_disconnected(id) {
 	UnSet_BitVar(p_Armor, id);
 
 }
-
-public zp_fw_ap_items_select_pre(id, itemid, ignorecost)
+public zp_fw_money_items_select_pre(id, itemid, ignorecost)
 {
 	if (itemid != g_ItemID)
 	return ZP_ITEM_AVAILABLE;
 
-	new Float:armor
-	pev(id, pev_armorvalue, armor)
+	if( zp_core_is_zombie(id)  ) return ZP_ITEM_DONT_SHOW;
 
-	if( armor > 0 && Get_BitVar(p_Armor, id) ) {
+	if( Get_BitVar(p_Armor, id) ) {
 		return ZP_ITEM_NOT_AVAILABLE;
 	}
 
 	return ZP_ITEM_AVAILABLE;
 }
 
-public zp_fw_ap_items_select_post(id, itemid, ignorecost)
+public zp_fw_money_items_select_post(id, itemid, ignorecost)
 {
 	// This is not our item
 	if (itemid != g_ItemID)
-	return;
+		return;
 
 	Set_BitVar(p_Armor, id);
-	new Float:armor
-	pev(id, pev_armorvalue, armor)
-
 	set_pev(id, pev_armorvalue, 100);
+
+	emit_sound(id, CHAN_ITEM, "items/ammopickup2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	zp_colored_print(id, "Đã trang bị Giáp chống zombie loại Xịn");
 }
@@ -134,6 +131,12 @@ public zp_fw_core_cure_post(id, attacker)
 
 	if (armor < get_pcvar_float(cvar_human_armor_default))
 	set_pev(id, pev_armorvalue, get_pcvar_float(cvar_human_armor_default))
+}
+public zp_fw_core_infect_post(id, attacker)
+{
+	UnSet_BitVar(p_Armor, id)
+	zp_colored_print(id, "Phát hiện zombie - Giáp chống Zombie loại xịn tự động huỷ");
+
 }
 
 // Ham Take Damage Forward
@@ -170,7 +173,7 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type)
 		if (LibraryExists(LIBRARY_SNIPER, LibType_Library) && !get_pcvar_num(cvar_sniper_armor_protect) && zp_class_sniper_get(victim))
 		return HAM_IGNORED;
 
-		if( Get_BitVar(p_Armor, victim)) {
+		if( Get_BitVar(p_Armor, victim) ) {
 			// Get victim armor
 			static Float:armor
 			pev(victim, pev_armorvalue, armor)
@@ -180,11 +183,13 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type)
 			{
 				emit_sound(victim, CHAN_BODY, g_sound_armor_hit, 1.0, ATTN_NORM, 0, PITCH_NORM)
 
-				if (armor - damage > 0.0)
-				set_pev(victim, pev_armorvalue, armor - damage)
+				if (armor - damage > 0.0) {
+					set_pev(victim, pev_armorvalue, armor - damage)
+				}
 				else {
 					UnSet_BitVar(p_Armor, victim);
 					cs_set_user_armor(victim, 0, CS_ARMOR_NONE)
+					zp_colored_print(victim, "Giáp chống Zombie loại xịn đã bị phá huỷ");
 				}
 
 				// Block damage, but still set the pain shock offset
@@ -208,7 +213,7 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type)
 public zp_fw_gamemodes_start(game_mode_id)
 {
 	g_IsInfectionRound = false
-
+	p_Armor = 0;
 	if(IsInfectionRound())
 	{
 		zp_gamemodes_set_allow_infect(false)
