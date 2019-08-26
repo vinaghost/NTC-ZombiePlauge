@@ -509,6 +509,8 @@ public Check_Damage(Atk, id, Float:Origin[3], Except)
 			continue
 		if(Except == i)
 			continue
+		if( !zp_core_is_zombie(i) )
+			continue
 
 		if(id != i) ExecuteHamB(Ham_TakeDamage, i, 0, id, float(DAMAGE), DMG_BURN)
 	}

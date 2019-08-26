@@ -6,18 +6,19 @@
 #include <cstrike>
 #include <xs>
 #include <fun>
-
-#include <zp50_weapon>
+#include <cs_ham_bots_api>
 #include <zombieplague>
+#include <zp50_weapon>
+
 
 #define PLUGIN "[CSO] THANATOS-9"
 #define VERSION "1.0"
 #define AUTHOR "Joseph Rias de Dias"
 
-#define DAMAGE_A 1000
-#define DAMAGE_B 500
+#define DAMAGE_A 700
+#define DAMAGE_B 300
 
-#define RADIUS 120.0
+#define RADIUS 100.0
 #define SLASH_DELAY 0.9
 
 #define FALLEN_GALVATRON_TIME 5.0
@@ -84,12 +85,11 @@ enum
 #define UnSet_BitVar(%1,%2) %1 &= ~(1 << (%2 & 31))
 
 new g_Had_Thanatos9, g_MegatronMode, g_FallenGalvatron, g_DarthVader, g_Changing, Float:CheckDamage[33]
-new g_HamBot, g_MsgWeaponList, g_MaxPlayers, g_SmokePuff_SprId
+new g_MsgWeaponList, g_MaxPlayers, g_SmokePuff_SprId
 
 // Safety
 new g_IsConnected, g_IsAlive, g_PlayerWeapon[33]
-
-new g_thanatos9;
+new g_item;
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -105,6 +105,7 @@ public plugin_init()
 
 	// Hams
 	RegisterHam(Ham_TraceAttack, "player", "fw_PlayerTraceAttack")
+	RegisterHamBots(Ham_TraceAttack, "fw_PlayerTraceAttack")
 	RegisterHam(Ham_Item_Deploy, weapon_thanatos9, "fw_Item_Deploy_Post", 1)
 	RegisterHam(Ham_Item_AddToPlayer, weapon_thanatos9, "fw_Item_AddToPlayer_Post", 1)
 	RegisterHam(Ham_Weapon_WeaponIdle, weapon_thanatos9, "fw_Weapon_WeaponIdle_Post", 1)
@@ -115,22 +116,9 @@ public plugin_init()
 
 	// CMD
 	register_clcmd("knife_thanatos9", "Hook_Thanatos9")
-
-	g_thanatos9 = zp_weapons_register("Thanatos 9", 60, ZP_KNIFE, ZP_WEAPON_AP)
 	//register_clcmd("say /get", "Get_Thanatos9")
+	g_item = zp_weapons_register("Thanatos 9", 25, ZP_KNIFE, ZP_WEAPON_AP);
 }
-
-public zp_fw_wpn_select_post(id, ItemID)
-{
-	if(ItemID == g_thanatos9) Get_Thanatos9(id)
-}
-public zp_fw_wpn_remove(id, ItemID )
-{
-	if(ItemID == g_thanatos9) Remove_Thanatos9(id)
-}
-
-public zp_user_infected_post(id) Remove_Thanatos9(id)
-public zp_user_humanized_post(id) Remove_Thanatos9(id)
 
 public plugin_precache()
 {
@@ -150,25 +138,20 @@ public plugin_precache()
 public client_putinserver(id)
 {
 	Safety_Connected(id)
-
-	if(!g_HamBot && is_user_bot(id))
-	{
-		g_HamBot = 1
-		set_task(0.1, "Do_Register_HamBot", id)
-	}
-}
-
-public Do_Register_HamBot(id)
-{
-	Register_SafetyFuncBot(id)
-	RegisterHamFromEntity(Ham_TraceAttack, id, "fw_PlayerTraceAttack")
 }
 
 public client_disconnected(id)
 {
 	Safety_Disconnected(id)
 }
-
+public zp_fw_wpn_select_post(id, ItemID)
+{
+    if(ItemID == g_item) Get_Thanatos9(id)
+}
+public zp_fw_wpn_remove(id, ItemID )
+{
+    if(ItemID == g_item) Remove_Thanatos9(id)
+}
 public Get_Thanatos9(id)
 {
 	remove_task(id+TASK_SLASHING)
@@ -548,6 +531,8 @@ public Damage_Slashing(id)
 		if(!is_alive(i))
 			continue
 		if(id == i)
+			continue
+		if(!zp_core_is_zombie(i) )
 			continue
 		if(entity_range(id, i) > Max_Distance)
 			continue

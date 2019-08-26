@@ -5,39 +5,45 @@
 #include <hamsandwich>
 #include <cstrike>
 #include <xs>
-#include <zp50_weapon>
+#include <cs_ham_bots_api>
 #include <zombieplague>
+#include <zp50_weapon>
+#include <cs_weap_models_api>
 
-#define PLUGIN "[CSO] Dual Katana"
-#define VERSION "1.0"
-#define AUTHOR "Dias"
 
-#define V_MODEL "models/v_katanad.mdl"
-#define P_MODEL "models/p_katanad.mdl"
+#define PLUGIN "Dragon Sword"
+#define VERSION "2.0"
+#define AUTHOR "Dias Leon"
 
-#define CSW_DUALKATANA CSW_KNIFE
-#define weapon_dualkatana "weapon_knife"
-#define WEAPON_ANIMEXT "dualpistols_1"
-#define WEAPON_ANIMEXT2 "knife"
+#define V_MODEL "models/v_dragonsword2.mdl"
+#define P_MODEL "models/p_dragonsword.mdl"
+
+#define CSW_DRAGONSWORD CSW_KNIFE
+#define weapon_dragonsword "weapon_knife"
+#define WEAPON_ANIMEXT "knife" //"skullaxe"
 
 #define DRAW_TIME 1.0
 
-#define SLASH_DAMAGE 300
-#define SLASH_RADIUS 400
-#define SLASH_RESET_TIME 1.0
-#define SLASH1_TIME 0.25
-#define SLASH2_TIME1 0.25
-#define SLASH2_TIME2 0.5
-#define SLASH_RESET_TIME 1.0
+#define SLASH_ROTATE_DAMAGE 130.0
+#define SLASH_ROTATE_RADIUS 110.0
+#define SLASH_ROTATE_POINT_DIS 60.0
+#define SLASH_ROTATE_DELAY_TIME 0.7
+#define SLASH_ROTATE_RESET_TIME 1.0
 
-#define STAB_DAMAGE 500
-#define STAB_RADIUS 20
-#define STAB_POINT_DIS 48
-#define STAB_TIME 0.5
-#define STAB_RESET_TIME 1.0
+#define SLASH_AHEAD_DAMAGE 180.0
+#define SLASH_AHEAD_RADIUS 90.0
+#define SLASH_AHEAD_POINT_DIS 30.0
+#define SLASH_AHEAD_DELAY_TIME 0.3
+#define SLASH_AHEAD_RESET_TIME 0.9
 
-#define TASK_SET_DAMAGE 1955+10
-#define TASK_RESET_DAMAGE 1955+20
+#define STAB_DAMAGE 220.0
+#define STAB_RADIUS 100.0
+#define STAB_POINT_DIS 80.0
+#define STAB_TIME 0.657
+#define STAB_RESET_TIME 0.75
+
+#define TASK_SLASHING 2033+20
+#define TASK_STABING 2033+10
 
 // OFFSET
 const PDATA_SAFE = 2
@@ -46,38 +52,33 @@ const OFFSET_WEAPONOWNER = 41
 const m_flNextAttack = 83
 const m_szAnimExtention = 492
 
-new const DualKatana_Sound[9][] =
+new const DragonSword_Sound[8][] =
 {
-	"weapons/katanad_draw.wav",
-	"weapons/katanad_hit1.wav",
-	"weapons/katanad_hit2.wav",
-	"weapons/katanad_hitwall.wav",
-	"weapons/katanad_slash1.wav",
-	"weapons/katanad_slash2.wav",
-	"weapons/katanad_slash3.wav",
-	"weapons/katanad_stab.wav",
-	"weapons/katanad_stab_miss.wav"
+	"weapons/dragonsword_draw.wav",
+	"weapons/dragonsword_hit1.wav",
+	"weapons/dragonsword_hit2.wav",
+	"weapons/dragonsword_idle.wav",
+	"weapons/dragonsword_slash1.wav",
+	"weapons/dragonsword_slash2.wav",
+	"weapons/dragonsword_stab_hit.wav",
+	"weapons/dragonsword_wall.wav"
 }
 
 enum
 {
-	ATTACK_SLASH1 = 1,
-	ATTACK_SLASH2,
-	ATTACK_SLASH3,
+	ATTACK_SLASH_ROTATE = 1,
+	ATTACK_SLASH_AHEAD,
 	ATTACK_STAB
 }
 
 enum
 {
-	DK_ANIM_IDLE = 0,
-	DK_ANIM_FSLASH1,
-	DK_ANIM_FSLASH2,
-	DK_ANIM_DRAW,
-	DK_ANIM_STAB,
-	DK_ANIM_STAB_MISS,
-	DK_ANIM_SLASH1,
-	DK_ANIM_SLASH2,
-	DK_ANIM_SLASH3
+	DS_ANIM_IDLE = 0,
+	DS_ANIM_SLASH_ROTATE,
+	DS_ANIM_SLASH_AHEAD,
+	DS_ANIM_DRAW,
+	DS_ANIM_STAB_BEGIN,
+	DS_ANIM_STAB_END
 }
 
 enum
@@ -87,16 +88,16 @@ enum
 	HIT_WALL
 }
 
-new g_DualKatana
-new g_Had_DualKatana[33], g_Slashing_Mode[33], g_Attack_Mode[33], g_Checking_Mode[33], g_Hit_Ing[33]
-new g_Old_Weapon[33], g_Ham_Bot
-
+new g_Had_DragonSword, g_Slashing_Mode[33], g_Attack_Mode[33], g_Checking_Mode[33], g_Hit_Ing[33]
+new g_Old_Weapon[33], g_MaxPlayers
+new g_IsConnected, g_IsAlive;
+new g_item;
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 
-	register_event("DeathMsg", "Event_Death", "a")
-	register_event("CurWeapon", "Event_CurWeapon", "be", "1=1")
+	Register_SafetyFunc();
+	register_event("HLTV", "Event_NewRound", "a", "1=0", "2=0")
 
 	register_forward(FM_EmitSound, "fw_EmitSound")
 	register_forward(FM_CmdStart, "fw_CmdStart")
@@ -104,10 +105,10 @@ public plugin_init()
 	register_forward(FM_TraceHull, "fw_TraceHull")
 
 	RegisterHam(Ham_TraceAttack, "player", "fw_PlayerTraceAttack")
-	RegisterHam(Ham_Item_Deploy, weapon_dualkatana, "fw_Item_Deploy_Post", 1)
+	RegisterHamBots(Ham_TraceAttack, "fw_PlayerTraceAttack")
 
-	register_clcmd("admin_get_dualkatana", "get_dualkatana")
-
+	g_item = zp_weapons_register("Dragon Sword", 20, ZP_KNIFE, ZP_WEAPON_AP);
+	g_MaxPlayers = get_maxplayers()
 }
 
 public plugin_precache()
@@ -115,315 +116,84 @@ public plugin_precache()
 	engfunc(EngFunc_PrecacheModel, V_MODEL)
 	engfunc(EngFunc_PrecacheModel, P_MODEL)
 
-	for(new i = 0; i < sizeof(DualKatana_Sound); i++)
-		engfunc(EngFunc_PrecacheSound, DualKatana_Sound[i])
-
-	g_DualKatana = zp_weapons_register("Dual Katana", 5000, ZP_KNIFE, ZP_WEAPON_MONEY);
+	for(new i = 0; i < sizeof(DragonSword_Sound); i++)
+		engfunc(EngFunc_PrecacheSound, DragonSword_Sound[i])
 }
 
 public zp_fw_wpn_select_post(id, ItemID)
 {
-    if(ItemID == g_DualKatana)  get_dualkatana(id)
+    if(ItemID == g_item) get_dragonsword(id)
 }
 public zp_fw_wpn_remove(id, ItemID )
 {
-    if(ItemID == g_DualKatana) remove_dualkatana(id)
+    if(ItemID == g_item) remove_dragonsword(id)
 }
-
-public zp_user_infected_post(id) remove_dualkatana(id)
-public zp_user_humanized_post(id) remove_dualkatana(id)
-
-
-public get_dualkatana(id)
+public get_dragonsword(id)
 {
-	if(!is_user_alive(id))
+	if(!Get_BitVar(g_IsAlive, id))
 		return
 
-	g_Had_DualKatana[id] = 1
+	remove_task(id+TASK_SLASHING)
+	remove_task(id+TASK_STABING)
+
+	Set_BitVar(g_Had_DragonSword, id)
 	g_Slashing_Mode[id] = 0
 	g_Attack_Mode[id] = 0
 	g_Checking_Mode[id] = 0
 	g_Hit_Ing[id] = 0
-
-	g_Had_DualKatana[id] = 1
-	fm_give_item(id, weapon_dualkatana)
 
 	if(get_user_weapon(id) == CSW_KNIFE)
 	{
-		set_pev(id, pev_viewmodel2, V_MODEL)
-		set_pev(id, pev_weaponmodel2, P_MODEL)
+		cs_set_player_view_model(id, CSW_KNIFE, V_MODEL);
+		cs_set_player_weap_model(id, CSW_KNIFE, P_MODEL);
 
-		set_weapon_anim(id, DK_ANIM_DRAW)
+		set_weapon_anim(id, DS_ANIM_DRAW)
 		set_player_nextattack(id, DRAW_TIME)
 	} else {
-		engclient_cmd(id, weapon_dualkatana)
+		engclient_cmd(id, weapon_dragonsword)
 	}
 }
 
-public remove_dualkatana(id)
+public remove_dragonsword(id)
 {
-	g_Had_DualKatana[id] = 0
+	remove_task(id+TASK_SLASHING)
+	remove_task(id+TASK_STABING)
+
+	UnSet_BitVar(g_Had_DragonSword, id)
 	g_Slashing_Mode[id] = 0
 	g_Attack_Mode[id] = 0
 	g_Checking_Mode[id] = 0
 	g_Hit_Ing[id] = 0
+
+	cs_reset_player_view_model(id, CSW_KNIFE);
+	cs_reset_player_weap_model(id, CSW_KNIFE);
 }
 
-public client_putinserver(id)
+public Event_NewRound()
 {
-	if(!g_Ham_Bot && is_user_bot(id))
-	{
-		g_Ham_Bot = 1
-		set_task(0.1, "Do_RegisterHam_Bot", id)
-	}
-}
-
-public Do_RegisterHam_Bot(id)
-{
-	RegisterHamFromEntity(Ham_TraceAttack, id, "fw_PlayerTraceAttack")
-}
-
-public Event_Death()
-{
-	static Victim; Victim = read_data(2)
-	remove_dualkatana(Victim)
+	for(new i = 0; i < g_MaxPlayers; i++)
+		remove_dragonsword(i)
 }
 
 public Event_CurWeapon(id)
 {
-	if(!is_user_alive(id))
-		return
-	if(!g_Had_DualKatana[id])
+	if(!Get_BitVar(g_IsAlive, id))
 		return
 
-	if(get_user_weapon(id) == CSW_DUALKATANA && g_Old_Weapon[id] != CSW_DUALKATANA)
-	{
-		set_weapon_anim(id, DK_ANIM_DRAW)
-		set_player_nextattack(id, DRAW_TIME)
-
-		set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT, -1 , 20)
-	}
-
-	g_Old_Weapon[id] = get_user_weapon(id)
-}
-
-
-public fw_CmdStart(id, uc_handle, seed)
-{
-	if (!is_user_alive(id))
-		return
-	if(get_user_weapon(id) != CSW_DUALKATANA || !g_Had_DualKatana[id])
-		return
-
-	static ent; ent = fm_get_user_weapon_entity(id, CSW_DUALKATANA)
-
-	if(!pev_valid(ent))
-		return
-	if(get_pdata_float(ent, 46, OFFSET_LINUX_WEAPONS) > 0.0 || get_pdata_float(ent, 47, OFFSET_LINUX_WEAPONS) > 0.0)
-		return
-
-	static CurButton
-	CurButton = get_uc(uc_handle, UC_Buttons)
-
-	if (CurButton & IN_ATTACK)
-	{
-		set_uc(uc_handle, UC_Buttons, CurButton & ~IN_ATTACK)
-
-		if(g_Slashing_Mode[id] == 0) g_Slashing_Mode[id] = 1
-
-		g_Slashing_Mode[id]++
-		if(g_Slashing_Mode[id] > ATTACK_SLASH3) g_Slashing_Mode[id] = 1
-
-		if(g_Slashing_Mode[id] == 1)
-		{
-			g_Attack_Mode[id] = ATTACK_SLASH1
-
-			set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT2, -1 , 20)
-
-			g_Checking_Mode[id] = 1
-			ExecuteHamB(Ham_Weapon_PrimaryAttack, ent)
-			g_Checking_Mode[id] = 0
-
-			set_pev(id, pev_framerate, 0.75)
-			set_weapons_timeidle(id, CSW_DUALKATANA, SLASH_RESET_TIME)
-			set_player_nextattack(id, SLASH_RESET_TIME)
-
-			set_weapon_anim(id, DK_ANIM_SLASH1)
-			set_task(SLASH1_TIME, "Do_Slashing", id+TASK_SET_DAMAGE)
-		} else if(g_Slashing_Mode[id] == 2) {
-			g_Attack_Mode[id] = ATTACK_SLASH2
-
-			set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT2, -1 , 20)
-
-			g_Checking_Mode[id] = 1
-			ExecuteHamB(Ham_Weapon_PrimaryAttack, ent)
-			g_Checking_Mode[id] = 0
-
-			set_pev(id, pev_framerate, 1.0)
-			set_weapons_timeidle(id, CSW_DUALKATANA, SLASH_RESET_TIME)
-			set_player_nextattack(id, SLASH_RESET_TIME)
-
-			set_weapon_anim(id, DK_ANIM_SLASH2)
-			set_task(SLASH2_TIME1, "Do_Slashing", id+TASK_SET_DAMAGE)
-			set_task(SLASH2_TIME2, "Do_Slashing", id+TASK_SET_DAMAGE)
-		} else if(g_Slashing_Mode[id] == 3) {
-			g_Attack_Mode[id] = ATTACK_SLASH3
-
-			set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT2, -1 , 20)
-
-			g_Checking_Mode[id] = 1
-			ExecuteHamB(Ham_Weapon_PrimaryAttack, ent)
-			g_Checking_Mode[id] = 0
-
-			set_pev(id, pev_framerate, 1.0)
-			set_weapons_timeidle(id, CSW_DUALKATANA, SLASH_RESET_TIME)
-			set_player_nextattack(id, SLASH_RESET_TIME)
-
-			set_weapon_anim(id, DK_ANIM_SLASH3)
-			set_task(SLASH2_TIME1, "Do_Slashing", id+TASK_SET_DAMAGE)
-			set_task(SLASH2_TIME2, "Do_Slashing", id+TASK_SET_DAMAGE)
-		}
-	} else if (CurButton & IN_ATTACK2) {
-		set_uc(uc_handle, UC_Buttons, CurButton & ~IN_ATTACK2)
-
-		set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT2, -1 , 20)
-
-		g_Attack_Mode[id] = ATTACK_STAB
-		g_Checking_Mode[id] = 1
-		ExecuteHamB(Ham_Weapon_SecondaryAttack, ent)
-		g_Checking_Mode[id] = 0
-
-		set_weapons_timeidle(id, CSW_DUALKATANA, STAB_TIME + 0.1)
-		set_player_nextattack(id, STAB_TIME + 0.1)
-
-		set_weapon_anim(id, DK_ANIM_STAB)
-
-		remove_task(id+TASK_SET_DAMAGE)
-		set_task(STAB_TIME, "Do_StabNow", id+TASK_SET_DAMAGE)
-	}
-}
-
-public Do_Slashing(id)
-{
-	id -= TASK_SET_DAMAGE
-
-	if (!is_user_alive(id))
-		return
-	if(get_user_weapon(id) != CSW_DUALKATANA)
-		return
-	if(!g_Had_DualKatana[id])
-		return
-
-	static Body, Target
-	get_user_aiming(id, Target, Body, SLASH_RADIUS)
-
-	static Ent; Ent = fm_get_user_weapon_entity(id, get_user_weapon(id))
-	if(!pev_valid(Ent)) Ent = 0
-
-	if(is_user_alive(Target))
-	{
-		emit_sound(id, CHAN_WEAPON, DualKatana_Sound[random_num(1, 2)], 1.0, ATTN_NORM, 0, PITCH_NORM)
-		do_attack(id, Target, Ent, float(SLASH_DAMAGE))
-	} else {
-		if(g_Hit_Ing[id] == HIT_WALL) emit_sound(id, CHAN_WEAPON, DualKatana_Sound[3], 1.0, ATTN_NORM, 0, PITCH_NORM)
-		else if(g_Hit_Ing[id] == HIT_NOTHING) emit_sound(id, CHAN_WEAPON, DualKatana_Sound[random_num(4, 6)], 1.0, ATTN_NORM, 0, PITCH_NORM)
-	}
-
-	set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT, -1 , 20)
-}
-
-public Do_StabNow(id)
-{
-	id -= TASK_SET_DAMAGE
-
-	if (!is_user_alive(id))
-		return
-	if(get_user_weapon(id) != CSW_DUALKATANA)
-		return
-	if(!g_Had_DualKatana[id])
-		return
-
-	set_weapons_timeidle(id, CSW_DUALKATANA, STAB_RESET_TIME)
-	set_player_nextattack(id, STAB_RESET_TIME)
-
-	if(Check_StabAttack(id))
-	{
-		emit_sound(id, CHAN_WEAPON, DualKatana_Sound[7], 1.0, ATTN_NORM, 0, PITCH_NORM)
-	} else {
-		if(g_Hit_Ing[id] == HIT_WALL) emit_sound(id, CHAN_WEAPON, DualKatana_Sound[3], 1.0, ATTN_NORM, 0, PITCH_NORM)
-		else if(g_Hit_Ing[id] == HIT_NOTHING) emit_sound(id, CHAN_WEAPON, DualKatana_Sound[8], 1.0, ATTN_NORM, 0, PITCH_NORM)
-	}
-
-	set_pdata_string(id, m_szAnimExtention * 4, WEAPON_ANIMEXT, -1 , 20)
-
-	g_Attack_Mode[id] = 0
-	g_Hit_Ing[id] = 0
-}
-
-public Check_StabAttack(id)
-{
-	static Float:Max_Distance, Float:Point[4][3], Float:TB_Distance, Float:Point_Dis
-
-	Point_Dis = float(STAB_POINT_DIS)
-	Max_Distance = float(STAB_RADIUS)
-	TB_Distance = Max_Distance / 4.0
-
-	static Float:VicOrigin[3], Float:MyOrigin[3]
-	pev(id, pev_origin, MyOrigin)
-
-	for(new i = 0; i < 4; i++)
-		get_position(id, TB_Distance * (i + 1), 0.0, 0.0, Point[i])
-
-	static Have_Victim; Have_Victim = 0
-	static ent
-	ent = fm_get_user_weapon_entity(id, get_user_weapon(id))
-
-	if(!pev_valid(ent))
-		return 0
-
-	for(new i = 0; i < get_maxplayers(); i++)
-	{
-		if(!is_user_alive(i))
-			continue
-		if(id == i)
-			continue
-		if(entity_range(id, i) > Max_Distance)
-			continue
-
-		pev(i, pev_origin, VicOrigin)
-		if(is_wall_between_points(MyOrigin, VicOrigin, id))
-			continue
-
-		if(get_distance_f(VicOrigin, Point[0]) <= Point_Dis
-		|| get_distance_f(VicOrigin, Point[1]) <= Point_Dis
-		|| get_distance_f(VicOrigin, Point[2]) <= Point_Dis
-		|| get_distance_f(VicOrigin, Point[3]) <= Point_Dis)
-		{
-			if(!Have_Victim) Have_Victim = 1
-			do_attack(id, i, ent, float(STAB_DAMAGE))
-		}
-	}
-
-	if(Have_Victim)
-		return 1
-	else
-		return 0
+	g_Old_Weapon[id] = read_data(2)
 }
 
 public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags, pitch)
 {
-	if(!is_user_connected(id))
+	if(!Get_BitVar(g_IsConnected, id))
 		return FMRES_IGNORED
-	if(get_user_weapon(id) != CSW_DUALKATANA || !g_Had_DualKatana[id])
+	if(/*get_user_weapon(id) != CSW_DRAGONSWORD || */!Get_BitVar(g_Had_DragonSword, id))
 		return FMRES_IGNORED
 
 	if(sample[8] == 'k' && sample[9] == 'n' && sample[10] == 'i')
 	{
 		if(sample[14] == 's' && sample[15] == 'l' && sample[16] == 'a')
-		{
-			g_Hit_Ing[id] = HIT_NOTHING
 			return FMRES_SUPERCEDE
-		}
 		if (sample[14] == 'h' && sample[15] == 'i' && sample[16] == 't')
 		{
 			if (sample[17] == 'w') // wall
@@ -442,11 +212,220 @@ public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags
 	return FMRES_IGNORED
 }
 
+public fw_CmdStart(id, uc_handle, seed)
+{
+	if (!Get_BitVar(g_IsAlive, id))
+		return
+	if(get_user_weapon(id) != CSW_DRAGONSWORD || !Get_BitVar(g_Had_DragonSword, id))
+		return
+
+	static ent; ent = fm_get_user_weapon_entity(id, CSW_DRAGONSWORD)
+
+	if(!pev_valid(ent))
+		return
+	if(get_pdata_float(ent, 46, OFFSET_LINUX_WEAPONS) > 0.0 || get_pdata_float(ent, 47, OFFSET_LINUX_WEAPONS) > 0.0)
+		return
+
+	static CurButton
+	CurButton = get_uc(uc_handle, UC_Buttons)
+
+	if (CurButton & IN_ATTACK)
+	{
+		set_uc(uc_handle, UC_Buttons, CurButton & ~IN_ATTACK)
+
+		if(!g_Slashing_Mode[id])
+		{
+			g_Attack_Mode[id] = ATTACK_SLASH_ROTATE
+			g_Checking_Mode[id] = 1
+			ExecuteHamB(Ham_Weapon_PrimaryAttack, ent)
+			g_Checking_Mode[id] = 0
+
+			set_pev(id, pev_framerate, 1.5)
+			set_weapons_timeidle(id, CSW_DRAGONSWORD, SLASH_ROTATE_RESET_TIME)
+			set_player_nextattack(id, SLASH_ROTATE_RESET_TIME)
+
+			set_weapon_anim(id, DS_ANIM_SLASH_ROTATE)
+			set_task(SLASH_ROTATE_DELAY_TIME, "Do_Slashing_Rotate", id+TASK_SLASHING)
+		} else {
+			g_Attack_Mode[id] = ATTACK_SLASH_AHEAD
+			g_Checking_Mode[id] = 1
+			ExecuteHamB(Ham_Weapon_PrimaryAttack, ent)
+			g_Checking_Mode[id] = 0
+
+			set_pev(id, pev_framerate, 2.0)
+			set_weapons_timeidle(id, CSW_DRAGONSWORD, SLASH_AHEAD_RESET_TIME)
+			set_player_nextattack(id, SLASH_AHEAD_RESET_TIME)
+
+			set_weapon_anim(id, DS_ANIM_SLASH_AHEAD)
+			set_task(SLASH_AHEAD_DELAY_TIME, "Do_Slashing_Ahead", id+TASK_SLASHING)
+		}
+
+		g_Slashing_Mode[id] = !g_Slashing_Mode[id]
+	} else if (CurButton & IN_ATTACK2) {
+		set_uc(uc_handle, UC_Buttons, CurButton & ~IN_ATTACK2)
+
+		g_Attack_Mode[id] = ATTACK_STAB
+		g_Checking_Mode[id] = 1
+		ExecuteHamB(Ham_Weapon_SecondaryAttack, ent)
+		g_Checking_Mode[id] = 0
+
+		set_pev(id, pev_framerate, 1.5)
+		set_weapons_timeidle(id, CSW_DRAGONSWORD, STAB_TIME + 0.1)
+		set_player_nextattack(id, STAB_TIME + 0.1)
+
+		set_weapon_anim(id, DS_ANIM_STAB_BEGIN)
+
+		remove_task(id+TASK_STABING)
+		set_task(STAB_TIME, "Do_StabNow", id+TASK_STABING)
+	}
+}
+
+public Do_Slashing_Rotate(id)
+{
+	id -= TASK_SLASHING
+
+	if(!Get_BitVar(g_IsAlive, id))
+		return
+	if(get_user_weapon(id) != CSW_DRAGONSWORD || !Get_BitVar(g_Had_DragonSword, id))
+		return
+
+	if(Check_Attack(id, ATTACK_SLASH_ROTATE))
+	{
+		emit_sound(id, CHAN_WEAPON, DragonSword_Sound[1], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	} else {
+		if(g_Hit_Ing[id] == HIT_WALL) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[7], 1.0, ATTN_NORM, 0, PITCH_NORM)
+		else if(g_Hit_Ing[id] == HIT_NOTHING) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[4], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	}
+
+	g_Attack_Mode[id] = 0
+	g_Hit_Ing[id] = 0
+}
+
+public Do_Slashing_Ahead(id)
+{
+	id -= TASK_SLASHING
+
+	if(!Get_BitVar(g_IsAlive, id))
+		return
+	if(get_user_weapon(id) != CSW_DRAGONSWORD || !Get_BitVar(g_Had_DragonSword, id))
+		return
+
+	if(Check_Attack(id, ATTACK_SLASH_AHEAD))
+	{
+		emit_sound(id, CHAN_WEAPON, DragonSword_Sound[2], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	} else {
+		if(g_Hit_Ing[id] == HIT_WALL) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[7], 1.0, ATTN_NORM, 0, PITCH_NORM)
+		else if(g_Hit_Ing[id] == HIT_NOTHING) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[5], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	}
+
+	g_Attack_Mode[id] = 0
+	g_Hit_Ing[id] = 0
+}
+
+public Do_StabNow(id)
+{
+	id -= TASK_STABING
+
+	if (!Get_BitVar(g_IsAlive, id))
+		return
+	if(!Get_BitVar(g_Had_DragonSword, id))
+		return
+
+	set_weapon_anim(id, DS_ANIM_STAB_END)
+
+	if(get_user_weapon(id) != CSW_DRAGONSWORD)
+	{
+		set_weapons_timeidle(id, CSW_DRAGONSWORD, 0.0)
+		set_player_nextattack(id, 0.0)
+	} else {
+		set_weapons_timeidle(id, CSW_DRAGONSWORD, STAB_RESET_TIME)
+		set_player_nextattack(id, STAB_RESET_TIME)
+	}
+
+	if(Check_Attack(id, ATTACK_STAB))
+	{
+		emit_sound(id, CHAN_WEAPON, DragonSword_Sound[1], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	} else {
+		if(g_Hit_Ing[id] == HIT_WALL) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[7], 1.0, ATTN_NORM, 0, PITCH_NORM)
+		else if(g_Hit_Ing[id] == HIT_NOTHING) emit_sound(id, CHAN_WEAPON, DragonSword_Sound[6], 1.0, ATTN_NORM, 0, PITCH_NORM)
+	}
+
+	g_Attack_Mode[id] = 0
+	g_Hit_Ing[id] = 0
+}
+
+
+public Check_Attack(id, Mode)
+{
+	static Float:Max_Distance, Float:Point[4][3], Float:TB_Distance, Float:Point_Dis
+
+	if(Mode == ATTACK_SLASH_ROTATE)
+	{
+		Point_Dis = SLASH_ROTATE_POINT_DIS
+		Max_Distance = SLASH_ROTATE_RADIUS
+		TB_Distance = Max_Distance / 4.0
+	} else if(Mode == ATTACK_SLASH_AHEAD) {
+		Point_Dis = SLASH_AHEAD_POINT_DIS
+		Max_Distance = SLASH_AHEAD_RADIUS
+		TB_Distance = Max_Distance / 4.0
+	} else if(Mode == ATTACK_STAB) {
+		Point_Dis = STAB_POINT_DIS
+		Max_Distance = STAB_RADIUS
+		TB_Distance = Max_Distance / 4.0
+	}
+
+	static Float:VicOrigin[3], Float:MyOrigin[3]
+	pev(id, pev_origin, MyOrigin)
+
+	for(new i = 0; i < 4; i++)
+		get_position(id, TB_Distance * (i + 1), 0.0, 0.0, Point[i])
+
+	static Have_Victim; Have_Victim = 0
+	static ent
+	ent = fm_get_user_weapon_entity(id, get_user_weapon(id))
+
+	if(!pev_valid(ent))
+		return 0
+
+	for(new i = 0; i < get_maxplayers(); i++)
+	{
+		if(!Get_BitVar(g_IsAlive,i))
+			continue
+		if(id == i)
+			continue
+		if(entity_range(id, i) > Max_Distance)
+			continue
+
+		pev(i, pev_origin, VicOrigin)
+		if(is_wall_between_points(MyOrigin, VicOrigin, id))
+			continue
+
+		if(get_distance_f(VicOrigin, Point[0]) <= Point_Dis
+		|| get_distance_f(VicOrigin, Point[1]) <= Point_Dis
+		|| get_distance_f(VicOrigin, Point[2]) <= Point_Dis
+		|| get_distance_f(VicOrigin, Point[3]) <= Point_Dis)
+		{
+			if(!Have_Victim) Have_Victim = 1
+			if(Mode == ATTACK_SLASH_ROTATE)
+				do_attack(id, i, ent, SLASH_ROTATE_DAMAGE)
+			else if(Mode == ATTACK_SLASH_AHEAD)
+				do_attack(id, i, ent, SLASH_AHEAD_DAMAGE)
+			else if(Mode == ATTACK_STAB)
+				do_attack(id, i, ent, STAB_DAMAGE)
+		}
+	}
+
+	if(Have_Victim)
+		return 1
+
+	return 0
+}
+
 public fw_TraceLine(Float:vector_start[3], Float:vector_end[3], ignored_monster, id, handle)
 {
-	if (!is_user_alive(id))
+	if (!Get_BitVar(g_IsAlive, id))
 		return FMRES_IGNORED
-	if (get_user_weapon(id) != CSW_DUALKATANA || !g_Had_DualKatana[id])
+	if (get_user_weapon(id) != CSW_DRAGONSWORD || !Get_BitVar(g_Had_DragonSword, id))
 		return FMRES_IGNORED
 
 	static Float:vecStart[3], Float:vecEnd[3], Float:v_angle[3], Float:v_forward[3], Float:view_ofs[3], Float:fOrigin[3]
@@ -459,9 +438,9 @@ public fw_TraceLine(Float:vector_start[3], Float:vector_end[3], ignored_monster,
 	engfunc(EngFunc_MakeVectors, v_angle)
 	get_global_vector(GL_v_forward, v_forward)
 
-	if(g_Attack_Mode[id] == ATTACK_SLASH1 || g_Attack_Mode[id] == ATTACK_SLASH2 || g_Attack_Mode[id] == ATTACK_SLASH3)
-		xs_vec_mul_scalar(v_forward, float(SLASH_RADIUS), v_forward)
-	else if(g_Attack_Mode[id] == ATTACK_STAB) xs_vec_mul_scalar(v_forward, float(STAB_RADIUS), v_forward)
+	if(g_Attack_Mode[id] == ATTACK_SLASH_ROTATE) xs_vec_mul_scalar(v_forward, SLASH_ROTATE_RADIUS, v_forward)
+	else if(g_Attack_Mode[id] == ATTACK_SLASH_AHEAD) xs_vec_mul_scalar(v_forward, SLASH_AHEAD_RADIUS, v_forward)
+	else if(g_Attack_Mode[id] == ATTACK_STAB) xs_vec_mul_scalar(v_forward, STAB_RADIUS, v_forward)
 	else xs_vec_mul_scalar(v_forward, 0.0, v_forward)
 	xs_vec_add(vecStart, v_forward, vecEnd)
 
@@ -472,9 +451,9 @@ public fw_TraceLine(Float:vector_start[3], Float:vector_end[3], ignored_monster,
 
 public fw_TraceHull(Float:vector_start[3], Float:vector_end[3], ignored_monster, hull, id, handle)
 {
-	if (!is_user_alive(id))
+	if (!Get_BitVar(g_IsAlive, id))
 		return FMRES_IGNORED
-	if (get_user_weapon(id) != CSW_DUALKATANA || !g_Had_DualKatana[id])
+	if (get_user_weapon(id) != CSW_DRAGONSWORD || !Get_BitVar(g_Had_DragonSword, id))
 		return FMRES_IGNORED
 
 	static Float:vecStart[3], Float:vecEnd[3], Float:v_angle[3], Float:v_forward[3], Float:view_ofs[3], Float:fOrigin[3]
@@ -487,9 +466,9 @@ public fw_TraceHull(Float:vector_start[3], Float:vector_end[3], ignored_monster,
 	engfunc(EngFunc_MakeVectors, v_angle)
 	get_global_vector(GL_v_forward, v_forward)
 
-	if(g_Attack_Mode[id] == ATTACK_SLASH1 || g_Attack_Mode[id] == ATTACK_SLASH2 || g_Attack_Mode[id] == ATTACK_SLASH3)
-		xs_vec_mul_scalar(v_forward, float(SLASH_RADIUS), v_forward)
-	else if(g_Attack_Mode[id] == ATTACK_STAB) xs_vec_mul_scalar(v_forward, float(STAB_RADIUS), v_forward)
+	if(g_Attack_Mode[id] == ATTACK_SLASH_ROTATE) xs_vec_mul_scalar(v_forward, SLASH_ROTATE_RADIUS, v_forward)
+	else if(g_Attack_Mode[id] == ATTACK_SLASH_AHEAD) xs_vec_mul_scalar(v_forward, SLASH_AHEAD_RADIUS, v_forward)
+	else if(g_Attack_Mode[id] == ATTACK_STAB) xs_vec_mul_scalar(v_forward, STAB_RADIUS, v_forward)
 	else xs_vec_mul_scalar(v_forward, 0.0, v_forward)
 	xs_vec_add(vecStart, v_forward, vecEnd)
 
@@ -500,27 +479,13 @@ public fw_TraceHull(Float:vector_start[3], Float:vector_end[3], ignored_monster,
 
 public fw_PlayerTraceAttack(Victim, Attacker, Float:Damage, Float:Direction[3], TraceResult, DamageBits)
 {
-	if(!is_user_alive(Attacker))
+	if(!Get_BitVar(g_IsAlive, Attacker))
 		return HAM_IGNORED
-	if(!g_Had_DualKatana[Attacker] || !g_Checking_Mode[Attacker])
+	if(!Get_BitVar(g_Had_DragonSword, Attacker) || !g_Checking_Mode[Attacker])
 		return HAM_IGNORED
 
 	return HAM_SUPERCEDE
 }
-
-public fw_Item_Deploy_Post(ent)
-{
-	static id; id = fm_cs_get_weapon_ent_owner(ent)
-	if (!pev_valid(id))
-		return
-
-	if(!g_Had_DualKatana[id])
-		return
-
-	set_pev(id, pev_viewmodel2, V_MODEL)
-	set_pev(id, pev_weaponmodel2, P_MODEL)
-}
-
 
 do_attack(Attacker, Victim, Inflictor, Float:fDamage)
 {
@@ -695,9 +660,22 @@ stock fm_cs_get_weapon_ent_owner(ent)
 	return get_pdata_cbase(ent, OFFSET_WEAPONOWNER, OFFSET_LINUX_WEAPONS)
 }
 
+stock set_weapon_anim(id, anim)
+{
+	if(!Get_BitVar(g_IsAlive, id))
+		return
+
+	set_pev(id, pev_weaponanim, anim)
+
+	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, _, id)
+	write_byte(anim)
+	write_byte(0)
+	message_end()
+}
+
 stock set_weapons_timeidle(id, WeaponId ,Float:TimeIdle)
 {
-	if(!is_user_alive(id))
+	if(!Get_BitVar(g_IsAlive, id))
 		return
 
 	static entwpn; entwpn = fm_get_user_weapon_entity(id, WeaponId)
@@ -709,17 +687,20 @@ stock set_weapons_timeidle(id, WeaponId ,Float:TimeIdle)
 	set_pdata_float(entwpn, 48, TimeIdle + 0.5, OFFSET_LINUX_WEAPONS)
 }
 
-stock set_weapon_anim(id, anim)
+stock set_player_nextattack(id, Float:nexttime)
 {
-	if(!is_user_alive(id))
+	if(!Get_BitVar(g_IsAlive, id))
 		return
 
-	set_pev(id, pev_weaponanim, anim)
+	set_pdata_float(id, m_flNextAttack, nexttime, 5)
+}
 
-	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, _, id)
-	write_byte(anim)
-	write_byte(0)
-	message_end()
+stock is_valid_entity(ent)
+{
+	if(pev_valid(ent) != PDATA_SAFE)
+		return 0
+
+	return 1
 }
 
 stock get_position(ent, Float:forw, Float:right, Float:up, Float:vStart[])
@@ -740,13 +721,6 @@ stock get_position(ent, Float:forw, Float:right, Float:up, Float:vStart[])
 	vStart[2] = vOrigin[2] + vForward[2] * forw + vRight[2] * right + vUp[2] * up
 }
 
-stock set_player_nextattack(id, Float:nexttime)
-{
-	if(!is_user_alive(id))
-		return
-
-	set_pdata_float(id, m_flNextAttack, nexttime, 5)
-}
 
 stock is_wall_between_points(Float:start[3], Float:end[3], ignore_ent)
 {
@@ -760,4 +734,55 @@ stock is_wall_between_points(Float:start[3], Float:end[3], ignore_ent)
 
 	free_tr2(ptr)
 	return floatround(get_distance_f(end, EndPos))
+}
+
+public Safety_Connected(id)
+{
+	Set_BitVar(g_IsConnected, id)
+	UnSet_BitVar(g_IsAlive, id)
+}
+
+public Safety_Disconnected(id)
+{
+	UnSet_BitVar(g_IsConnected, id)
+	UnSet_BitVar(g_IsAlive, id)
+}
+public Register_SafetyFunc()
+{
+
+	register_event("CurWeapon", "Event_CurWeapon", "be", "1=1")
+
+	RegisterHam(Ham_Spawn, "player", "fw_Safety_Spawn_Post", 1)
+	RegisterHam(Ham_Killed, "player", "fw_Safety_Killed_Post", 1)
+
+	RegisterHamBots(Ham_Spawn, "fw_Safety_Spawn_Post", 1)
+	RegisterHamBots(Ham_Killed, "fw_Safety_Killed_Post", 1)
+
+}
+public fw_Safety_Spawn_Post(id)
+{
+	if(!Get_BitVar(g_IsAlive, id))
+		return
+
+	Set_BitVar(g_IsAlive, id)
+}
+
+public fw_Safety_Killed_Post(id)
+{
+	UnSet_BitVar(g_IsAlive, id)
+}
+
+public is_player(id, IsAliveCheck)
+{
+	if(!(1 <= id <= 32))
+		return 0
+	if(!Get_BitVar(g_IsConnected, id))
+		return 0
+	if(IsAliveCheck)
+	{
+		if(Get_BitVar(g_IsAlive, id)) return 1
+		else return 0
+	}
+
+	return 1
 }

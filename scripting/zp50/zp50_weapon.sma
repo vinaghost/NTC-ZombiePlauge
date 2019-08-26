@@ -130,9 +130,9 @@ public user_remove_weapon(id) {
 		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_PRIMARY][id])
 	}
 
-	if(p_Weapon[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON ) {
+	if(p_Weapon[ZP_SECONDARY][id] != ZP_INVALID_WEAPON ) {
 
-		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDAYRY][id])
+		ExecuteForward(g_Forwards[FW_WPN_REMOVE], g_ForwardResult, id, p_Weapon[ZP_SECONDARY][id])
 	}
 
 	if(p_Weapon[ZP_KNIFE][id] != ZP_INVALID_WEAPON ) {
@@ -146,7 +146,8 @@ public zp_fw_core_cure_pre(id, attacker)
 	return;
 
 	strip_weapons(id, ZP_PRIMARY)
-	strip_weapons(id, ZP_SECONDAYRY)
+	strip_weapons(id, ZP_SECONDARY)
+	user_remove_weapon(id)
 
 	set_task(0.1, "show_menu_main", id)
 }
@@ -157,11 +158,11 @@ public client_connect(id) {
 	UnSet_BitVar(h_DoubleFrost, id)
 
 	p_Weapon[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
-	p_Weapon[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
+	p_Weapon[ZP_SECONDARY][id] = ZP_INVALID_WEAPON;
 	p_Weapon[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
 
 	p_Weapon_Auto[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
-	p_Weapon_Auto[ZP_SECONDAYRY][id] = ZP_INVALID_WEAPON;
+	p_Weapon_Auto[ZP_SECONDARY][id] = ZP_INVALID_WEAPON;
 	p_Weapon_Auto[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
 
 
@@ -192,23 +193,23 @@ public show_menu_main(id) {
 	return;
 
 	new title[64];
-	formatex(title, charsmax(title), "Chon vu khi^nĐang có %d AP", zp_ammopacks_get(id))
+	formatex(title, charsmax(title), "Chọn vũ khí^nĐang có %d AP", zp_ammopacks_get(id))
 	new menu = menu_create(title, "menu_main");
 
-	menu_additem(menu, "\yNANG CAP SUNG !!!")
+	menu_additem(menu, "\yNÂNG CẤP SÚNG!!!")
 
 	new item[128];
-	if( p_Weapon_Auto[ZP_PRIMARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_KNIFE][id] != ZP_INVALID_WEAPON )
+	if( p_Weapon_Auto[ZP_PRIMARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_SECONDARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_KNIFE][id] != ZP_INVALID_WEAPON )
 	{
 		new primary[32], secondary[32], knife[32];
 		ArrayGetString(g_WeaponName, p_Weapon_Auto[ZP_PRIMARY][id], primary, charsmax(primary))
-		ArrayGetString(g_WeaponName, p_Weapon_Auto[ZP_SECONDAYRY][id], secondary, charsmax(secondary))
+		ArrayGetString(g_WeaponName, p_Weapon_Auto[ZP_SECONDARY][id], secondary, charsmax(secondary))
 		ArrayGetString(g_WeaponName, p_Weapon_Auto[ZP_KNIFE][id], knife, charsmax(knife))
 
-		formatex(item, charsmax(item), "CHON LAI VU KHI^n- %s^n- %s^n- %s",  primary, secondary, knife);
+		formatex(item, charsmax(item), "CHỌN LẠI VŨ KHÍ^n- %s^n- %s^n- %s",  primary, secondary, knife);
 	}
 	else
-	formatex(item, charsmax(item), "\dCHON LAI VU KHI^n- [NONE]  ^n- [NONE]  ^n- [NONE] ");
+	formatex(item, charsmax(item), "\dCHỌN LẠI VŨ KHÍ^n- [NONE]  ^n- [NONE]  ^n- [NONE] ");
 
 	menu_additem(menu, item);
 
@@ -231,7 +232,7 @@ public menu_main( id, menu, item )
 		}
 
 		case 1:  {
-			if( p_Weapon_Auto[ZP_PRIMARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_SECONDAYRY][id] != ZP_INVALID_WEAPON &&p_Weapon_Auto[ZP_KNIFE][id] != ZP_INVALID_WEAPON )
+			if( p_Weapon_Auto[ZP_PRIMARY][id] != ZP_INVALID_WEAPON && p_Weapon_Auto[ZP_SECONDARY][id] != ZP_INVALID_WEAPON &&p_Weapon_Auto[ZP_KNIFE][id] != ZP_INVALID_WEAPON )
 			auto_take_weapons(id)
 			else
 			show_menu_main(id)
@@ -247,7 +248,7 @@ public auto_take_weapons(id) {
 	return;
 
 	buy_weapon(id, p_Weapon_Auto[ZP_PRIMARY][id], 1)
-	buy_weapon(id, p_Weapon_Auto[ZP_SECONDAYRY][id], 1)
+	buy_weapon(id, p_Weapon_Auto[ZP_SECONDARY][id], 1)
 	buy_weapon(id, p_Weapon_Auto[ZP_KNIFE][id], 1)
 
 	give_item(id, "weapon_hegrenade")
@@ -265,7 +266,7 @@ public show_primary_menu(id) {
 	return;
 
 	new title[64];
-	formatex(title, charsmax(title), "Chon vu khi chinh^nĐang có %d AP", zp_ammopacks_get(id))
+	formatex(title, charsmax(title), "Chọn vũ khí chính^nĐang có %d AP", zp_ammopacks_get(id))
 	new menuid = menu_create(title, "primary_menu");
 
 	static menu[128], name[32], cost, free, type, cost_type;
@@ -378,7 +379,7 @@ public show_secondary_menu(id) {
 	return;
 
 	new title[64];
-	formatex(title, charsmax(title), "Chon vu khi phu^nĐang có %d AP", zp_ammopacks_get(id))
+	formatex(title, charsmax(title), "Chọn vũ khí phụ^nĐang có %d AP", zp_ammopacks_get(id))
 	new menuid = menu_create(title, "secondary_menu");
 
 	static menu[128], name[32], cost, free, type, cost_type;
@@ -391,7 +392,7 @@ public show_secondary_menu(id) {
 		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYRY)
+		if( type != ZP_SECONDARY)
 		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
@@ -420,7 +421,7 @@ public show_secondary_menu(id) {
 		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYRY)
+		if( type != ZP_SECONDARY)
 		continue;
 
 		free = ArrayGetCell(g_WeaponFree, index)
@@ -497,7 +498,7 @@ public show_knife_menu(id) {
 	return
 
 	new title[64];
-	formatex(title, charsmax(title), "Chon dao^nĐang có %d AP", zp_ammopacks_get(id))
+	formatex(title, charsmax(title), "Chọn vũ khí cận chiến^nĐang có %d AP", zp_ammopacks_get(id))
 	new menuid = menu_create(title, "knife_menu");
 
 	static menu[128], name[32], cost, free, type, cost_type;
@@ -612,7 +613,7 @@ public knife_menu(id, menuid, item)
 		menu_destroy(menuid)
 	}
 
-return PLUGIN_HANDLED;
+	return PLUGIN_HANDLED;
 }
 
 public show_buy_pri_menu(id) {
@@ -729,7 +730,7 @@ public show_buy_sec_menu(id) {
 		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYRY)
+		if( type != ZP_SECONDARY)
 		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
@@ -985,7 +986,7 @@ public show_buy_m_sec_menu(id) {
 		continue;
 
 		type = ArrayGetCell(g_WeaponType, index)
-		if( type != ZP_SECONDAYRY)
+		if( type != ZP_SECONDARY)
 		continue;
 
 		ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, index, 0)
@@ -1363,7 +1364,7 @@ stock strip_weapons(id, stripwhat)
 		// Prevent re-indexing the array
 		weaponid = weapons[index]
 		if ((stripwhat == ZP_PRIMARY && ((1<<weaponid) & PRIMARY_WEAPONS_BIT_SUM))
-		    || (stripwhat == ZP_SECONDAYRY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM))
+		    || (stripwhat == ZP_SECONDARY && ((1<<weaponid) & SECONDARY_WEAPONS_BIT_SUM))
 		    || ((1<<weaponid) & GRENADES_WEAPONS_BIT_SUM))
 		{
 			// Get weapon name
