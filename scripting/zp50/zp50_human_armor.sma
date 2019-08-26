@@ -134,9 +134,10 @@ public zp_fw_core_cure_post(id, attacker)
 }
 public zp_fw_core_infect_post(id, attacker)
 {
-	UnSet_BitVar(p_Armor, id)
-	zp_colored_print(id, "Phát hiện zombie - Giáp chống Zombie loại xịn tự động huỷ");
-
+	if( Get_BitVar(p_Armor, id) ) {
+		UnSet_BitVar(p_Armor, id)
+		zp_colored_print(id, "Phát hiện zombie - Giáp chống Zombie loại xịn tự động huỷ");
+	}
 }
 
 // Ham Take Damage Forward
