@@ -232,7 +232,7 @@ public CmdAddUser(id, level, cid) {
 		copy(data[Data_Auth], charsmax(data[Data_Auth]), auth);
 		copy(data[Data_Password], charsmax(data[Data_Password]), password);
 		copy(data[Data_Flags], charsmax(data[Data_Flags]), flagString);
-		copy(data[Data_RemoveDate], charsmax(data[Data_RemoveDate]), remove ? removeDate : "0000-00-00");
+		copy(data[Data_RemoveDate], charsmax(data[Data_RemoveDate]), remove ? removeDate : "2000-11-06");
 
 		new query[128];
 		formatex(query, charsmax(query), "SELECT COUNT(*) FROM `vip_users` WHERE `auth_type` = %d AND `auth` = ^"%s^";", typeNum, auth);
@@ -331,7 +331,7 @@ public CmdAddAuth(id, level, cid) {
 		copy(data[Data_Auth], charsmax(data[Data_Auth]), auth);
 		copy(data[Data_Password], charsmax(data[Data_Password]), password);
 		copy(data[Data_Flags], charsmax(data[Data_Flags]), flagString);
-		copy(data[Data_RemoveDate], charsmax(data[Data_RemoveDate]), remove ? removeDate : "0000-00-00");
+		copy(data[Data_RemoveDate], charsmax(data[Data_RemoveDate]), remove ? removeDate : "2000-11-06");
 
 		new query[128];
 		formatex(query, charsmax(query), "SELECT COUNT(*) FROM `vip_users` WHERE `auth_type` = %d AND `auth` = ^"%s^";", typeNum, auth);
@@ -412,7 +412,7 @@ LoadConfig() {
 }
 
 DateToUnix(const dateString[]) {
-	if(!dateString[0] || regex_match_c(dateString, gDatePattern, gReturnFromForward) <= 0 || equal(dateString, "0000-00-00")) {
+	if(!dateString[0] || regex_match_c(dateString, gDatePattern, gReturnFromForward) <= 0 || equal(dateString, "2000-11-06")) {
 		return 0;
 	}
 
@@ -437,7 +437,7 @@ LoadSql(bool:threadQueries) {
 			`auth` VARCHAR(32) NOT NULL,\
 			`password` VARCHAR(32) NOT NULL,\
 			`flags` VARCHAR(26) NOT NULL,\
-			`date_remove` DATE NOT NULL);";
+			`date_remove` DATE NOT NULL DEFAULT '2000-11-06');";
 
 	if(threadQueries) {
 		SQL_ThreadQuery(gSqlTuple, "QueryCreateTable", queryString);
@@ -492,7 +492,7 @@ LoadFromSql() {
 	get_time("%Y-%m-%d", curDate, charsmax(curDate));
 
 	new queryString[94];
-	// SELECT * FROM `vip_users` WHERE `date_remove` = '0000-00-00' OR `date_remove` > '2012-02-09';
+	// SELECT * FROM `vip_users` WHERE `date_remove` = '02000-11-06' OR `date_remove` > '2012-02-09';
 	// 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789
 
 	if(get_pcvar_num(gCvarDeleteExpired)) {
@@ -501,7 +501,7 @@ LoadFromSql() {
 		SQL_ThreadQuery(gSqlTuple, "QueryDeleteExpired", queryString);
 	}
 
-	formatex(queryString, charsmax(queryString), "SELECT * FROM `vip_users` WHERE `date_remove` = '0000-00-00' OR `date_remove` > '%s';", curDate);
+	formatex(queryString, charsmax(queryString), "SELECT * FROM `vip_users` WHERE `date_remove` = '2000-11-06' OR `date_remove` > '%s';", curDate);
 
 	SQL_ThreadQuery(gSqlTuple, "QueryLoadUsers", queryString);
 }
