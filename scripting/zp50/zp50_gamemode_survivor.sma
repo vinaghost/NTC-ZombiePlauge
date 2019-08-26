@@ -1,12 +1,12 @@
 /*================================================================================
-	
+
 	--------------------------------
 	-*- [ZP] Game Mode: Survivor -*-
 	--------------------------------
-	
+
 	This plugin is part of Zombie Plague Mod and is distributed under the
 	terms of the GNU General Public License. Check ZP_ReadMe.txt for details.
-	
+
 ================================================================================*/
 
 #include <amxmodx>
@@ -45,35 +45,35 @@ public plugin_precache()
 	// Register game mode at precache (plugin gets paused after this)
 	register_plugin("[ZP] Game Mode: Survivor", ZP_VERSION_STRING, "ZP Dev Team")
 	zp_gamemodes_register("Survivor Mode")
-	
+
 	// Create the HUD Sync Objects
 	g_HudSync = CreateHudSyncObj()
-	
+
 	g_MaxPlayers = get_maxplayers()
-	
+
 	cvar_survivor_chance = register_cvar("zp_survivor_chance", "20")
 	cvar_survivor_min_players = register_cvar("zp_survivor_min_players", "0")
 	cvar_survivor_show_hud = register_cvar("zp_survivor_show_hud", "1")
 	cvar_survivor_sounds = register_cvar("zp_survivor_sounds", "1")
 	cvar_survivor_allow_respawn = register_cvar("zp_survivor_allow_respawn", "0")
-	
+
 	// Initialize arrays
 	g_sound_survivor = ArrayCreate(SOUND_MAX_LENGTH, 1)
-	
+
 	// Load from external file
 	amx_load_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ROUND SURVIVOR", g_sound_survivor)
-	
+
 	// If we couldn't load custom sounds from file, use and save default ones
 	new index
 	if (ArraySize(g_sound_survivor) == 0)
 	{
 		for (index = 0; index < sizeof sound_survivor; index++)
 			ArrayPushString(g_sound_survivor, sound_survivor[index])
-		
+
 		// Save to external file
 		amx_save_setting_string_arr(ZP_SETTINGS_FILE, "Sounds", "ROUND SURVIVOR", g_sound_survivor)
 	}
-	
+
 	// Precache sounds
 	new sound[SOUND_MAX_LENGTH]
 	for (index = 0; index < ArraySize(g_sound_survivor); index++)
@@ -95,7 +95,7 @@ public zp_fw_deathmatch_respawn_pre(id)
 	// Respawning allowed?
 	if (!get_pcvar_num(cvar_survivor_allow_respawn))
 		return PLUGIN_HANDLED;
-	
+
 	return PLUGIN_CONTINUE;
 }
 
@@ -112,12 +112,12 @@ public zp_fw_gamemodes_choose_pre(game_mode_id, skipchecks)
 		// Random chance
 		if (random_num(1, get_pcvar_num(cvar_survivor_chance)) != 1)
 			return PLUGIN_HANDLED;
-		
+
 		// Min players
 		if (GetAliveCount() < get_pcvar_num(cvar_survivor_min_players))
 			return PLUGIN_HANDLED;
 	}
-	
+
 	// Game mode allowed
 	return PLUGIN_CONTINUE;
 }
@@ -132,7 +132,7 @@ public zp_fw_gamemodes_start()
 {
 	// Turn player into survivor
 	zp_class_survivor_set(g_TargetPlayer)
-	
+
 	// Turn the remaining players into zombies
 	new id
 	for (id = 1; id <= g_MaxPlayers; id++)
@@ -140,14 +140,14 @@ public zp_fw_gamemodes_start()
 		// Not alive
 		if (!is_user_alive(id))
 			continue;
-		
+
 		// Survivor or already a zombie
 		if (zp_class_survivor_get(id) || zp_core_is_zombie(id))
 			continue;
-		
+
 		zp_core_infect(id)
 	}
-	
+
 	// Play Survivor sound
 	if (get_pcvar_num(cvar_survivor_sounds))
 	{
@@ -155,7 +155,7 @@ public zp_fw_gamemodes_start()
 		ArrayGetString(g_sound_survivor, random_num(0, ArraySize(g_sound_survivor) - 1), sound, charsmax(sound))
 		PlaySoundToClients(sound)
 	}
-	
+
 	if (get_pcvar_num(cvar_survivor_show_hud))
 	{
 		// Show Survivor HUD notice
@@ -179,13 +179,13 @@ PlaySoundToClients(const sound[])
 GetAliveCount()
 {
 	new iAlive, id
-	
+
 	for (id = 1; id <= g_MaxPlayers; id++)
 	{
 		if (is_user_alive(id))
 			iAlive++
 	}
-	
+
 	return iAlive;
 }
 
@@ -193,15 +193,15 @@ GetAliveCount()
 GetRandomAlive(target_index)
 {
 	new iAlive, id
-	
+
 	for (id = 1; id <= g_MaxPlayers; id++)
 	{
 		if (is_user_alive(id))
 			iAlive++
-		
+
 		if (iAlive == target_index)
 			return id;
 	}
-	
+
 	return -1;
 }
