@@ -53,7 +53,7 @@ public zp_fw_class_human_select_pre(id, classid) {
 				return ZP_CLASS_NOT_AVAILABLE;
 			}
 			if(g_choose[i]) {
-				zp_class_human_menu_text_add("Đã có người chọn skin này");
+				zp_class_human_menu_text_add("Skin đã có chủ");
 				return ZP_CLASS_NOT_AVAILABLE;
 			}
 

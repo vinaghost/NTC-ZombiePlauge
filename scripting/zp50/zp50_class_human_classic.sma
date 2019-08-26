@@ -13,8 +13,8 @@
 #include <zp50_class_human>
 
 // Classic Human Attributes
-new const humanclass1_name[] = "Classic Human"
-new const humanclass1_info[] = "=Balanced="
+new const humanclass1_name[] = "Cơ bản"
+new const humanclass1_info[] = ""
 new const humanclass1_models[][] = { "arctic" , "guerilla" , "leet" , "terror" , "gign" , "gsg9" , "sas" , "urban" }
 const humanclass1_health = 200
 const Float:humanclass1_speed = 1.0
