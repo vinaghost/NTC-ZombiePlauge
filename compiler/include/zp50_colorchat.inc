@@ -17,26 +17,26 @@
 // - Does not support blue/red/gray colors
 stock zp_colored_print(target, const message[], any:...)
 {
-	static buffer[512], msg_SayText = 0
+	static buffer[512], msg_SayText;
 	if( !msg_SayText ) msg_SayText = get_user_msgid("SayText")
-	
+
 	// Send to everyone
 	if (!target)
 	{
 		static player, maxplayers, argscount
 		maxplayers = get_maxplayers()
 		argscount = numargs()
-		
+
 		for (player = 1; player <= maxplayers; player++)
 		{
 			// Not connected
 			if (!is_user_connected(player))
 				continue;
-			
+
 			// Remember changed arguments
-			static arg_index, changed_args[20], changedcount // [20] = max LANG_PLAYER occurencies	
+			static arg_index, changed_args[20], changedcount // [20] = max LANG_PLAYER occurencies
 			changedcount = 0
-			
+
 			// Replace LANG_PLAYER with player id
 			for (arg_index = 2; arg_index < argscount; arg_index++)
 			{
@@ -54,17 +54,17 @@ stock zp_colored_print(target, const message[], any:...)
 					}
 				}
 			}
-			
+
 			// Format message for player (+add ZP prefix)
 			vformat(buffer, charsmax(buffer), message, 3)
 			format(buffer, charsmax(buffer), "^x04[NTC]^x01 %s", buffer)
-			
+
 			// Send it
 			message_begin(MSG_ONE_UNRELIABLE, msg_SayText, _, player)
 			write_byte(player)
 			write_string(buffer)
 			message_end()
-			
+
 			// Replace back player id's with LANG_PLAYER
 			for (arg_index = 0; arg_index < changedcount; arg_index++)
 				setarg(changed_args[arg_index], 0, LANG_PLAYER)
@@ -76,7 +76,7 @@ stock zp_colored_print(target, const message[], any:...)
 		// Format message for player (+add ZP prefix)
 		vformat(buffer, charsmax(buffer), message, 3)
 		format(buffer, charsmax(buffer), "^x04[NTC]^x01 %s",  buffer)
-		
+
 		// Send it
 		message_begin(MSG_ONE, msg_SayText, _, target)
 		write_byte(target)
