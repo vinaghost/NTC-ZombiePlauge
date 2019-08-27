@@ -28,7 +28,7 @@ new const humanclass_models[][] = {
 	"buffclassyuri"
 }
 const humanclass_health = 250;
-const Float:humanclass_speed = 1.7;
+const Float:humanclass_speed = 1.3;
 const Float:humanclass_gravity = 0.7;
 
 new g_HumanClassID[TOTAL_CLASS];
