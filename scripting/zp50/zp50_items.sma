@@ -523,6 +523,10 @@ buy_ap_item(id, itemid, ignorecost = 0)
 
 	// Execute item selected forward
 	ExecuteForward(a_Forwards[FW_ITEM_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
+
+	new name[33]
+	ArrayGetString(a_ItemName, itemid, name, charsmax(name))
+	zp_colored_print(id, "Đã mua ^x04%s", name)
 }
 
 
@@ -624,4 +628,8 @@ buy_money_item(id, itemid, ignorecost = 0)
 
 	// Execute item selected forward
 	ExecuteForward(m_Forwards[FW_ITEM_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
+
+	new name[33]
+	ArrayGetString(m_ItemName, itemid, name, charsmax(name))
+	zp_colored_print(id, "Đã mua ^x04%s", name)
 }
