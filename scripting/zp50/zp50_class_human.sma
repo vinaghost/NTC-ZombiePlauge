@@ -25,7 +25,7 @@
 new const ZP_HUMANCLASSES_FILE[] = "zp_humanclasses.ini"
 
 // Settings file
-new const ZP_SETTINGS_FILE[] = "zombieplague.ini"
+//new const ZP_SETTINGS_FILE[] = "zombieplague.ini"
 
 #define MODEL_MAX_LENGTH 64
 
@@ -140,7 +140,7 @@ public client_putinserver(id)
 	g_HumanClassNext[id] = ZP_INVALID_HUMAN_CLASS
 }
 
-public client_disconnect(id)
+public client_disconnected(id)
 {
 	// Reset remembered menu pages
 	MENU_PAGE_CLASS = 0
@@ -250,17 +250,17 @@ public menu_humanclass(id, menuid, item)
 	// Make selected class next class for player
 	g_HumanClassNext[id] = index
 
-	new name[32], transkey[64]
-	new Float:maxspeed = Float:ArrayGetCell(g_HumanClassSpeed, g_HumanClassNext[id])
+	new name[32]/*, transkey[64]*/
+	//new Float:maxspeed = Float:ArrayGetCell(g_HumanClassSpeed, g_HumanClassNext[id])
 	ArrayGetString(g_HumanClassName, g_HumanClassNext[id], name, charsmax(name))
 	// ML support for class name
-	formatex(transkey, charsmax(transkey), "HUMANNAME %s", name)
-	if (GetLangTransKey(transkey) != TransKey_Bad) formatex(name, charsmax(name), "%L", id, transkey)
+	//formatex(transkey, charsmax(transkey), "HUMANNAME %s", name)
+	//if (GetLangTransKey(transkey) != TransKey_Bad) formatex(name, charsmax(name), "%L", id, transkey)
 
 	// Show selected human class
 	//zp_colored_print(id, "%L: %s", id, "HUMAN_SELECT", name)
 	//zp_colored_print(id, "%L: %d %L: %d %L: %.2fx", id, "ZOMBIE_ATTRIB1", ArrayGetCell(g_HumanClassHealth, g_HumanClassNext[id]), id, "ZOMBIE_ATTRIB2", cs_maxspeed_display_value(maxspeed), id, "ZOMBIE_ATTRIB3", Float:ArrayGetCell(g_HumanClassGravity, g_HumanClassNext[id]))
-
+	zp_colored_print(id, "Bạn đã chọn class ^x04%s", name);
 	// Execute class select post forward
 	ExecuteForward(g_Forwards[FW_CLASS_SELECT_POST], g_ForwardResult, id, index)
 
@@ -273,10 +273,11 @@ public zp_fw_core_cure_post(id, attacker)
 	// Show human class menu if they haven't chosen any (e.g. just connected)
 	if (g_HumanClassNext[id] == ZP_INVALID_HUMAN_CLASS)
 	{
-		if (g_HumanClassCount > 1)
+		/*if (g_HumanClassCount > 1)
 			show_menu_humanclass(id)
 		else // If only one class is registered, choose it automatically
-			g_HumanClassNext[id] = 0
+			*/
+		g_HumanClassNext[id] = 0
 	}
 
 	// Bots pick class automatically
