@@ -1,6 +1,6 @@
 #include <amxmodx>
 #include <zombieplague>
-
+#include <zp50_gamemodes>
 #define validTeam(%1) (1 <= get_user_team(%1) <= 3)
 
 
@@ -22,7 +22,10 @@ public SpawnUser(id)
 		remove_task(id);
 	else
 	{
-		zp_respawn_user(id, ZP_TEAM_ZOMBIE);
+		if( zp_gamemodes_get_current() == ZP_INVALID_GAME_MODE )
+			zp_respawn_user(id, ZP_TEAM_HUMAN);
+		else
+			zp_respawn_user(id, ZP_TEAM_ZOMBIE);
 
 		remove_task(id);
 	}
