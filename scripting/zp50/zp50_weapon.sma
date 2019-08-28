@@ -8,8 +8,9 @@
 #include <zp50_core>
 #include <zp50_ammopacks>
 #include <zp50_colorchat>
-#include <zp50_weapon_const>
 #include <zp50_items>
+#include <zp50_weapon_const>
+
 
 #define LIBRARY_SURVIVOR "zp50_class_survivor"
 #include <zp50_class_survivor>
@@ -701,7 +702,9 @@ public buy_pri_menu(id, menuid, item){
 	{
 		buy_weapon(id, itemid)
 	}
-
+	new name[33]
+	ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+	zp_colored_print(id, "Đã mua ^x04%s", name)
 	return PLUGIN_HANDLED;
 }
 
@@ -786,6 +789,9 @@ public buy_sec_menu(id, menuid, item){
 	else
 	{
 		buy_weapon(id, itemid)
+		new name[33]
+		ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+		zp_colored_print(id, "Đã mua ^x04%s", name)
 	}
 
 	return PLUGIN_HANDLED;
@@ -873,6 +879,9 @@ public buy_knife_menu(id, menuid, item){
 	{
 
 		buy_weapon(id, itemid)
+		new name[33]
+		ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+		zp_colored_print(id, "Đã mua ^x04%s", name)
 	}
 
 	return PLUGIN_HANDLED;
@@ -948,7 +957,6 @@ public buy_m_pri_menu(id, menuid, item){
 	menu_item_getinfo(menuid, item, dummy, itemdata, charsmax(itemdata), _, _, dummy)
 	itemid = itemdata[0]
 
-	client_print(id, print_chat, "%d", itemid)
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_PRE], g_ForwardResult, id, itemid, 0)
 
 	if (g_ForwardResult >= ZP_WEAPON_NOT_AVAILABLE)
@@ -958,8 +966,10 @@ public buy_m_pri_menu(id, menuid, item){
 	else
 	{
 
-		client_print(id, print_chat, "%d", itemid)
 		buy_weapon(id, itemid)
+		new name[33]
+		ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+		zp_colored_print(id, "Đã mua ^x04%s", name)
 	}
 	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
@@ -1042,6 +1052,9 @@ public buy_m_sec_menu(id, menuid, item){
 	else
 	{
 		buy_weapon(id, itemid)
+		new name[33]
+		ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+		zp_colored_print(id, "Đã mua ^x04%s", name)
 	}
 	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
@@ -1124,6 +1137,9 @@ public buy_m_knife_menu(id, menuid, item){
 	else
 	{
 		buy_weapon(id, itemid)
+		new name[33]
+		ArrayGetString( g_WeaponName, itemid, name, charsmax(name))
+		zp_colored_print(id, "Đã mua ^x04%s", name)
 	}
 	menu_destroy(menuid)
 	return PLUGIN_HANDLED;
