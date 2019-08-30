@@ -47,6 +47,7 @@ new Array:g_WeaponCost
 new Array:g_WeaponCostType
 new Array:g_WeaponType
 new Array:g_WeaponFree
+new Array:g_WeaponStep
 new g_WeaponCount
 
 new p_Weapon[3][33], p_Weapon_Auto[3][33]
@@ -97,6 +98,7 @@ public plugin_natives()
 	g_WeaponCostType = ArrayCreate(1,1)
 	g_WeaponType = ArrayCreate(1,1)
 	g_WeaponFree = ArrayCreate(1,1)
+	g_WeaponStep = ArrayCreate(1,1)
 
 }
 public module_filter(const module[])
@@ -165,9 +167,6 @@ public client_connect(id) {
 	p_Weapon_Auto[ZP_PRIMARY][id] = ZP_INVALID_WEAPON;
 	p_Weapon_Auto[ZP_SECONDARY][id] = ZP_INVALID_WEAPON;
 	p_Weapon_Auto[ZP_KNIFE][id] = ZP_INVALID_WEAPON;
-
-
-
 }
 public client_disconnected(id) {
 
@@ -1200,6 +1199,7 @@ public native_weapons_register(plugin_id, num_params)
 	}
 	ArrayPushCell(g_WeaponFree, free)
 
+	ArrayPushCell(g_WeaponStep, 1);
 
 	g_WeaponCount++
 	return g_WeaponCount - 1;
@@ -1354,6 +1354,11 @@ buy_weapon(id, itemid, ignorecost = 0) {
 	p_Weapon[type][id] = itemid
 	ExecuteForward(g_Forwards[FW_WPN_SELECT_POST], g_ForwardResult, id, itemid, ignorecost)
 
+	if( !ignorecost ){
+		new step = ArrayGetCell(g_WeaponStep, itemid);
+		ArraySetCell(g_WeaponCost, itemid,  ArrayGetCell(g_WeaponCost, itemid) + step);
+		ArraySetCell(g_WeaponStep, itemid, step + 1)
+	}
 	if( ArrayGetCell(g_WeaponCostType ,itemid) == ZP_WEAPON_AP ) {
 
 		p_Weapon_Auto[type][id] = itemid
