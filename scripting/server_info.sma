@@ -17,19 +17,19 @@ new const message[][] = {
 	"!wBáo lỗi cho VINAGHOST thông qua Discord để nhận quà",
 	"!wQuyết định của VINAGHOST là quyết định cuối cùng"
 }
+new num;
 public plugin_init() {
 	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
 
 	register_clcmd("say /server", "server")
 
 	CC_SetPrefix("!g[NTC]!w");
-
+	num = 0;
 	set_task(30.0, "show_message", _, _, _, "b");
 }
 
 public show_message() {
 
-	static num;
 	if( num > 9) {
 		num = 0;
 	}
@@ -39,6 +39,7 @@ public show_message() {
 }
 public server(id) {
 	client_print(id, print_console, "[NTC] Multimod DP - Match - 103.48.193.60:27020");
+	client_print(id, print_console, "[NTC] Multimod DP - Deathrun - 103.48.193.60:27015");
 	client_print(id, print_console, "[NTC] Multimod DP - KZ - 103.48.193.60:27030");
 	client_print(id, print_console, "[NTC] Multimod DP - HNS - 103.48.193.60:27040");
 	client_print(id, print_console, "[NTC] Multimod DP - Battle Royale - 103.48.193.60:27060");

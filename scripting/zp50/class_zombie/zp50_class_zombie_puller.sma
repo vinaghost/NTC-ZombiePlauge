@@ -3,6 +3,7 @@
 #include <fakemeta>
 #include <xs>
 #include <engine>
+#include <msgstocks>
 
 #include <zp50_class_zombie>
 #include <zp50_class_sniper>
@@ -32,6 +33,7 @@ new g_ItemID
 new p_puller;
 
 new msg_ScreenFade;
+new beamsprite
 public plugin_init() {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 
@@ -48,8 +50,10 @@ public plugin_precache()
 	zp_class_zombie_register_model(g_Puller, zclass_model)
 	zp_class_zombie_register_claw(g_Puller, zclass_clawsmodel)
 
-	zp_class_zombie_register_1(g_Puller, zclass_desc1, 1, 0)
+	zp_class_zombie_register_1(g_Puller, zclass_desc1, 20, 0)
 	zp_class_zombie_register_2(g_Puller, zclass_desc2, 0, 0)
+
+	beamsprite = precache_model("sprites/dot.spr")
 }
 public zp_fw_money_items_select_pre(id, itemid)
 {
@@ -73,8 +77,8 @@ public client_putinserver(id) {
 public zp_fw_class_zombie_select_pre(id, classid) {
 	if( classid != g_Puller ) return ZP_CLASS_AVAILABLE;
 
-	/*if( !Get_BitVar(p_puller, id) )
-	return ZP_CLASS_NOT_AVAILABLE;*/
+	if( !Get_BitVar(p_puller, id) )
+	return ZP_CLASS_NOT_AVAILABLE;
 
 	return ZP_CLASS_AVAILABLE;
 
@@ -109,6 +113,31 @@ public zp_fw_zombie_skill1_active(id, classid) {
 	pev(id, pev_origin, Origin)
 	HookEnt(target, Origin, 2000.0, 1.0, 1)
 
+	static iOrigin[3], iOriginT[3];
+	get_user_origin(id, iOrigin);
+	get_user_origin(target, iOriginT);
+	te_create_beam_between_points(iOrigin, iOriginT, beamsprite, 1, 1, 2, 5, 0, 2255, 0, 0, 200, 0)
+	/*
+	//Create red beam
+	message_begin(MSG_BROADCAST,SVC_TEMPENTITY)
+	write_byte(1)		//TE_BEAMENTPOINT
+	write_short(id)		// start entity
+	write_coord(floatround(Origin[0]))
+	write_coord(floatround(Origin[1]))
+	write_coord(floatround(Origin[2]))
+	write_short(beamsprite)
+	write_byte(1)		// framestart
+	write_byte(1)		// framerate
+	write_byte(10)		// life in 0.1's
+	write_byte(5)		// width
+	write_byte(0)		// noise
+	write_byte(255)		// red
+	write_byte(0)		// green
+	write_byte(0)		// blue
+	write_byte(200)		// brightness
+	write_byte(0)		// speed
+	message_end()
+	*/
 
 	return ZP_CLASS_SKILL_ACTIVE;
 }

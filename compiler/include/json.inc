@@ -1,777 +1,1092 @@
-// vim: set ts=4 sw=4 tw=99 noet:
-//
-// AMX Mod X, based on AMX Mod by Aleksander Naszko ("OLO").
-// Copyright (C) The AMX Mod X Development Team.
-//
-// This software is licensed under the GNU General Public License, version 3 or higher.
-// Additional exceptions apply. For full license details, see LICENSE.txt or visit:
-//     https://alliedmods.net/amxmodx-license
-
-//
-// JSON Natives
-//
-
 #if defined _json_included
 	#endinput
 #endif
+
 #define _json_included
 
-#pragma reqlib json
-#if !defined AMXMODX_NOAUTOLOAD
-	#pragma loadlib json
+#include < amxmodx >
+
+#define JSON_KEY_SIZE   512
+#define JSON_STR_SIZE   512
+
+//#define JSON_DEBUG
+
+#if defined JSON_DEBUG
+	#define JSON_VAR new
+	#define JSON_FUNC
+#else
+	#define JSON_VAR stock
+	#define JSON_FUNC stock
 #endif
 
-/*
- * JSON types
- */
-enum JSONType
-{
-	JSONError   = -1,
-	JSONNull    = 1,
-	JSONString  = 2,
-	JSONNumber  = 3,
-	JSONObject  = 4,
-	JSONArray   = 5,
-	JSONBoolean = 6
-};
+JSON_VAR __json_key[ JSON_KEY_SIZE ];
+JSON_VAR __json_key2[ JSON_KEY_SIZE ];
+JSON_VAR __json_string[ JSON_STR_SIZE ];
 
-/*
- * JSON invalid handle
- */
 enum JSON
 {
-	Invalid_JSON = -1
+	JSON_INVALID = 0,
+	
+	JSON_Cell,
+	JSON_Float,
+	JSON_String,
+	JSON_Object
+};
+
+JSON_FUNC JSON:json_create(bool:is_array=false)
+{
+	new Trie:object = TrieCreate( );
+	
+	if( object == Invalid_Trie )
+	{
+		return JSON_INVALID;
+	}
+	
+	new Trie:data = TrieCreate( );
+	new Array:keys = ArrayCreate( JSON_KEY_SIZE );
+	
+	TrieSetCell( object, "data", data );
+	TrieSetCell( object, "keys", keys );
+	
+	if( is_array )
+	{
+		TrieSetCell( object, "is_array", true );
+	}
+	
+	return JSON:object;
 }
 
-/**
- * Helper macros for checking type
- */
-#define json_is_object(%1)   (%1 != Invalid_JSON && json_get_type(%1) == JSONObject)
-#define json_is_array(%1)    (%1 != Invalid_JSON && json_get_type(%1) == JSONArray)
-#define json_is_string(%1)   (%1 != Invalid_JSON && json_get_type(%1) == JSONString)
-#define json_is_number(%1)   (%1 != Invalid_JSON && json_get_type(%1) == JSONNumber)
-#define json_is_bool(%1)     (%1 != Invalid_JSON && json_get_type(%1) == JSONBoolean)
-#define json_is_null(%1)     (%1 != Invalid_JSON && json_get_type(%1) == JSONNull)
-#define json_is_true(%1)     (%1 != Invalid_JSON && json_is_bool(%1) && json_get_bool(%1))
-#define json_is_false(%1)    (%1 != Invalid_JSON && json_is_bool(%1) && !json_get_bool(%1))
+JSON_FUNC JSON:json_from_array(const any:array[], size, JSON:types[]={JSON_INVALID}, JSON:force_type=JSON_INVALID)
+{
+	new JSON:json = json_create( .is_array = true );
+	
+	if( json == JSON_INVALID )
+	{
+		return JSON_INVALID;
+	}
+	
+	new key[ 12 ];
+	
+	for( new i = 0; i < size; i++ )
+	{
+		num_to_str( i, key, charsmax( key ) );
+		
+		json_set_cell( json, key, array[ i ], ( force_type ? force_type : types[ i ] ) );
+	}
+	
+	return json;
+}
 
-/**
- * Parses JSON string or a file that contains JSON.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param string            String to parse
- * @param is_file           True to treat string param as filename, false otherwise
- * @param with_comments     True if parsing JSON includes comments (it will ignore them), false otherwise
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_parse(const string[], bool:is_file = false, bool:with_comments = false);
+JSON_FUNC JSON:json_from_array2(Array:array, size=-1, {Array,JSON}:types, bool:force_type=false)
+{
+	if( array == Invalid_Array )
+	{
+		return JSON_INVALID;
+	}
+	
+	if( size < 0 )
+	{
+		size = ArraySize( array );
+	}
+	
+	if( !size )
+	{
+		return JSON_INVALID;
+	}
+	
+	new JSON:json = json_create( .is_array = true );
+	
+	if( json == JSON_INVALID )
+	{
+		return JSON_INVALID;
+	}
+	
+	new key[ 12 ];
+	
+	for( new i = 0; i < size; i++ )
+	{
+		num_to_str( i, key, charsmax( key ) );
+		
+		json_set_cell( json, key, ArrayGetCell( array, i ), JSON:( force_type ? types : ArrayGetCell( types, i ) ) );
+	}
+	
+	return json;
+}
 
-/**
- * Checks if the first value is the same as the second one.
- *
- * @param value1            JSON handle
- * @param value2            JSON handle
- *
- * @return                  True if they are the same, false otherwise
- * @error                   If passed value is not a valid handle
- */
-native bool:json_equals(const JSON:value1, const JSON:value2);
+JSON_FUNC bool:json_set_cell(JSON:object, const key[], any:value, JSON:type=JSON_Cell)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data, Array:keys;
+	
+	TrieGetCell( Trie:object, "data", data );
+	TrieGetCell( Trie:object, "keys", keys );
+	
+	if( !__json_delete( data, key ) )
+	{
+		ArrayPushString( keys, key );
+	}
+	
+	new Trie:info = TrieCreate( );
+	
+	TrieSetCell( info, "type", type );
+	TrieSetCell( info, "value", value );
+	
+	TrieSetCell( data, key, info );
+	
+	return true;
+}
 
-/**
- * Validates json by checking if object have identically named
- * fields with matching types.
- *
- * @note                    Schema {"name":"", "age":0} will validate
- *                          {"name":"Joe", "age":25} and {"name":"Joe", "age":25, "gender":"m"},
- *                          but not {"name":"Joe"} or {"name":"Joe", "age":"Cucumber"}.
- *
- * @note                    In case of arrays, only first value in schema
- *                          is checked against all values in tested array.
- *
- * @note                    Empty objects ({}) validate all objects,
- *                          empty arrays ([]) validate all arrays,
- *                          null validates values of every type.
- *
- * @param schema            JSON handle
- * @param value             JSON handle
- *
- * @return                  True if passed value is valid, false otherwise
- * @error                   If a schema handle or value handle is invalid
- */
-native bool:json_validate(const JSON:schema, const JSON:value);
+JSON_FUNC bool:json_set_array(JSON:object, const key[], const any:array[], size, JSON:types[]={JSON_INVALID}, JSON:force_type=JSON_INVALID)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new JSON:child = json_from_array( array, size, types, force_type );
+	
+	return ( child == JSON_INVALID ) ? false : json_set_cell( object, key, child, JSON_Object );
+}
 
-/**
- * Gets value's parent handle.
- *
- * @note                  Parent's handle needs to be freed using json_free() native.
- *
- * @param value           JSON handle
- *
- * @return                Parent's handle
- */
-native JSON:json_get_parent(const JSON:value);
+JSON_FUNC bool:json_set_array2(JSON:object, const key[], Array:array, size=-1, {Array,JSON}:types, bool:force_type=false)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new JSON:child = json_from_array2( array, size, types, force_type );
+	
+	return ( child == JSON_INVALID ) ? false : json_set_cell( object, key, child, JSON_Object );
+}
 
-/**
- * Gets JSON type of passed value.
- *
- * @param value             JSON handle
- *
- * @return                  JSON type (JSONType constants)
- * @error                   If a value handle is invalid
- */
-native JSONType:json_get_type(const JSON:value);
+JSON_FUNC bool:json_set_string(JSON:object, const key[], const string[])
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data, Array:keys;
+	
+	TrieGetCell( Trie:object, "data", data );
+	TrieGetCell( Trie:object, "keys", keys );
+	
+	if( !__json_delete( data, key ) )
+	{
+		ArrayPushString( keys, key );
+	}
+	
+	new Trie:info = TrieCreate( );
+	
+	TrieSetCell( info, "type", JSON_String );
+	TrieSetString( info, "value", string );
+	
+	TrieSetCell( data, key, info );
+	
+	return true;
+}
 
-/**
- * Inits an empty object.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_object();
+JSON_FUNC bool:json_get_cell(JSON:object, const key[], &any:value, &JSON:type=JSON_Cell)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data;
+	TrieGetCell( Trie:object, "data", data );
+	
+	new Trie:info;
+	
+	if( !TrieGetCell( data, key, info ) )
+	{
+		return false;
+	}
+	
+	TrieGetCell( info, "type", type );
+	
+	if( type != JSON_Cell && type != JSON_Float && type != JSON_Object )
+	{
+		return false;
+	}
+	
+	TrieGetCell( info, "value", value );
+	
+	return true;
+}
 
-/**
- * Inits an empty array.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_array();
+JSON_FUNC bool:json_get_array(JSON:object, const key[], any:output[], size, JSON:types[])
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data;
+	TrieGetCell( Trie:object, "data", data );
+	
+	new Trie:info;
+	
+	if( !TrieGetCell( data, key, info ) )
+	{
+		return false;
+	}
+	
+	new JSON:type;
+	TrieGetCell( info, "type", type );
+	
+	if( type != JSON_Object )
+	{
+		return false;
+	}
+	
+	new JSON:array;
+	TrieGetCell( data, "value", array );
+	
+	new num[ 12 ];
+	new index;
+	
+	while( index < size )
+	{
+		num_to_str( index, num, charsmax( num ) );
+		
+		if( !json_get_cell( array, num, output[ index ], types[ index ] ) )
+		{
+			break;
+		}
+		
+		index++;
+	}
+	
+	return ( index > 0 );
+}
 
-/**
- * Inits string data.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param value             String that the handle will be initialized with
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_string(const value[]);
+JSON_FUNC bool:json_get_array2(JSON:object, const key[], &Array:output, &size=0, &Array:types)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data;
+	TrieGetCell( Trie:object, "data", data );
+	
+	new Trie:info;
+	
+	if( !TrieGetCell( data, key, info ) )
+	{
+		return false;
+	}
+	
+	new JSON:type;
+	TrieGetCell( info, "type", type );
+	
+	if( type != JSON_Object )
+	{
+		return false;
+	}
+	
+	new JSON:array;
+	TrieGetCell( data, "value", array );
+	
+	new num[ 12 ];
+	num_to_str( 0, num, charsmax( num ) );
+	
+	new index, value;
+	
+	while( index < size )
+	{
+		num_to_str( index, num, charsmax( num ) );
+		
+		if( !json_get_cell( array, num, value, type ) )
+		{
+			break;
+		}
+		
+		ArrayPushCell( output, value );
+		ArrayPushCell( types, type );
+		
+		index++;
+	}
+	
+	return ( index > 0 );
+}
 
-/**
- * Inits a number.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param value             Integer number that the handle will be initialized with
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_number(value);
+JSON_FUNC bool:json_get_string(JSON:object, const key[], output[], len)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data;
+	TrieGetCell( Trie:object, "data", data );
+	
+	new Trie:info;
+	
+	if( !TrieGetCell( data, key, info ) )
+	{
+		return false;
+	}
+	
+	new JSON:type;
+	TrieGetCell( info, "type", type );
+	
+	if( type != JSON_String )
+	{
+		return false;
+	}
+	
+	TrieGetString( info, "value", output, len );
+	
+	return true;
+}
 
-/**
- * Inits a real number.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param value             Real number that the handle will be initialized with
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_real(Float:value);
+JSON_FUNC JSON:json_get_type(JSON:object, const key[])
+{
+	if( object == JSON_INVALID )
+	{
+		return JSON_INVALID;
+	}
+	
+	new Trie:data;
+	TrieGetCell( Trie:object, "data", data );
+	
+	new Trie:info;
+	
+	if( !TrieGetCell( data, key, info ) )
+	{
+		return JSON_INVALID;
+	}
+	
+	new JSON:type;
+	TrieGetCell( info, "type", type );
+	
+	return type;
+}
 
-/**
- * Inits a boolean value.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param value             Boolean value that the handle will be initialized with
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_bool(bool:value);
+JSON_FUNC bool:json_delete(JSON:object, const key[])
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data, Array:keys;
+	
+	TrieGetCell( Trie:object, "data", data );
+	TrieGetCell( Trie:object, "keys", keys );
+	
+	new size = ArraySize( keys );
+	
+	return __json_delete( data, key, keys, size );
+}
 
-/**
- * Inits a null.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- */
-native JSON:json_init_null();
+JSON_FUNC bool:__json_delete(Trie:data, const key[], Array:keys=Invalid_Array, &size=0)
+{
+	new Trie:info;
+	
+	if( TrieGetCell( data, key, info ) )
+	{
+		TrieDeleteKey( data, key );
+		
+		if( keys != Invalid_Array && size > 0 )
+		{
+			for( new i = 0; i < size; i++ )
+			{
+				ArrayGetString( keys, i, __json_key2, charsmax( __json_key2 ) );
+				
+				if( equal( __json_key2, key ) )
+				{
+					ArrayDeleteItem( keys, i-- );
+					size--;
+				}
+			}
+		}
+		
+		new JSON:type;
+		TrieGetCell( info, "type", type );
+		
+		if( type == JSON_Object )
+		{
+			new JSON:object;
+			TrieGetCell( info, "value", object );
+			
+			json_destroy( object );
+		}
+		
+		TrieDestroy( info );
+		
+		return true;
+	}
+	
+	return false;
+}
 
-/**
- * Creates deep copy of passed value.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param value             JSON handle to be copied
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- * @error                   If passed value is not a valid handle
- */
-native JSON:json_deep_copy(const JSON:value);
+JSON_FUNC JSON:json_decode(const string[], &pos=0, len=0)
+{
+	if( !len && !( len = strlen( string ) ) )
+	{
+		return JSON_INVALID;
+	}
+	
+	while( pos < len && isspace( string[ pos ] ) )
+	{
+		pos++;
+	}
+	
+	while( len > 0 && isspace( string[ len - 1 ] ) )
+	{
+		len--;
+	}
+	
+	if( !len || pos >= len )
+	{
+		return JSON_INVALID;
+	}
+	
+	new JSON:json = JSON_INVALID;
+	
+	switch( string[ pos ] )
+	{
+		case '{':
+		{
+			json = json_create( );
+			
+			new key_start, key_len;
+			new bool:escaped;
+			new JSON:child;
+			new Array:array;
+			new Array:types;
+			new string_start;
+			new string_len;
+			
+			while( ++pos < len && isspace( string[ pos ] ) ) { }
+			
+			while( json )
+			{	
+				if( pos >= len || string[ pos ] != '"' )
+				{
+					json_destroy( json );
+					return JSON_INVALID;
+				}
+				
+				key_start = pos + 1;
+				escaped = false;
+				
+				while( ++pos <= len )
+				{
+					if( pos == len )
+					{
+						json_destroy( json );
+						return JSON_INVALID;
+					}
+					
+					if( escaped )
+					{
+						escaped = false;
+					}
+					else if( string[ pos ] == '\' )
+					{
+						escaped = true;
+					}
+					else if( string[ pos ] == '"' )
+					{
+						break;
+					}
+				}
+				
+				key_len = pos - key_start;
+				
+				if( !key_len )
+				{
+					json_destroy( json );
+					return JSON_INVALID;
+				}
+				
+				while( ++pos < len && isspace( string[ pos ] ) ) { }
+				
+				if( string[ pos ] != ':' )
+				{
+					json_destroy( json );
+					return JSON_INVALID;
+				}
+				
+				while( ++pos < len && isspace( string[ pos ] ) ) { }
+				
+				switch( string[ pos ] )
+				{
+					case '{':
+					{
+						// Read JSON
+						child = json_decode( string, pos, len );
+						
+						if( child == JSON_INVALID )
+						{
+							json_destroy( json );
+							return JSON_INVALID;
+						}
+						
+						copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+						
+						json_set_cell( json, __json_key, child, JSON_Object );
+					}
+					case '[':
+					{
+						// Read array
+						array = __json_read_array( string, len, pos, string_len, types );
+						
+						if( array == Invalid_Array )
+						{
+							json_destroy( json );
+							return JSON_INVALID;
+						}
+						
+						copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+						
+						json_set_array2( json, __json_key, array, string_len, types, .force_type = false );
+						
+						ArrayDestroy( array );
+						ArrayDestroy( types );
+					}
+					case '"':
+					{
+						// Read string
+						escaped = false;
+						
+						string_len = 0;
+						__json_string[ 0 ] = EOS;
+						
+						while( ++pos <= len )
+						{
+							if( pos == len )
+							{
+								json_destroy( json );
+								return JSON_INVALID;
+							}
+							
+							if( escaped )
+							{
+								escaped = false;
+								
+								if( string_len < charsmax( __json_string ) )
+								{
+									__json_string[ string_len++ ] = string[ pos ];
+								}
+							}
+							else if( string[ pos ] == '\' )
+							{
+								escaped = true;
+							}
+							else if( string[ pos ] == '"' )
+							{
+								pos++;
+								break;
+							}
+							else
+							{
+								
+								if( string_len < charsmax( __json_string ) )
+								{
+									__json_string[ string_len++ ] = string[ pos ];
+								}
+							}
+							
+							pos++;
+						}
+						
+						if( !string_len )
+						{
+							json_destroy( json );
+							return JSON_INVALID;
+						}
+						
+						copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+						
+						json_set_string( json, __json_key, __json_string );
+					}
+					default:
+					{
+						// Read true/false, integer, or float
+						string_start = pos;
+						
+						while( ++pos < len && !isspace( string[ pos ] ) ) { }
+						
+						string_len = pos - string_start;
+						
+						copy( __json_string, min( charsmax( __json_string ), string_len ), string[ string_start ] );
+						
+						if( equali( __json_string, "true" ) || equali( __json_string, "false" ) )
+						{
+							copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+							
+							json_set_cell( json, __json_key, ( __json_string[ 0 ] == 't' || __json_string[ 0 ] == 'T' ) );
+						}
+						else if( is_str_num( __json_string ) )
+						{
+							copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+							
+							json_set_cell( json, __json_key, str_to_num( __json_string ) );
+						}
+						else
+						{
+							string_len = contain( __json_string, "." );
+							
+							if( string_len <= 0 || !is_str_num( __json_string[ string_len + 1 ] ) )
+							{
+								json_destroy( json );
+								return JSON_INVALID;
+							}
+							
+							__json_string[ string_len ] = EOS;
+							
+							string_start = _:!!( __json_string[ 0 ] == '-' );
+							
+							if( !is_str_num( __json_string[ string_start ] ) )
+							{
+								json_destroy( json );
+								return JSON_INVALID;
+							}
+							
+							__json_string[ string_len ] = '.';
+							
+							copy( __json_key, min( charsmax( __json_key ), key_len ), string[ key_start ] );
+							
+							json_set_cell( json, __json_key, str_to_float( __json_string ), JSON_Float );
+						}
+					}
+				}
+				
+				while( pos < len && isspace( string[ pos ] ) )
+				{
+					pos++;
+				}
+				
+				if( string[ pos ] == '}' )
+				{
+					pos++;
+					break;
+				}
+				else if( string[ pos ] != ',' )
+				{
+					json_destroy( json );
+					return JSON_INVALID;
+				}
+				
+				while( ++pos < len && isspace( string[ pos ] ) ) { }
+			}
+		}
+		case '[':
+		{
+			// Read array
+			new size;
+			new Array:types;
+			
+			new Array:array = __json_read_array( string, len, pos, size, types );
+			
+			if( array == Invalid_Array )
+			{
+				return JSON_INVALID;
+			}
+			
+			json = json_from_array2( array, size, types );
+			
+			ArrayDestroy( array );
+			ArrayDestroy( types );
+		}
+	}
+	
+	return json;
+}
 
-/**
- * Frees handle.
- *
- * @param handle            JSON handle to be freed
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid handle
- */
-native bool:json_free(&JSON:handle);
+JSON_FUNC Array:__json_read_array(const string[], len, &pos, &size, &Array:types)
+{
+	new Array:output = ArrayCreate( JSON_STR_SIZE );
+	size = 0;
+	types = ArrayCreate( );
+	
+	new bool:failed;
+	
+	new JSON:child;
+	new Array:array;
+	new array_size;
+	new Array:array_types;
+	new bool:escaped;
+	new string_start;
+	new string_len;
+	
+	while( ++pos <= len )
+	{
+		while( pos < len && isspace( string[ pos ] ) )
+		{
+			pos++;
+		}
+		
+		if( pos == len )
+		{
+			failed = true;
+			goto check_fail;
+		}
+		
+		switch( string[ pos ] )
+		{
+			case ']':
+			{
+				pos++;
+				break;
+			}
+			case '{':
+			{
+				child = json_decode( string, pos, len );
+				
+				if( child == JSON_INVALID )
+				{
+					failed = true;
+					goto check_fail;
+				}
+				
+				ArrayPushCell( output, child );
+				ArrayPushCell( types, JSON_Object );
+				size++;
+			}
+			case '[':
+			{
+				array = __json_read_array( string, len, pos, array_size, array_types );
+				
+				if( array == Invalid_Array )
+				{
+					failed = true;
+					goto check_fail;
+				}
+				
+				ArrayPushCell( output, json_from_array2( array, array_size, array_types ) );
+				ArrayPushCell( types, JSON_Object );
+				size++;
+				
+				ArrayDestroy( array );
+				ArrayDestroy( array_types );
+			}
+			case '"':
+			{
+				// Read string
+				escaped = false;
+				
+				string_len = 0;
+				__json_string[ 0 ] = EOS;
+				
+				while( ++pos <= len )
+				{
+					if( pos == len )
+					{
+						failed = true;
+						goto check_fail;
+					}
+					
+					if( escaped )
+					{
+						escaped = false;
+						
+						if( string_len < charsmax( __json_string ) )
+						{
+							__json_string[ string_len++ ] = string[ pos ];
+						}
+					}
+					else if( string[ pos ] == '\' )
+					{
+						escaped = true;
+					}
+					else if( string[ pos ] == '"' )
+					{
+						pos++;
+						break;
+					}
+					else
+					{
+						
+						if( string_len < charsmax( __json_string ) )
+						{
+							__json_string[ string_len++ ] = string[ pos ];
+						}
+					}
+					
+					pos++;
+				}
+				
+				if( !string_len )
+				{
+					failed = true;
+					goto check_fail;
+				}
+				
+				ArrayPushString( output, __json_string );
+				ArrayPushCell( types, JSON_String );
+				size++;
+			}
+			default:
+			{
+				// Read true/false, integer, or float
+				string_start = pos;
+				
+				while( ++pos < len && !isspace( string[ pos ] ) ) { }
+				
+				string_len = pos - string_start;
+				
+				copy( __json_string, min( charsmax( __json_string ), string_len ), string[ string_start ] );
+				
+				if( equali( __json_string, "true" ) || equali( __json_string, "false" ) )
+				{
+					ArrayPushCell( output, ( __json_string[ 0 ] == 't' || __json_string[ 0 ] == 'T' ) );
+					ArrayPushCell( types, JSON_Cell );
+					size++;
+				}
+				else if( is_str_num( __json_string ) )
+				{
+					ArrayPushCell( output, str_to_num( __json_string ) );
+					ArrayPushCell( types, JSON_Cell );
+					size++;
+				}
+				else
+				{
+					string_len = contain( __json_string, "." );
+					
+					if( string_len <= 0 || !is_str_num( __json_string[ string_len + 1 ] ) )
+					{
+						failed = true;
+						goto check_fail;
+					}
+					
+					__json_string[ string_len ] = EOS;
+					
+					string_start = _:!!( __json_string[ 0 ] == '-' );
+					
+					if( !is_str_num( __json_string[ string_start ] ) )
+					{
+						failed = true;
+						goto check_fail;
+					}
+					
+					__json_string[ string_len ] = '.';
+					
+					ArrayPushCell( output, str_to_float( __json_string ) );
+					ArrayPushCell( types, JSON_Float );
+					size++;
+				}
+			}
+		}
+		
+		while( pos < len && isspace( string[ pos ] ) )
+		{
+			pos++;
+		}
+		
+		if( string[ pos ] == ']' )
+		{
+			pos++;
+			break;
+		}
+		else if( string[ pos ] != ',' )
+		{
+			failed = true;
+			goto check_fail;
+		}
+	}
+	
+	check_fail:
+	
+	if( failed )
+	{
+		while( --size >= 0 )
+		{
+			if( ArrayGetCell( types, size ) == JSON_Object )
+			{
+				child = ArrayGetCell( output, size );
+				
+				json_destroy( child );
+			}
+		}
+		
+		ArrayDestroy( output );
+		ArrayDestroy( types );
+		
+		output = Invalid_Array;
+	}
+	
+	return output;
+}
 
-/**
- * Gets string data.
- *
- * @param value             JSON handle
- * @param buffer            Buffer to copy string to
- * @param maxlen            Maximum size of the buffer
- *
- * @return                  The number of cells written to the buffer
- * @error                   If passed value is not a valid handle
- */
-native json_get_string(const JSON:value, buffer[], maxlen);
+JSON_FUNC json_encode(JSON:object, output[], len)
+{
+	if( object == JSON_INVALID )
+	{
+		return 0;
+	}
+	
+	new Trie:data, Array:keys;
+	
+	TrieGetCell( Trie:object, "data", data );
+	TrieGetCell( Trie:object, "keys", keys );
+	
+	new bool:is_array = TrieKeyExists( Trie:object, "is_array" );
+	
+	new pos = copy( output, len, is_array ? "[" : "{" );
+	
+	new size = ArraySize( keys );
+	
+	new Trie:info;
+	new bool:first = true;
+	new JSON:type;
+	new value;
+	
+	for( new i = 0; i < size; i++ )
+	{
+		ArrayGetString( keys, i, __json_key, charsmax( __json_key ) );
+		
+		if( TrieGetCell( data, __json_key, info ) )
+		{
+			if( first )
+			{
+				first = false;
+			}
+			else
+			{
+				pos += copy( output[ pos ], len - pos, "," );
+			}
+			
+			if( !is_array )
+			{
+				pos += copy( output[ pos ], len - pos, "^"" );
+				
+				pos += json_escape( __json_key, output[ pos ], len - pos );
+				
+				pos += copy( output[ pos ], len - pos, "^":" );
+			}
+			
+			TrieGetCell( info, "type", type );
+			
+			switch( type )
+			{
+				case JSON_Cell:
+				{
+					TrieGetCell( info, "value", value );
+					
+					pos += formatex( output[ pos ], len - pos, "%d", value );
+				}
+				case JSON_Float:
+				{
+					TrieGetCell( info, "value", value );
+					
+					pos += formatex( output[ pos ], len - pos, "%f", value );
+					
+					// Remove insignificant digits
+					while( output[ --pos ] == '0' ) { }
+					
+					if( output[ pos ] == '.' )
+					{
+						output[ pos ] = EOS;
+					}
+					else
+					{
+						
+						output[ ++pos ] = EOS;
+					}
+				}
+				case JSON_String:
+				{
+					TrieGetString( info, "value", __json_string, charsmax( __json_string ) );
+					
+					pos += copy( output[ pos ], len - pos, "^"" );
+					
+					pos += json_escape( __json_string, output[ pos ], len - pos );
+					
+					pos += copy( output[ pos ], len - pos, "^"" );
+				}
+				case JSON_Object:
+				{
+					TrieGetCell( info, "value", value );
+					
+					pos += json_encode( JSON:value, output[ pos ], len - pos );
+				}
+			}
+		}
+	}
+	
+	pos += copy( output[ pos ], len - pos, is_array ? "]" : "}" );
+	
+	return pos;
+}
 
-/**
- * Gets a number.
- *
- * @param value             JSON handle
- *
- * @return                  Number
- * @error                   If passed value is not a valid handle
- */
-native json_get_number(const JSON:value);
+JSON_FUNC json_escape(const string[], output[], len)
+{
+	new pos, c, o;
+	
+	while( ( c = string[ pos++ ] ) > 0 )
+	{
+		if( o == len )
+		{
+			// Out of room for the rest of the string
+			// Fail the escaping since we cannot give back full string
+			o = 0;
+			break;
+		}
+		
+		if( c == '"' || c == '\' )
+		{
+			if( ( o + 2 ) > len )
+			{
+				// Cannot finish escaping the string, so fail the function
+				o = 0;
+				break;
+			}
+			
+			output[ o++ ] = '\';
+			output[ o++ ] = c;
+		}
+		else
+		{
+			output[ o++ ] = c;
+		}
+	}
+	
+	output[ o ] = EOS;
+	
+	return o;
+}
 
-/**
- * Gets a real number.
- *
- * @param value             JSON handle
- *
- * @return                  Real number
- * @error                   If passed value is not a valid handle
- */
-native Float:json_get_real(const JSON:value);
-
-/**
- * Gets a boolean value.
- *
- * @param value             JSON handle
- *
- * @return                  Boolean value
- * @error                   If passed value is not a valid handle
- */
-native bool:json_get_bool(const JSON:value);
-
-/**
- * Gets a value from the array.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- * @error                   If passed handle is not a valid array
- */
-native JSON:json_array_get_value(const JSON:array, index);
-
-/**
- * Gets string data from the array.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- * @param buffer            Buffer to copy string to
- * @param maxlen            Maximum size of the buffer
- *
- * @return                  The number of cells written to the buffer
- * @error                   If passed handle is not a valid array
- */
-native json_array_get_string(const JSON:array, index, buffer[], maxlen);
-
-/**
- * Gets a number from the array.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- *
- * @return                  The number as integer
- * @error                   If passed handle is not a valid array
- */
-native json_array_get_number(const JSON:array, index);
-
-/**
- * Gets a real number from the array.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- *
- * @return                  The number as float
- * @error                   If passed handle is not a valid array
- */
-native Float:json_array_get_real(const JSON:array, index);
-
-/**
- * Gets a boolean value from the array.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- *
- * @return                  Boolean value
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_get_bool(const JSON:array, index);
-
-/**
- * Gets count of the elements in the array.
- *
- * @param array             Array handle
- *
- * @return                  Number of elements in the array
- * @error                   If passed handle is not a valid array
- */
-native json_array_get_count(const JSON:array);
-
-/**
- * Replaces an element in the array with value.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- * @param value             JSON handle to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_value(JSON:array, index, const JSON:value);
-
-/**
- * Replaces an element in the array with string data.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- * @param string            String to copy
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_string(JSON:array, index, const string[]);
-
-/**
- * Replaces an element in the array with number.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- * @param number            Number to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_number(JSON:array, index, number);
-
-/**
- * Replaces an element in the array with real number.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- * @param number            Real number to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_real(JSON:array, index, Float:number);
-
-/**
- * Replaces an element in the array with boolean value.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- * @param boolean           Boolean value to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_bool(JSON:array, index, bool:boolean);
-
-/**
- * Replaces an element in the array with null.
- *
- * @param array             Array handle
- * @param index             Position in the array to be replaced
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_replace_null(JSON:array, index);
-
-/**
- * Appends a value in the array.
- *
- * @param array             Array handle
- * @param value             JSON handle to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_value(JSON:array, const JSON:value);
-
-/**
- * Appends string data in the array.
- *
- * @param array             Array handle
- * @param string            String to copy
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_string(JSON:array, const string[]);
-
-/**
- * Appends a number in the array.
- *
- * @param array             Array handle
- * @param number            Number to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_number(JSON:array, number);
-
-/**
- * Appends a real number in the array.
- *
- * @param array             Array handle
- * @param number            Real number to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_real(JSON:array, Float:number);
-
-/**
- * Appends a boolean value in the array.
- *
- * @param array             Array handle
- * @param boolean           Boolean value to set
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_bool(JSON:array, bool:boolean);
-
-/**
- * Appends a null in the array.
- *
- * @param array             Array handle
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_append_null(JSON:array);
-
-/**
- * Removes an element from the array.
- *
- * @note                    Order of values in array may change during execution.
- *
- * @param array             Array handle
- * @param index             Position in the array (starting from 0)
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_remove(JSON:array, index);
-
-/**
- * Removes all elements from the array.
- *
- * @param array             Array handle
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid array
- */
-native bool:json_array_clear(JSON:array);
-
-/**
- * Gets a value from the object.
- *
- * @note                    Needs to be freed using json_free() native.
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- * @error                   If passed handle is not a valid object
- */
-native JSON:json_object_get_value(const JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Gets string data from the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param buffer            Buffer to copy string to
- * @param maxlen            Maximum size of the buffer
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  The number of cells written to the buffer
- * @error                   If passed handle is not a valid object
- */
-native json_object_get_string(const JSON:object, const name[], buffer[], maxlen, bool:dot_not = false);
-
-/**
- * Gets a number from the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  Number
- * @error                   If passed handle is not a valid object
- */
-native json_object_get_number(const JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Gets a real number from the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  Real number
- * @error                   If passed handle is not a valid object
- */
-native Float:json_object_get_real(const JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Gets a boolean value from the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  Boolean value
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_get_bool(const JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Gets count of the keys in the object.
- *
- * @param object            Object handle
- *
- * @return                  Keys count
- * @error                   If passed handle is not a valid object
- */
-native json_object_get_count(const JSON:object);
-
-/**
- * Gets name of the object's key.
- *
- * @param object            Object handle
- * @param index             Position from which get key name
- * @param buffer            Buffer to copy string to
- * @param maxlen            Maximum size of the buffer
- *
- * @return                  The number of cells written to the buffer
- * @error                   If passed handle is not a valid object
- */
-native json_object_get_name(const JSON:object, index, buffer[], maxlen);
-
-/**
- * Gets a value at the specified position from the object.
- *
- * @note                    Needs to be freed using json_free() native.
- *
- * @param object            Object handle
- * @param index             Position from which get key name
- *
- * @return                  JSON handle, Invalid_JSON if error occurred
- * @error                   If passed handle is not a valid object
- */
-native JSON:json_object_get_value_at(const JSON:object, index);
-
-/**
- * Checks if the object has a value with a specific name and type.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param type              Type of value, if JSONError type will not be checked
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if has, false if not
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_has_value(const JSON:object, const name[], JSONType:type = JSONError, bool:dot_not = false);
-
-/**
- * Sets a value in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param value             JSON handle to set
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_value(JSON:object, const name[], const JSON:value, bool:dot_not = false);
-
-/**
- * Sets string data in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param string            String to copy
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_string(JSON:object, const name[], const string[], bool:dot_not = false);
-
-/**
- * Sets a number in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param number            Number to set
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_number(JSON:object, const name[], number, bool:dot_not = false);
-
-/**
- * Sets a real number in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param number            Real number to set
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_real(JSON:object, const name[], Float:number, bool:dot_not = false);
-
-/**
- * Sets a boolean value in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param boolean           Boolean value to set
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_bool(JSON:object, const name[], bool:boolean, bool:dot_not = false);
-
-/**
- * Sets a null in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- * @note                    It also removes the old value if any.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_set_null(JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Removes a key and its value in the object.
- *
- * @note                    If dot notation is used some values may be inaccessible
- *                          because valid names in JSON can contain dots.
- *
- * @param object            Object handle
- * @param name              Key name
- * @param dot_not           True to use dot notation, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_remove(JSON:object, const name[], bool:dot_not = false);
-
-/**
- * Removes all keys and their values in the object.
- *
- * @param object            Object handle
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid object
- */
-native bool:json_object_clear(JSON:object);
-
-/**
- * Gets size of serialization.
- *
- * @param value             JSON handle
- * @param pretty            True to count size for pretty format, false to not
- * @param null_byte         True to include null byte, false to not
- *
- * @return                  Size of serialized string
- * @error                   If passed handle is not a valid value
- */
-native json_serial_size(const JSON:value, bool:pretty = false, bool:null_byte = false);
-
-/**
- * Copies serialized string to the buffer.
- *
- * @param value             JSON handle
- * @param buffer            Buffer to copy string to
- * @param maxlen            Maximum size of the buffer
- * @param pretty            True to format pretty JSON string, false to not
- *
- * @return                  The number of cells written to the buffer
- * @error                   If passed handle is not a valid value
- */
-native json_serial_to_string(const JSON:value, buffer[], maxlen, bool:pretty = false);
-
-/**
- * Copies serialized string to the file.
- *
- * @param value             JSON handle
- * @param file              Path to the file
- * @param pretty            True to format pretty JSON string, false to not
- *
- * @return                  True if succeed, false otherwise
- * @error                   If passed handle is not a valid value
- */
-native bool:json_serial_to_file(const JSON:value, const file[], bool:pretty = false);
+JSON_FUNC bool:json_destroy(&JSON:object)
+{
+	if( object == JSON_INVALID )
+	{
+		return false;
+	}
+	
+	new Trie:data, Array:keys;
+	
+	TrieGetCell( Trie:object, "data", data );
+	TrieGetCell( Trie:object, "keys", keys );
+	
+	new size = ArraySize( keys );
+	
+	for( new i = 0; i < size; i++ )
+	{
+		ArrayGetString( keys, i, __json_key, charsmax( __json_key ) );
+		
+		__json_delete( data, __json_key );
+	}
+	
+	TrieDestroy( data );
+	ArrayDestroy( keys );
+	
+	TrieDestroy( Trie:object );
+	
+	object = JSON_INVALID;
+	
+	return true;
+}
+/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
+*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1033\\ f0\\ fs16 \n\\ par }
+*/
